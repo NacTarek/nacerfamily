@@ -82,6 +82,10 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 #gate .box{background:#ffffff;border-radius:14px;padding:22px;width:min(420px,100%);box-shadow:0 12px 40px rgba(0,0,0,.35)}
 #gate h2{margin:0 0 8px;font-size:20px;text-transform:none;letter-spacing:0;color:#1b2a4a}
 #gate input{margin-top:4px}
+
+.sg{border:1px solid #d5ddec;border-radius:10px;padding:10px 12px;background:#fff}.sg.new{border-color:#2b59c3;background:#f3f7ff}.sg.done{opacity:.6}
+.sgh{font-size:13px;color:#6b7a99}.sgh em{background:#2b59c3;color:#fff;border-radius:8px;padding:0 7px;margin-inline-start:6px;font-style:normal}.sgw{font-size:13px;margin-top:4px}.sgb{white-space:pre-wrap;margin-top:6px;font-size:14px}
+#bInbox.hot{background:#2b59c3;color:#fff;border-color:#2b59c3}
 </style>
 </head>
 <body>
@@ -91,9 +95,9 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
   <button id="bOri"></button>
   <button id="bOrd"></button>
   <button id="bZo">−</button><button id="bZi">+</button><button id="bFit">ملاءمة</button>
-  <span id="fstat" class="fstat"></span><button id="bLink" style="display:none"></button><button id="bDl" style="display:none">تنزيل نسخة محدّثة</button>
+  <span id="fstat" class="fstat"></span><span id="cstat" class="fstat"></span><button id="bLink" style="display:none"></button><button id="bDl" style="display:none">تنزيل نسخة محدّثة</button>
   <button id="bStudy">🎓 الدراسة</button><button id="bPdf">📄 تصدير PDF</button>
-  <button id="bPub">🌐 نشر للعرض</button>
+  <button id="bInbox">📥 الاقتراحات</button><button id="bPub">🌐 نشر للعرض</button><button id="bOut" style="display:none">خروج</button>
   <button id="bData">نسخ احتياطي / استيراد</button>
 </div>
 
@@ -124,12 +128,13 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
   <div class="msg" id="pdfNote" style="color:#a3361f"></div>
 </div></div>
 <div id="gate"><div class="box" id="gateBox"></div></div>
+<div class="modal" id="inboxM"><div class="box wide"><strong>اقتراحات الزوّار</strong><div id="inboxList" style="overflow:auto;display:flex;flex-direction:column;gap:10px"></div><div class="row" style="margin:0"><button id="inboxClose">إغلاق</button></div></div></div>
 <div class="modal" id="pubm"><div class="box">
   <strong>نشر للعرض (tree.json)</strong>
   <div class="hint">هذه هي النسخة العامة من الشجرة التي يراها الزوّار: الأسماء والزوج/الزوجة والتواريخ والمكان فقط. <b>لا تتضمن</b> الملاحظات ولا بيانات الدراسة ولا الإنجازات ولا علامات «غير مؤكد». لتحديث الموقع: نزّل الملف ثم ارفعه إلى مستودع GitHub بدل tree.json القديم.</div>
   <textarea id="pubjson" dir="ltr" readonly spellcheck="false"></textarea>
   <div class="msg" id="pubmsg"></div>
-  <div class="row" style="margin:0"><button class="primary" id="pubDl">تنزيل tree.json</button><button id="pubCopy">نسخ النص</button><button id="pubClose" style="margin-inline-start:auto">إغلاق</button></div>
+  <div class="row" style="margin:0"><button class="primary" id="pubNow">نشر الآن للزوّار</button><button id="pubDl">تنزيل tree.json</button><button id="pubCopy">نسخ النص</button><button id="pubClose" style="margin-inline-start:auto">إغلاق</button></div>
 </div></div>
 <div class="modal" id="modal"><div class="box">
   <strong>نسخ احتياطي / استيراد</strong>
@@ -139,7 +144,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
   <div class="row" style="margin:0">
     <button class="primary" id="bCopy">نسخ</button>
     <button id="bLoad">تحميل هذا النص</button>
-    <label style="display:inline-block;margin:0"><input type="file" id="file" accept=".json,application/json" style="font-size:12px"></label>
+    <label style="display:inline-block;margin:0"><input type="file" id="file" accept=".json,.html,application/json,text/html" style="font-size:12px"></label>
     <button id="bReset" class="danger" style="margin-left:auto">إعادة الأصل</button>
     <button id="bClose">إغلاق</button>
   </div>
@@ -186,7 +191,7 @@ function load(){
   if(pick!==emb)needSave=true;
   return normalize(pick);
 }
-let saveT;function save(){clearTimeout(saveT);data.savedAt=Date.now();saveT=setTimeout(()=>{try{localStorage.setItem(KEY,exportJSON());}catch(e){}scheduleFileSave();},250);}
+let saveT;function save(){clearTimeout(saveT);data.savedAt=Date.now();saveT=setTimeout(()=>{try{localStorage.setItem(KEY,exportJSON());}catch(e){}scheduleFileSave();scheduleCloud();},250);}
 function exportJSON(){return JSON.stringify(data,(k,v)=>k[0]==='_'?undefined:v,2);}
 let migrated=false;
 function migrate(d){
@@ -688,7 +693,7 @@ const modal=$('#modal'),ta=$('#json'),msg=$('#msg');
 $('#bData').onclick=()=>{ta.value=exportJSON();msg.textContent='';modal.classList.add('on');};
 $('#bClose').onclick=()=>modal.classList.remove('on');
 $('#bCopy').onclick=async()=>{ta.value=exportJSON();ta.select();try{await navigator.clipboard.writeText(ta.value);msg.textContent='تم النسخ.';}catch(e){msg.textContent='النص محدد — اضغط Ctrl+C للنسخ.';}};
-function loadText(t){try{const d=normalize(JSON.parse(t));if(!d.root)throw 0;data=d;refreshAll();save();msg.textContent='تم التحميل.';return true;}catch(e){msg.textContent='هذا النص ليس نسخة احتياطية صالحة.';return false;}}
+function loadText(t){try{const m0=/<script[^>]*id="treedata"[^>]*>([\s\S]*?)<\/script>/.exec(t);if(m0&&t.trim()[0]==='<')t=m0[1];const d=normalize(JSON.parse(t));if(!d.root)throw 0;data=d;refreshAll();save();msg.textContent='تم التحميل.';return true;}catch(e){msg.textContent='هذا النص ليس نسخة احتياطية صالحة.';return false;}}
 $('#bLoad').onclick=()=>loadText(ta.value);
 $('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{ta.value=r.result;loadText(r.result);};r.readAsText(f);};
 let rArmed=false;$('#bReset').onclick=()=>{const b=$('#bReset');if(!rArmed){rArmed=true;b.classList.add('armed');b.textContent='اضغط مجدداً: مسح تعديلاتي';setTimeout(()=>{rArmed=false;b.classList.remove('armed');b.textContent='إعادة الأصل';},3500);return;}rArmed=false;b.classList.remove('armed');b.textContent='إعادة الأصل';data=defaultData();refreshAll();save();ta.value=exportJSON();msg.textContent='تمت إعادة الأصل.';};
@@ -744,52 +749,83 @@ async function initFS(){
 }
 
 function boot(){
-data=load();syncBar();draw();renderPanel();fitZoom();if(usedDefault&&/^https?:$/.test(location.protocol)){fetch('tree.json?'+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d&&d.root){data=normalize(d);refreshAll();}}).catch(()=>{});}
+data=load();syncBar();draw();renderPanel();fitZoom();
 if(zoom<.5){autoFit=false;zoom=.5;applyZoom();const pp=$('#paper');pp.scrollLeft=-(pp.scrollWidth-pp.clientWidth)/2;}initFS();if(migrated||needSave)save();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{draw();if(autoFit)fitZoom();});
 }
-/* ---- password gate (only when hosted on the web; the local file opens directly) ---- */
+/* ---- Supabase: login, cloud save, publish, suggestions inbox ---- */
+const SB={url:'https://xwurszjkydfylisvjzwz.supabase.co',key:'sb_publishable_bJ3-yY89bYk2VKcRYUY0_A_c4R8flsX'};
 const GATE=/^https?:$/.test(location.protocol);
-const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
-const unhex=h=>new Uint8Array(h.match(/../g).map(x=>parseInt(x,16)));
-async function pbk(pw,salt,iter){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt,iterations:iter},k,256));}
+let sess=null;
+try{sess=JSON.parse(localStorage.getItem('famSess')||'null');}catch(e){}
+function setSess(s2){sess=s2;try{if(s2)localStorage.setItem('famSess',JSON.stringify(s2));else localStorage.removeItem('famSess');}catch(e){}}
+function mkSess(j){return j&&j.access_token?{access_token:j.access_token,refresh_token:j.refresh_token,exp:Date.now()+((j.expires_in||3600)-60)*1000}:null;}
+async function authCall(path,body){const r=await fetch(SB.url+'/auth/v1/'+path,{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify(body)});let j={};try{j=await r.json();}catch(e){}return{ok:r.ok,j};}
+async function token(){
+  if(!sess)return null;
+  if(Date.now()>sess.exp){const r=await authCall('token?grant_type=refresh_token',{refresh_token:sess.refresh_token});const n=r.ok&&mkSess(r.j);if(!n){setSess(null);return null;}setSess(n);}
+  return sess.access_token;}
+async function sb(path,opt){opt=opt||{};const t=await token();if(!t)throw new Error('auth');
+  const r=await fetch(SB.url+'/rest/v1/'+path,{method:opt.method||'GET',headers:Object.assign({apikey:SB.key,Authorization:'Bearer '+t,'Content-Type':'application/json'},opt.headers||{}),body:opt.body?JSON.stringify(opt.body):undefined});
+  if(!r.ok)throw new Error('http '+r.status);
+  const tx=await r.text();return tx?JSON.parse(tx):null;}
+const up=(table,obj)=>sb(table+'?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:Object.assign({id:1,updated_at:new Date().toISOString()},obj)});
+function cstat(t,err){const e=$('#cstat');if(e){e.textContent=t;e.className='fstat'+(err?' err':'');}}
+let cloudT=null,cloudOn=false;
+function scheduleCloud(){if(!cloudOn)return;clearTimeout(cloudT);cstat('☁ بانتظار الحفظ…');cloudT=setTimeout(async()=>{try{await up('tree_private',{data:JSON.parse(exportJSON())});cstat('☁ حُفظ في السحابة '+hhmm());}catch(e){cstat('☁ تعذّر الحفظ في السحابة',true);}},1500);}
+async function cloudInit(){
+  cloudOn=true;
+  try{const rows=await sb('tree_private?id=eq.1&select=data,updated_at');
+    if(rows&&rows[0]&&rows[0].data&&rows[0].data.root){const d=rows[0].data;if((d.savedAt||0)>=(data.savedAt||0)||usedDefault){data=normalize(d);refreshAll();try{localStorage.setItem(KEY,exportJSON());}catch(e){}}cstat('☁ متصل بالسحابة');}
+    else{if(usedDefault){try{const pr=await sb('tree_public?id=eq.1&select=data');if(pr&&pr[0]&&pr[0].data&&pr[0].data.root){data=normalize(pr[0].data);refreshAll();}else{const tr=await fetch('tree.json?'+Date.now(),{cache:'no-store'});if(tr.ok){const td=await tr.json();if(td&&td.root){data=normalize(td);refreshAll();}}}}catch(e){}}
+      data.savedAt=Date.now();try{await up('tree_private',{data:JSON.parse(exportJSON())});cstat('☁ رُفعت أول نسخة إلى السحابة');}catch(e){cstat('☁ تعذّر الرفع الأول',true);}}
+  }catch(e){cstat('☁ تعذّر الاتصال بالسحابة',true);}
+  inboxCount();setInterval(inboxCount,60000);
+}
+/* publish */
+async function publishNow(){const m=$('#pubmsg');m.style.color='#6b7a99';m.textContent='جارٍ النشر…';
+  try{await up('tree_public',{data:publicData()});m.style.color='#2a7a3b';m.textContent='✓ نُشرت الشجرة، وسيراها الزوّار فورًا '+hhmm();}catch(e){m.style.color='#a3361f';m.textContent='تعذّر النشر. سجّل الدخول من جديد ثم أعد المحاولة.';}}
+/* suggestions inbox */
+const esc2=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function inboxCount(){try{const r=await sb('suggestions?status=eq.new&select=id');const n=r.length;$('#bInbox').textContent='📥 الاقتراحات'+(n?' ('+n+')':'');$('#bInbox').classList.toggle('hot',n>0);}catch(e){}}
+async function inboxOpen(){
+  $('#inboxM').classList.add('on');const L=$('#inboxList');L.textContent='جارٍ التحميل…';
+  try{const rows=await sb('suggestions?select=*&order=created_at.desc&limit=200');
+    if(!rows.length){L.innerHTML='<div class="hint">لا توجد اقتراحات بعد.</div>';return;}
+    L.innerHTML=rows.map(r=>`<div class="sg ${r.status}" data-id="${r.id}"><div class="sgh"><b>${esc2(r.sender)}</b> · ${esc2(r.kind)} · <span>${new Date(r.created_at).toLocaleString('ar',{dateStyle:'medium',timeStyle:'short'})}</span>${r.status==='new'?'<em>جديد</em>':''}</div>${r.who?`<div class="sgw">الشخص: ${esc2(r.who)}</div>`:''}<div class="sgb">${esc2(r.body)}</div><div class="row" style="margin-top:6px"><button data-a="done">تمّ</button><button data-a="new">إرجاع كجديد</button><button class="danger" data-a="del">حذف</button></div></div>`).join('');
+    L.querySelectorAll('.sg button').forEach(b=>b.onclick=async()=>{const id=b.closest('.sg').dataset.id,a=b.dataset.a;
+      try{if(a==='del'){if(!confirm('حذف هذا الاقتراح؟'))return;await sb('suggestions?id=eq.'+id,{method:'DELETE'});}else await sb('suggestions?id=eq.'+id,{method:'PATCH',body:{status:a}});await inboxOpen();inboxCount();}catch(e){alert('تعذّر التنفيذ');}});
+  }catch(e){L.textContent='تعذّر تحميل الاقتراحات.';}}
+$('#bInbox').onclick=inboxOpen;$('#inboxClose').onclick=()=>$('#inboxM').classList.remove('on');$('#pubNow').onclick=publishNow;
+/* login gate */
+async function ownerCheck(){
+  try{if(await sb('rpc/is_owner',{method:'POST',body:{}})===true)return true;}catch(e){}
+  try{if(await sb('rpc/claim_owner',{method:'POST',body:{}})===true)return true;}catch(e){}
+  return false;}
 async function runGate(){
   const g=$('#gate'),box=$('#gateBox');g.style.display='flex';
-  let auth=null;try{const r=await fetch('auth.json?'+Date.now(),{cache:'no-store'});if(r.ok)auth=await r.json();}catch(e){}
-  if(auth&&auth.hash&&auth.salt){
-    try{if(sessionStorage.getItem('treeAuth')===auth.hash){g.style.display='none';boot();return;}}catch(e){}
-    box.innerHTML=`<h2>🔒 تعديل شجرة العائلة</h2><div class="hint">أدخل كلمة السر لفتح صفحة التعديل.</div>
-      <input type="password" id="gpw" placeholder="كلمة السر" autocomplete="current-password" style="margin-top:12px">
-      <div class="msg" id="gmsg" style="color:#a3361f"></div>
-      <div class="row"><button class="primary" id="gok">دخول</button></div>`;
-    const go=async()=>{
-      const pw=$('#gpw').value;if(!pw)return;$('#gok').disabled=true;$('#gmsg').textContent='';
-      let ok=false;try{ok=(await pbk(pw,unhex(auth.salt),auth.iter||200000))===auth.hash;}catch(e){}
-      if(ok){try{sessionStorage.setItem('treeAuth',auth.hash);}catch(e){}g.style.display='none';boot();}
-      else{await new Promise(r=>setTimeout(r,900));$('#gmsg').textContent='كلمة السر غير صحيحة.';$('#gok').disabled=false;$('#gpw').select();}
-    };
-    $('#gok').onclick=go;$('#gpw').addEventListener('keydown',e=>{if(e.key==='Enter')go();});$('#gpw').focus();
-  }else{
-    box.innerHTML=`<h2>🔒 صفحة التعديل مقفلة</h2><div class="hint">لم تُعيَّن كلمة سر بعد. اختر كلمة سر لإنشاء ملف <b>auth.json</b>، ثم ارفعه إلى مستودع GitHub بجانب edit.html. بعدها تُطلب كلمة السر عند كل فتح.</div>
-      <label>كلمة السر الجديدة (٨ أحرف على الأقل)</label><input type="password" id="gp1" autocomplete="new-password">
-      <label>أعد كتابتها</label><input type="password" id="gp2" autocomplete="new-password">
-      <div class="msg" id="gmsg" style="color:#a3361f"></div>
-      <div class="row"><button class="primary" id="gmk">إنشاء auth.json</button></div>
-      <textarea id="gout" dir="ltr" readonly style="display:none;margin-top:10px;min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px"></textarea>
-      <div class="row" id="gacts" style="display:none"><button id="gdl" class="primary">تنزيل auth.json</button><button id="gcp">نسخ النص</button></div>`;
-    $('#gmk').onclick=async()=>{
-      const a=$('#gp1').value,b=$('#gp2').value,m=$('#gmsg');
-      if(a.length<8){m.textContent='كلمة السر قصيرة (٨ أحرف على الأقل).';return;}
-      if(a!==b){m.textContent='الكلمتان غير متطابقتين.';return;}
-      m.style.color='#5f7f55';m.textContent='جارٍ الإنشاء…';
-      const salt=crypto.getRandomValues(new Uint8Array(16)),iter=200000,h=await pbk(a,salt,iter);
-      $('#gout').value=JSON.stringify({v:1,iter,salt:hex(salt),hash:h},null,2);$('#gout').style.display='block';$('#gacts').style.display='flex';
-      m.textContent='تم. نزّل الملف وارفعه إلى المستودع (باسم auth.json).';
-    };
-    $('#gdl').onclick=()=>{const x=document.createElement('a');x.href=URL.createObjectURL(new Blob([$('#gout').value],{type:'application/json'}));x.download='auth.json';document.body.appendChild(x);x.click();x.remove();};
-    $('#gcp').onclick=async()=>{const t=$('#gout');t.select();try{await navigator.clipboard.writeText(t.value);$('#gmsg').textContent='تم النسخ.';}catch(e){}};
-  }
+  const enter=()=>{g.style.display='none';$('#bOut').style.display='';boot();cloudInit();};
+  if(sess&&await token()&&await ownerCheck()){enter();return;}
+  let mode='in';
+  const render=()=>{box.innerHTML=`<h2>🔒 ${mode==='in'?'تسجيل الدخول':'إنشاء حساب المالك'}</h2><div class="hint">${mode==='in'?'ادخل ببريدك وكلمة سرك لتعديل شجرة العائلة.':'أول مرة فقط: اختر بريدك وكلمة سر (٨ أحرف فأكثر). أول حساب يدخل يصبح مالك الشجرة، ولا يستطيع غيره التعديل.'}</div>
+    <label>البريد الإلكتروني</label><input type="email" id="gem" dir="ltr" autocomplete="username">
+    <label>كلمة السر</label><input type="password" id="gpw" autocomplete="${mode==='in'?'current-password':'new-password'}">
+    <div class="msg" id="gmsg" style="color:#a3361f"></div>
+    <div class="row"><button class="primary" id="gok">${mode==='in'?'دخول':'إنشاء الحساب'}</button><button id="gsw">${mode==='in'?'أول مرة؟ إنشاء حساب':'لدي حساب'}</button></div>`;
+    $('#gsw').onclick=()=>{mode=mode==='in'?'up':'in';render();};
+    const go=async()=>{const m=$('#gmsg'),em=$('#gem').value.trim(),pw=$('#gpw').value;if(!em||pw.length<8){m.textContent='اكتب البريد وكلمة سر من ٨ أحرف على الأقل.';return;}
+      $('#gok').disabled=true;m.style.color='#6b7a99';m.textContent='لحظة…';
+      const r=await authCall(mode==='in'?'token?grant_type=password':'signup',{email:em,password:pw});
+      let s2=mkSess(r.j);
+      if(!s2&&mode==='up'&&r.ok){m.style.color='#2a7a3b';m.textContent='تم. افتح رسالة التأكيد في بريدك ثم ارجع واضغط «لدي حساب» وادخل.';$('#gok').disabled=false;return;}
+      if(!s2){m.style.color='#a3361f';m.textContent=mode==='in'?'البريد أو كلمة السر غير صحيحة (أو لم تؤكد بريدك بعد).':((r.j&&(r.j.msg||r.j.error_description))||'تعذّر إنشاء الحساب.');$('#gok').disabled=false;return;}
+      setSess(s2);
+      if(!(await ownerCheck())){setSess(null);m.style.color='#a3361f';m.textContent='هذا الحساب ليس مالك الشجرة.';$('#gok').disabled=false;return;}
+      enter();};
+    $('#gok').onclick=go;$('#gpw').addEventListener('keydown',e=>{if(e.key==='Enter')go();});$('#gem').focus();};
+  render();
 }
+$('#bOut').onclick=()=>{setSess(null);location.reload();};
 if(GATE)runGate();else boot();
 </script>
 <style id="pageStyle"></style><div id="printArea"></div>
