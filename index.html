@@ -145,12 +145,14 @@ function parseDate(s){s=String(s||'').replace(/[٠-٩]/g,c=>c.charCodeAt(0)-1632
   if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:+m[3]};
   if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:0};
   if((m=s.match(/(\d{4})/)))return{y:+m[1],m:0,d:0};return null;}
-function ageOf(n){const b=parseDate(n.birth);if(!b)return null;
-  const dead=!!(n.dead||n.death);let e;
-  if(dead){e=parseDate(n.death);if(!e)return{age:null,dead:true};}
+function calcAge(bs,ds,dd){const b=parseDate(bs);if(!b)return null;
+  const dead=!!(dd||ds);let e;
+  if(dead){e=parseDate(ds);if(!e)return{age:null,dead:true};}
   else{const t=new Date();e={y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}
   let a=e.y-b.y;if(b.m&&e.m&&(e.m<b.m||(e.m===b.m&&b.d&&e.d&&e.d<b.d)))a--;
   return a>=0&&a<125?{age:a,dead}:null;}
+function ageOf(n){return calcAge(n.birth,n.death,n.dead);}
+function spAgeOf(n){return calcAge(n.spouseBirth,n.spouseDeath,n.spouseDead);}
 function ageBadge(g,x,y,n){const r=ageOf(n);if(!r||r.age==null)return;
   const cx=x+NW/2-4,cy=y-NH/2+2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
   el('circle',{cx,cy,r:17,fill:col,stroke:'#fff','stroke-width':2.5},b);
@@ -279,11 +281,11 @@ function showCard(){
   const c=$('#card');if(!sel){c.style.display='none';return;}
   const f=find(sel);if(!f){c.style.display='none';return;}
   const n=f.n,p=f.p,years=[n.birth&&('الميلاد: '+esc(n.birth)),n.death&&('الوفاة: '+esc(n.death))].filter(Boolean);
-  c.innerHTML=`<h2>${esc(n.name||'—')}</h2>
-  ${n.spouse?`<div class="sp2">الزوج/الزوجة: ${esc(n.spouse)}</div>`:''}
+  c.innerHTML=`<h2>${esc(n.name||'—')}${n.dead||n.death?' <small style="font-size:13px;color:#8a97b3;font-weight:500">(متوفى)</small>':''}</h2>
   ${years.map(y=>`<div class="row">${y}</div>`).join('')}
   ${(()=>{const r=ageOf(n);return r&&r.age!=null?`<div class="row"><b>${r.dead?'العمر عند الوفاة':'العمر'}:</b> ${r.age} سنة</div>`:'';})()}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
+  ${n.spouse?`<div class="sp2">الزوج/الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(متوفى/ة)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
   ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
   ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
   <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button><button id="cClose">إغلاق</button></div>`;

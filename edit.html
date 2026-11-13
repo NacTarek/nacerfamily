@@ -199,7 +199,7 @@ function migrate(d){
 }
 function normalize(d){
   d.settings=Object.assign({up:true,rtl:true},d.settings||{});d.title=d.title||'';d.subtitle=d.subtitle||'';
-  (function w(n){n.id=n.id||uid();n.name=n.name||'';['spouse','birth','death','place','note'].forEach(k=>n[k]=n[k]||'');n.dead=!!(n.dead||n.death);if(n.edu){n.edu.log=n.edu.log||[];n.edu.achv=n.edu.achv||'';n.edu.honored=n.edu.honored||[];}n.unsure=!!n.unsure;n.children=Array.isArray(n.children)?n.children:[];n.children.forEach(w);})(d.root);
+  (function w(n){n.id=n.id||uid();n.name=n.name||'';['spouse','birth','death','place','note'].forEach(k=>n[k]=n[k]||'');n.dead=!!(n.dead||n.death);['spouseBirth','spouseDeath'].forEach(k=>n[k]=n[k]||'');n.spouseDead=!!(n.spouseDead||n.spouseDeath);if(n.edu){n.edu.log=n.edu.log||[];n.edu.achv=n.edu.achv||'';n.edu.honored=n.edu.honored||[];}n.unsure=!!n.unsure;n.children=Array.isArray(n.children)?n.children:[];n.children.forEach(w);})(d.root);
   if(!d.v)migrate(d);
   if((d.v||0)<3){(function z(n){delete n.stack;n.children.forEach(z);})(d.root);d.v=3;migrated=true;}
   return d;
@@ -373,12 +373,14 @@ function parseDate(s){s=String(s||'').replace(/[٠-٩]/g,c=>c.charCodeAt(0)-1632
   if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:+m[3]};
   if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:0};
   if((m=s.match(/(\d{4})/)))return{y:+m[1],m:0,d:0};return null;}
-function ageOf(n){const b=parseDate(n.birth);if(!b)return null;
-  const dead=!!(n.dead||n.death);let e;
-  if(dead){e=parseDate(n.death);if(!e)return{age:null,dead:true};}
+function calcAge(bs,ds,dd){const b=parseDate(bs);if(!b)return null;
+  const dead=!!(dd||ds);let e;
+  if(dead){e=parseDate(ds);if(!e)return{age:null,dead:true};}
   else{const t=new Date();e={y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}
   let a=e.y-b.y;if(b.m&&e.m&&(e.m<b.m||(e.m===b.m&&b.d&&e.d&&e.d<b.d)))a--;
   return a>=0&&a<125?{age:a,dead}:null;}
+function ageOf(n){return calcAge(n.birth,n.death,n.dead);}
+function spAgeOf(n){return calcAge(n.spouseBirth,n.spouseDeath,n.spouseDead);}
 function ageBadge(g,x,y,n){const r=ageOf(n);if(!r||r.age==null)return;
   const cx=x+NW/2-4,cy=y-NH/2+2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
   el('circle',{cx,cy,r:17,fill:col,stroke:'#fff','stroke-width':2.5},b);
@@ -527,6 +529,10 @@ function renderPanel(){
   box.innerHTML=`<h2>الشخص</h2>
   <label>الاسم</label><input type="text" id="f_name" dir="auto">
   <label>الزوج / الزوجة</label><input type="text" id="f_spouse" dir="auto">
+  <div id="spBox"><label>تاريخ ميلاد الزوج / الزوجة</label><input type="text" id="f_spouseBirth" dir="auto" placeholder="مثال: 1955 أو 1955-02-10">
+  <label class="chk"><input type="checkbox" id="f_spouseDead"> الزوج / الزوجة متوفى / متوفاة</label>
+  <div id="spDeathBox"><label>تاريخ الوفاة</label><input type="text" id="f_spouseDeath" dir="auto" placeholder="مثال: 2018"></div>
+  <div class="hint" id="f_spAge" style="margin:4px 0 8px"></div></div>
   <label>تاريخ الميلاد</label><input type="text" id="f_birth" dir="auto" placeholder="مثال: 1950 أو 1950-03-12 أو 12/03/1950">
   <label class="chk"><input type="checkbox" id="f_dead"> متوفى</label>
   <div id="deathBox"><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
@@ -548,6 +554,12 @@ function renderPanel(){
   const ageTxt=()=>{const r=ageOf(n);$('#f_age').textContent=!r?(n.birth?'تعذّر قراءة تاريخ الميلاد — اكتب سنة من 4 أرقام.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
   const deathVis=()=>{$('#deathBox').style.display=n.dead?'':'none';};
   ['name','spouse','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();ageTxt();});});
+  const spTxt=()=>{const r=spAgeOf(n);$('#f_spAge').textContent=!r?(n.spouseBirth?'تعذّر قراءة تاريخ الميلاد.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
+  const spVis=()=>{$('#spBox').style.display=n.spouse?'':'none';$('#spDeathBox').style.display=n.spouseDead?'':'none';};
+  ['spouseBirth','spouseDeath'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();spTxt();});});
+  $('#f_spouse').addEventListener('input',spVis);
+  $('#f_spouseDead').checked=!!n.spouseDead;spVis();spTxt();
+  $('#f_spouseDead').addEventListener('change',e=>{n.spouseDead=e.target.checked;if(!n.spouseDead){n.spouseDeath='';$('#f_spouseDeath').value='';}spVis();draw();save();spTxt();});
   $('#f_dead').checked=!!n.dead;deathVis();ageTxt();
   $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();});
   $('#f_unsure').checked=n.unsure;$('#f_unsure').addEventListener('change',e=>{n.unsure=e.target.checked;draw();save();});
@@ -676,7 +688,7 @@ $('#pdfClose').onclick=()=>$('#pdfm').classList.remove('on');
 $('#pdfOne').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('single');};
 $('#pdfTile').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('tile');};
 function publicData(){
-  const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
+  const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
   return {title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 $('#bPub').onclick=()=>{$('#pubjson').value=JSON.stringify(publicData(),null,2);$('#pubmsg').textContent='';$('#pubm').classList.add('on');};
