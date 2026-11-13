@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>شجرة العائلة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:Alexandria,Tahoma,system-ui,sans-serif;color:#3b2f2a;display:flex;flex-direction:column;overflow:hidden;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 2px,transparent 2px 150px),repeating-linear-gradient(90deg,#c9b9a4 0 150px,#bfae98 150px 300px);
+}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;background:rgba(40,28,22,.9);color:#f3e9dc;position:relative;z-index:5}
+.bar h1{font-size:16px;font-weight:700;margin:0;white-space:nowrap}
+.bar .sp{flex:1}
+button{font:inherit;font-size:13px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#f3e9dc;border-radius:7px;padding:6px 11px;cursor:pointer}
+button:hover{background:rgba(255,255,255,.22)}
+.search{position:relative;flex:1 1 220px;max-width:340px}
+.search input{width:100%;font:inherit;font-size:14px;padding:7px 11px;border-radius:8px;border:1px solid #cdbca5;background:#fffdf8;color:#2b211c}
+.search input:focus{outline:2px solid #9cc58a}
+#res{position:absolute;top:100%;inset-inline:0;background:#fffdf8;border:1px solid #cdbca5;border-radius:8px;margin-top:4px;box-shadow:0 8px 20px rgba(0,0,0,.3);max-height:300px;overflow:auto;display:none;color:#2b211c}
+#res div{padding:8px 12px;cursor:pointer;font-size:14px;border-bottom:1px solid #eee2cf}
+#res div:hover{background:#eef6ec}
+#res small{color:#8a7767;margin-inline-start:6px}
+main{flex:1;min-height:0;margin:10px;border:12px solid #ecd2a6;border-radius:3px;box-shadow:0 0 0 2px #b99a68,0 12px 30px rgba(0,0,0,.35),inset 0 0 0 2px #b99a68;background:#f8f6ef;position:relative;overflow:hidden}
+svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+svg.drag{cursor:grabbing}
+.node{cursor:pointer}
+.node:hover .main{stroke:#d97a3a;stroke-width:1.8}
+.ring{opacity:0;fill:none;stroke:#d97a3a;stroke-width:1.6;stroke-dasharray:3 3}
+.node.sel .ring{opacity:1}.node.sel .main{stroke:#d97a3a;stroke-width:2.6}
+.tog{cursor:pointer}
+#msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:15px;line-height:1.8;color:#6b5b4f}
+#card{position:fixed;z-index:6;background:#fbf6ee;border:1px solid #d6c7b2;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:14px 16px;display:none;
+  left:24px;top:84px;width:310px;max-height:calc(100vh - 110px);overflow:auto}
+@media(max-width:700px){#card{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:50vh}}
+#card h2{margin:0 0 4px;font-size:20px;font-weight:700}
+#card .sp2{color:#d6336c;font-weight:600;font-size:15px;margin-bottom:6px}
+#card .row{font-size:13px;color:#5a4f48;margin:4px 0}
+#card h3{font-size:12px;color:#8a7767;margin:12px 0 4px;font-weight:600}
+.chip{display:inline-block;background:#e8f3ec;border:1px solid #b9d6c3;border-radius:14px;padding:2px 11px;margin:2px;cursor:pointer;font-size:13px}
+.chip:hover{background:#d8ebde}
+#card .acts{display:flex;gap:6px;margin-top:12px}
+#card button{color:#3b2f2a;background:#fff;border-color:#cdbca5}
+#card button:hover{background:#f1e8d8}
+.foot{position:absolute;bottom:6px;inset-inline-start:12px;font-size:11px;color:#9b8b7b;pointer-events:none}
+</style>
+</head>
+<body>
+<header class="bar">
+  <h1 id="ttl">🌳 شجرة العائلة</h1>
+  <div class="search"><input id="q" type="text" placeholder="ابحث عن اسم…" autocomplete="off"><div id="res"></div></div>
+  <span class="sp"></span>
+  <button id="bZo" aria-label="تصغير">−</button><button id="bZi" aria-label="تكبير">+</button>
+  <button id="bFit">عرض الكل</button>
+  <button id="bOri"></button>
+  <button id="bCol"></button>
+</header>
+<main id="stage">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div id="msg">جارٍ تحميل الشجرة…</div>
+  <div class="foot" id="foot"></div>
+</main>
+<aside id="card"></aside>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs||{})e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let data=null,sel=null,up=true,rtl=true,collapsedAll=false;
+const collapsed=new Set();
+let view={x:0,y:0,k:.6},WH={W:1000,H:700};
+const NW=158,NH=62,GX=26,LG=112,M=70;
+const GREENS=['#7fae7a','#5f9a6b','#9cc58a','#6b9f7e','#88b98a'];
+const BLOOM=['#f08a7a','#b89ad0','#f2c04e','#e9a0b8'];
+const STROKE='#5e4c43';
+const FF='Alexandria,Tahoma,sans-serif';
+
+function rng(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}
+  return function(){h+=0x6D2B79F5;let t=h;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+function leafAt(g,x,y,ang,sc,col){el('path',{d:'M0,0 C4,-6 12,-6 17,0 C12,6 4,6 0,0Z',fill:col,opacity:.92,transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${ang.toFixed(0)}) scale(${sc.toFixed(2)})`},g);}
+function flower(g,x,y,col,r){for(let i=0;i<5;i++){const a=i*72*Math.PI/180;el('circle',{cx:(x+Math.cos(a)*r*.9).toFixed(1),cy:(y+Math.sin(a)*r*.9).toFixed(1),r:(r*.75).toFixed(1),fill:col,opacity:.95},g);}el('circle',{cx:x,cy:y,r:(r*.45).toFixed(1),fill:'#f7e3a3'},g);}
+
+const kids=n=>collapsed.has(n.id)?[]:n.children;
+const stacked=n=>{const k=kids(n);return !!n.stack&&k.length>0&&k.every(c=>!c.children.length);};
+function countDesc(n){return n.children.reduce((a,c)=>a+1+countDesc(c),0);}
+function everyone(){const out=[];(function w(n,p){out.push({n,p});n.children.forEach(c=>w(c,n));})(data.root,null);return out;}
+function find(id,n=data.root,p=null){if(n.id===id)return{n,p};for(const c of n.children){const r=find(id,c,n);if(r)return r;}return null;}
+function pathTo(id){const out=[];(function w(n){if(n.id===id)return true;for(const c of n.children){if(w(c)){out.push(n);return true;}}return false;})(data.root);return out;}
+
+function layout(){
+  let leaf=0,maxD=0;
+  (function walk(n,d){n._d=d;n._stk=false;n._last=false;maxD=Math.max(maxD,d);
+    const k=kids(n);
+    if(!k.length){n._i=leaf++;return;}
+    if(stacked(n)){n._i=leaf++;k.forEach((c,i)=>{c._d=d+i+1;c._i=n._i;c._stk=true;c._last=(i===k.length-1);});maxD=Math.max(maxD,d+k.length);return;}
+    (rtl?[...k].reverse():k).forEach(c=>walk(c,d+1));
+    n._i=(k[0]._i+k[k.length-1]._i)/2;})(data.root,0);
+  return{leaves:leaf,maxD};
+}
+
+function draw(){
+  const svg=$('#svg');svg.innerHTML='';
+  const{leaves,maxD}=layout();
+  const W=Math.max(leaves,1)*(NW+GX)+M*2;
+  const top=up?90:150,trunk=up?90:0,titleH=up?140:0,bot=up?0:70;
+  const H=top+maxD*LG+NH+trunk+titleH+bot;WH={W,H};
+  const X=n=>M+(n._i+.5)*(NW+GX);
+  const Y=n=>up?top+NH/2+(maxD-n._d)*LG:top+NH/2+n._d*LG;
+  const defs=el('defs',{},svg);
+  const lg=el('linearGradient',{id:'scroll',x1:0,y1:0,x2:0,y2:1},defs);
+  el('stop',{offset:0,'stop-color':'#eef8f3'},lg);el('stop',{offset:1,'stop-color':'#cfe8dd'},lg);
+  const world=el('g',{id:'world'},svg);
+  const deco=el('g',{},world),nodesG=el('g',{},world);
+  const all=[];(function w(n){all.push(n);kids(n).forEach(w);})(data.root);
+  all.forEach(n=>{n._x=X(n);n._y=Y(n);});
+  // stacked children positions
+  (function fix(n){const k=kids(n);k.forEach(c=>{c._x=X(c);c._y=Y(c);fix(c);});})(data.root);
+  const shown=[];(function w(n){shown.push(n);kids(n).forEach(w);})(data.root);
+
+  if(up){const r=data.root,x=r._x,y0=r._y+NH/2;
+    const tr=(d,w)=>el('path',{d,stroke:STROKE,'stroke-width':w,fill:'none','stroke-linecap':'round'},deco);
+    tr(`M${x},${y0} L${x},${y0+55}`,14);
+    tr(`M${x},${y0+48} C${x-20},${y0+64} ${x-60},${y0+66} ${x-110},${y0+82}`,7);
+    tr(`M${x},${y0+48} C${x+20},${y0+64} ${x+60},${y0+66} ${x+110},${y0+82}`,7);
+    tr(`M${x},${y0+52} C${x-6},${y0+70} ${x-14},${y0+80} ${x-22},${y0+92}`,5);
+    tr(`M${x},${y0+52} C${x+6},${y0+70} ${x+14},${y0+80} ${x+22},${y0+92}`,5);}
+
+  const vine=(p,seed)=>{const R=rng(seed),len=p.getTotalLength(),cnt=Math.max(2,Math.round(len/22));
+    for(let i=0;i<cnt;i++){const t=(i+.3+R()*.5)/cnt*len,a=p.getPointAtLength(t),b=p.getPointAtLength(Math.min(len,t+2));
+      const base=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI,side=R()<.5?-1:1;
+      leafAt(deco,a.x,a.y,base+side*(40+R()*30),.65+R()*.5,GREENS[Math.floor(R()*GREENS.length)]);
+      if(R()<.16)flower(deco,a.x+side*5,a.y+(R()*6-3),BLOOM[Math.floor(R()*BLOOM.length)],3.2);}};
+  shown.forEach(n=>{
+    const k=kids(n);if(!k.length)return;
+    if(stacked(n)){const last=k[k.length-1],x=n._x,y1=up?n._y-NH/2:n._y+NH/2;
+      const p=el('path',{d:`M${x},${y1} L${x},${last._y}`,stroke:STROKE,'stroke-width':Math.max(2.4,9.5-n._d*1.1).toFixed(1),fill:'none','stroke-linecap':'round'},deco);vine(p,'sp'+n.id);return;}
+    k.forEach(c=>{const x1=n._x,y1=up?n._y-NH/2:n._y+NH/2,x2=c._x,y2=up?c._y+NH/2:c._y-NH/2,my=(y1+y2)/2;
+      const p=el('path',{d:`M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`,stroke:STROKE,'stroke-width':Math.max(2.4,9.5-n._d*1.1).toFixed(1),fill:'none','stroke-linecap':'round'},deco);vine(p,c.id);});
+  });
+  shown.filter(n=>!kids(n).length&&(!n._stk||n._last)).forEach(n=>{
+    const R=rng('tip'+n.id),dir=up?-1:1,x=n._x,y=n._y+dir*NH/2,ex=x+(R()*30-15),ey=y+dir*24;
+    el('path',{d:`M${x},${y} Q${x+(ex-x)/2+dir*4},${y+dir*14} ${ex},${ey}`,stroke:STROKE,'stroke-width':2.4,fill:'none','stroke-linecap':'round'},deco);
+    leafAt(deco,x+(ex-x)*.4,y+dir*10,dir<0?-130:50,.9,GREENS[Math.floor(R()*5)]);
+    leafAt(deco,x+(ex-x)*.5,y+dir*14,dir<0?-50:130,.8,GREENS[Math.floor(R()*5)]);
+    flower(deco,ex,ey+dir*3,BLOOM[Math.floor(R()*4)],4.4);});
+
+  const fit=[];
+  shown.forEach(n=>{
+    const x=n._x,y=n._y,g=el('g',{class:'node'+(n.id===sel?' sel':''),'data-id':n.id},nodesG);
+    el('rect',{x:x-NW/2+2,y:y-NH/2+3,width:NW,height:NH,rx:5,fill:'#000',opacity:.12},g);
+    el('rect',{x:x-NW/2-7,y:y-NH/2+7,width:20,height:NH-7,rx:4,fill:'#c3ddd2',stroke:'#7a6a5d','stroke-width':1},g);
+    el('rect',{x:x+NW/2-13,y:y-NH/2+7,width:20,height:NH-7,rx:4,fill:'#c3ddd2',stroke:'#7a6a5d','stroke-width':1},g);
+    el('rect',{class:'main',x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:5,fill:'url(#scroll)',stroke:'#7a6a5d','stroke-width':1},g);
+    el('rect',{class:'ring',x:x-NW/2-10,y:y-NH/2-4,width:NW+20,height:NH+8,rx:8},g);
+    const years=[n.birth,n.death].filter(Boolean).join(' – '),meta=[years,n.place].filter(Boolean).join(' · ');
+    const nl=(n.spouse?1:0)+(meta?1:0);
+    const t1=el('text',{x,y:nl===0?y+7:(nl===1?y-5:y-11),'text-anchor':'middle','font-size':17,'font-weight':700,'font-family':FF,fill:'#140d0a'},g);t1.textContent=n.name||'—';fit.push([t1,17,NW-22]);
+    let ly=nl===1?y+16:y+6;
+    if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse;fit.push([t2,14.5,NW-22]);ly+=15;}
+    if(meta){const t3=el('text',{x,y:nl===1?ly:y+22,'text-anchor':'middle','font-size':11,'font-weight':500,'font-family':FF,fill:'#5a4f48'},g);t3.textContent=meta;fit.push([t3,11,NW-22]);}
+    if(collapsed.has(n.id)&&n.children.length){
+      const tg=el('g',{class:'tog','data-id':n.id},nodesG),cnt='+'+countDesc(n),w=Math.max(40,cnt.length*9+18),oy=y+(up?-1:1)*(NH/2+14);
+      el('rect',{x:x-w/2,y:oy-11,width:w,height:22,rx:11,fill:'#5f9a6b',stroke:'#fff','stroke-width':1.5},tg);
+      const tt=el('text',{x,y:oy+4.5,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':FF,fill:'#fff'},tg);tt.textContent=cnt;}
+  });
+  const tx=W/2,ty=up?H-78:62;
+  const T=el('text',{x:tx,y:ty,'text-anchor':'middle','font-size':40,'font-weight':700,'font-family':FF,fill:'#4a2c2a'},world);T.textContent=data.title||'';fit.push([T,40,W-160]);
+  if(data.subtitle){const S=el('text',{x:tx,y:ty+32,'text-anchor':'middle','font-size':20,'font-weight':600,'font-family':FF,fill:'#5f5046'},world);S.textContent=data.subtitle;fit.push([S,20,W-160]);}
+  const vy=ty+(data.subtitle?50:22);
+  el('path',{d:`M${tx-130},${vy} C${tx-90},${vy-8} ${tx-60},${vy+8} ${tx},${vy} C${tx+60},${vy-8} ${tx+90},${vy+8} ${tx+130},${vy}`,stroke:'#6b4f43','stroke-width':2,fill:'none'},world);
+  flower(world,tx,vy-2,'#e9a0b8',4);
+  fit.forEach(([t,size,maxw])=>{try{const L=t.getComputedTextLength();if(L>maxw)t.setAttribute('font-size',(size*maxw/L).toFixed(1));}catch(e){}});
+  applyView();
+}
+
+/* ---- pan / zoom ---- */
+const stage=$('#stage'),svgEl=$('#svg');
+function applyView(){const w=$('#world');if(w)w.setAttribute('transform',`translate(${view.x.toFixed(1)},${view.y.toFixed(1)}) scale(${view.k.toFixed(4)})`);}
+function sz(){const r=stage.getBoundingClientRect();return{w:r.width,h:r.height};}
+function zoomAt(cx,cy,f){const k=Math.min(3,Math.max(.06,view.k*f)),r=k/view.k;view.x=cx-(cx-view.x)*r;view.y=cy-(cy-view.y)*r;view.k=k;applyView();}
+function fitAll(){const{w,h}=sz();const k=Math.min(w/WH.W,h/WH.H)*.97;view.k=k;view.x=(w-WH.W*k)/2;view.y=(h-WH.H*k)/2;applyView();}
+function startView(){const{w,h}=sz();const k=Math.max(Math.min(w/WH.W,h/WH.H)*.97,Math.min(.7,w/1000));view.k=k;view.x=(w-WH.W*k)/2;view.y=(h-WH.H*k)/2;applyView();}
+function focusOn(n,minK){const{w,h}=sz();const k=Math.max(view.k,minK||.9);view.k=k;view.x=w/2-n._x*k;view.y=h/2-n._y*k;applyView();}
+
+const ptrs=new Map();let moved=false,pinch=null,lastTap={id:null,t:0};
+svgEl.addEventListener('pointerdown',e=>{svgEl.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});if(ptrs.size===1)moved=false;
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};moved=true;}});
+svgEl.addEventListener('pointermove',e=>{
+  const p=ptrs.get(e.pointerId);if(!p)return;
+  const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  const r=stage.getBoundingClientRect();
+  if(ptrs.size===1){if(!moved&&Math.hypot(dx,dy)<1.5&&!svgEl._acc){return;}
+    svgEl._acc=(svgEl._acc||0)+Math.hypot(dx,dy);if(svgEl._acc>6)moved=true;
+    if(moved){view.x+=dx;view.y+=dy;applyView();svgEl.classList.add('drag');}}
+  else if(ptrs.size===2&&pinch){const[a,b]=[...ptrs.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    view.x+=mx-pinch.mx;view.y+=my-pinch.my;zoomAt(mx-r.left,my-r.top,d/pinch.d);pinch={d,mx,my};}
+});
+function endPtr(e,tap){
+  ptrs.delete(e.pointerId);svgEl.classList.remove('drag');svgEl._acc=0;
+  if(ptrs.size<2)pinch=null;
+  if(tap&&!moved&&ptrs.size===0){
+    const t=document.elementFromPoint(e.clientX,e.clientY),tg=t&&t.closest('.tog'),g=t&&t.closest('.node');
+    if(tg){toggle(tg.getAttribute('data-id'));return;}
+    if(g){const id=g.getAttribute('data-id'),now=Date.now();
+      if(lastTap.id===id&&now-lastTap.t<380){lastTap={id:null,t:0};toggle(id);return;}
+      lastTap={id,t:now};select(id);}
+    else{sel=null;draw();showCard();}
+  }
+}
+svgEl.addEventListener('pointerup',e=>endPtr(e,true));
+svgEl.addEventListener('pointercancel',e=>endPtr(e,false));
+svgEl.addEventListener('wheel',e=>{e.preventDefault();const r=stage.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)));},{passive:false});
+
+/* ---- selection / card ---- */
+function select(id){sel=id;draw();showCard();}
+function toggle(id){const f=find(id);if(!f||!f.n.children.length)return;if(collapsed.has(id))collapsed.delete(id);else collapsed.add(id);sel=id;draw();showCard();}
+function showCard(){
+  const c=$('#card');if(!sel){c.style.display='none';return;}
+  const f=find(sel);if(!f){c.style.display='none';return;}
+  const n=f.n,p=f.p,years=[n.birth&&('الميلاد: '+esc(n.birth)),n.death&&('الوفاة: '+esc(n.death))].filter(Boolean);
+  c.innerHTML=`<h2>${esc(n.name||'—')}</h2>
+  ${n.spouse?`<div class="sp2">الزوج/الزوجة: ${esc(n.spouse)}</div>`:''}
+  ${years.map(y=>`<div class="row">${y}</div>`).join('')}
+  ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
+  ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
+  ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
+  <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cClose">إغلاق</button></div>`;
+  c.style.display='block';
+  c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
+  const t=$('#cTog');if(t)t.onclick=()=>toggle(n.id);
+  $('#cClose').onclick=()=>{sel=null;draw();showCard();};
+}
+function goTo(id){pathTo(id).forEach(a=>collapsed.delete(a.id));sel=id;draw();showCard();const f=find(id);if(f&&f.n._x!=null)focusOn(f.n,.9);}
+
+/* ---- search ---- */
+const norm=s=>String(s||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase().trim();
+$('#q').addEventListener('input',e=>{
+  const q=norm(e.target.value),box=$('#res');
+  if(!q){box.style.display='none';return;}
+  const hits=everyone().filter(({n})=>norm(n.name).includes(q)||norm(n.spouse).includes(q)).slice(0,12);
+  box.innerHTML=hits.length?hits.map(({n,p})=>`<div data-id="${n.id}">${esc(n.name)}${p?`<small>ابن/ة ${esc(p.name)}</small>`:''}</div>`).join(''):'<div style="cursor:default;color:#8a7767">لا نتائج</div>';
+  box.style.display='block';
+  box.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{box.style.display='none';e.target.value='';goTo(d.getAttribute('data-id'));});
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.search'))$('#res').style.display='none';});
+
+/* ---- toolbar ---- */
+function syncBtns(){$('#bOri').textContent=up?'الجذع: أسفل':'الجذع: أعلى';$('#bCol').textContent=collapsedAll?'فتح كل الفروع':'طيّ الفروع';}
+$('#bZi').onclick=()=>{const{w,h}=sz();zoomAt(w/2,h/2,1.25);};
+$('#bZo').onclick=()=>{const{w,h}=sz();zoomAt(w/2,h/2,.8);};
+$('#bFit').onclick=fitAll;
+$('#bOri').onclick=()=>{up=!up;syncBtns();draw();startView();};
+$('#bCol').onclick=()=>{
+  collapsedAll=!collapsedAll;collapsed.clear();sel=null;
+  if(collapsedAll)everyone().forEach(({n})=>{if(n.children.length&&n!==data.root&&!(n===data.root.children[0]))collapsed.add(n.id);});
+  syncBtns();draw();startView();showCard();};
+window.addEventListener('resize',()=>applyView());
+
+/* ---- load ---- */
+function normalize(d){
+  (function w(n){n.id=n.id||('n'+Math.random().toString(36).slice(2));n.children=Array.isArray(n.children)?n.children:[];n.children.forEach(w);})(d.root);
+  return d;
+}
+async function init(){
+  try{
+    const r=await fetch('tree.json?'+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error(r.status);
+    data=normalize(await r.json());
+  }catch(e){
+    $('#msg').innerHTML=location.protocol==='file:'
+      ?'لا يمكن فتح هذه الصفحة مباشرة من الملف.<br>افتحها من رابط GitHub Pages، أو شغّل خادماً محلياً.'
+      :'تعذّر تحميل بيانات الشجرة (tree.json).';
+    return;
+  }
+  $('#msg').style.display='none';
+  up=data.settings?data.settings.up!==false:true;rtl=data.settings?data.settings.rtl!==false:true;
+  document.title=data.title||'شجرة العائلة';$('#ttl').textContent='🌳 '+(data.title||'شجرة العائلة');
+  if(data.updated)$('#foot').textContent='آخر تحديث: '+data.updated;
+  syncBtns();draw();startView();
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(data){draw();}});
+}
+init();
+</script>
+</body>
+</html>

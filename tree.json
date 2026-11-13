@@ -1,0 +1,571 @@
+{
+  "title": "عائلة الحاج سليمان",
+  "subtitle": "شجرة العائلة",
+  "settings": {
+    "up": false,
+    "rtl": true
+  },
+  "v": 3,
+  "updated": "2026-11-13",
+  "root": {
+    "id": "nmwbvwjkc0",
+    "name": "الحاج سليمان",
+    "spouse": "عائشة",
+    "birth": "",
+    "death": "",
+    "place": "",
+    "children": [
+      {
+        "id": "nmwbvwjkc1",
+        "name": "يوسف",
+        "spouse": "بوعبون حاية",
+        "birth": "",
+        "death": "",
+        "place": "",
+        "children": [
+          {
+            "id": "nmwbvwjkc2",
+            "name": "الناصر",
+            "spouse": "",
+            "birth": "",
+            "death": "",
+            "place": "",
+            "children": [
+              {
+                "id": "nmwbvwjkc3",
+                "name": "محمد",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc4",
+                "name": "فاطمة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc5",
+                "name": "رقية",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc6",
+                "name": "بكير",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": [
+                  {
+                    "id": "nmwbxnlhf6",
+                    "name": "لقمان",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  },
+                  {
+                    "id": "nmwbxnqqb7",
+                    "name": "يحيى",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  },
+                  {
+                    "id": "nmwbxnulv8",
+                    "name": "بكير",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "nmwbvwjkc7",
+                "name": "عمار",
+                "spouse": "سليمان بوعصبانة رقية",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": [
+                  {
+                    "id": "nmwbyjr5y5",
+                    "name": "أحمد شوقي",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  },
+                  {
+                    "id": "nmwbxmy9a1",
+                    "name": "فاروق",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  },
+                  {
+                    "id": "nmwbxn0kn2",
+                    "name": "طارق",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "nmwbvwjkc8",
+                "name": "سليمان",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": [
+                  {
+                    "id": "nmwbyi29j1",
+                    "name": "إلهام",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  },
+                  {
+                    "id": "nmwbyhxpp0",
+                    "name": "يوسف",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  },
+                  {
+                    "id": "nmwbyi6ga2",
+                    "name": "علي",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  },
+                  {
+                    "id": "nmwbyicgv3",
+                    "name": "سلمى",
+                    "spouse": "",
+                    "birth": "",
+                    "death": "",
+                    "place": "",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "nmwbvwjkc9",
+                "name": "إبراهيم",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "nmwbvwjkca",
+            "name": "إبراهيم",
+            "spouse": "",
+            "birth": "",
+            "death": "",
+            "place": "",
+            "children": [
+              {
+                "id": "nmwbvwjkcb",
+                "name": "أحمد",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcc",
+                "name": "فاطمة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcd",
+                "name": "عبد الرحمن",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkce",
+                "name": "إبراهيم",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcf",
+                "name": "فوزية",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcg",
+                "name": "عائشة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkch",
+                "name": "حفصة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkci",
+                "name": "مسعودة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbxylwz1",
+                "name": "زبيدة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "nmwbvwjkcj",
+            "name": "لالة",
+            "spouse": "",
+            "birth": "",
+            "death": "",
+            "place": "",
+            "children": [
+              {
+                "id": "nmwbvwjkck",
+                "name": "عيسى",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcl",
+                "name": "صالح",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcm",
+                "name": "عائشة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcn",
+                "name": "محمد",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkco",
+                "name": "عمار",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcp",
+                "name": "سليمان",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "nmwbvwjkcq",
+            "name": "مامة",
+            "spouse": "",
+            "birth": "",
+            "death": "",
+            "place": "",
+            "children": [
+              {
+                "id": "nmwbvwjkcr",
+                "name": "صالح",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcs",
+                "name": "عائشة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkct",
+                "name": "محمد",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "nmwbvwjkcu",
+            "name": "بكير",
+            "spouse": "",
+            "birth": "",
+            "death": "",
+            "place": "",
+            "children": [
+              {
+                "id": "nmwbvwjkcv",
+                "name": "محمد",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcw",
+                "name": "يمينة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcx",
+                "name": "صالح",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcy",
+                "name": "نور الدين",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkcz",
+                "name": "رستم",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc10",
+                "name": "مسعودة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "nmwbvwjkc11",
+            "name": "سليمان",
+            "spouse": "",
+            "birth": "",
+            "death": "",
+            "place": "",
+            "children": [
+              {
+                "id": "nmwbvwjkc12",
+                "name": "حمزة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc13",
+                "name": "آسيا",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc14",
+                "name": "نعيمة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc15",
+                "name": "رحيمة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc16",
+                "name": "عائشة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "nmwbvwjkc17",
+            "name": "عائشة",
+            "spouse": "",
+            "birth": "",
+            "death": "",
+            "place": "",
+            "children": [
+              {
+                "id": "nmwbvwjkc18",
+                "name": "عبد الله",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc19",
+                "name": "فيصل",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc1a",
+                "name": "صبرينة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc1b",
+                "name": "سليمان",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc1c",
+                "name": "كريمة",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              },
+              {
+                "id": "nmwbvwjkc1d",
+                "name": "محمد",
+                "spouse": "",
+                "birth": "",
+                "death": "",
+                "place": "",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
