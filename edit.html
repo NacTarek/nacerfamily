@@ -109,9 +109,6 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
       <h2>عنوان الشجرة</h2>
       <label>العنوان</label><input type="text" id="fTitle" dir="auto">
       <label>العنوان الفرعي</label><input type="text" id="fSub" dir="auto">
-      <label>مفتاح استقبال الاقتراحات كإشعار (Web3Forms)</label><input type="text" id="fKey" dir="ltr">
-      <label>واتساب لاستقبال الاقتراحات (بالصيغة الدولية، مثل 2137…)</label><input type="text" id="fWa" dir="ltr" inputmode="tel">
-      <label>أو بريد إلكتروني لاستقبال الاقتراحات</label><input type="text" id="fMail" dir="ltr">
     </section>
     <section id="person"></section>
   </aside>
@@ -575,7 +572,7 @@ function addParent(n){const f=find(n.id),m=P('شخص جديد',0);m.children=[n]
 function select(id){sel=id;draw();renderPanel();}
 
 /* ---- wiring ---- */
-function syncBar(){$('#bOri').textContent='اتجاه النمو: '+(data.settings.up?'لأعلى':'لأسفل');$('#bOrd').textContent='الترتيب: '+(data.settings.rtl?'من اليمين لليسار':'من اليسار لليمين');$('#fTitle').value=data.title;$('#fSub').value=data.subtitle;$('#fKey').value=(data.contact&&data.contact.formKey)||'';$('#fWa').value=(data.contact&&data.contact.whatsapp)||'';$('#fMail').value=(data.contact&&data.contact.email)||'';}
+function syncBar(){$('#bOri').textContent='اتجاه النمو: '+(data.settings.up?'لأعلى':'لأسفل');$('#bOrd').textContent='الترتيب: '+(data.settings.rtl?'من اليمين لليسار':'من اليسار لليمين');$('#fTitle').value=data.title;$('#fSub').value=data.subtitle;}
 function refreshAll(keepSel){if(!keepSel)sel=null;syncBar();draw();renderPanel();if(autoFit)fitZoom();}
 $('#svg').addEventListener('click',e=>{if(suppressClick)return;const a=e.target.closest('.add');if(a){const f=find(a.getAttribute('data-id'));if(!f)return;const act=a.getAttribute('data-act'),n=f.n;
     if(act==='child')addChild(n);else if(act==='parent')addParent(n);else if(act==='sibA')addSibling(n,true);else if(act==='sibB')addSibling(n,false);else addSibling(n,(act==='sibL')===data.settings.rtl);return;}
@@ -587,9 +584,6 @@ $('#bZo').onclick=()=>{autoFit=false;zoom=Math.max(.08,zoom/1.2);applyZoom();};
 $('#bFit').onclick=fitZoom;
 $('#fTitle').addEventListener('input',e=>{data.title=e.target.value;draw();save();});
 $('#fSub').addEventListener('input',e=>{data.subtitle=e.target.value;draw();save();});
-$('#fKey').addEventListener('input',e=>{data.contact=data.contact||{};data.contact.formKey=e.target.value.trim();save();});
-$('#fWa').addEventListener('input',e=>{data.contact=data.contact||{};data.contact.whatsapp=e.target.value.replace(/[^0-9]/g,'');save();});
-$('#fMail').addEventListener('input',e=>{data.contact=data.contact||{};data.contact.email=e.target.value.trim();save();});
 window.addEventListener('resize',()=>{if(autoFit)fitZoom();});
 
 /* ---- drag & drop: re-parent / reorder ---- */
@@ -683,7 +677,7 @@ $('#pdfOne').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('single');
 $('#pdfTile').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('tile');};
 function publicData(){
   const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
-  return {title:data.title,subtitle:data.subtitle,settings:data.settings,contact:data.contact||{},v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
+  return {title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 $('#bPub').onclick=()=>{$('#pubjson').value=JSON.stringify(publicData(),null,2);$('#pubmsg').textContent='';$('#pubm').classList.add('on');};
 $('#pubClose').onclick=()=>$('#pubm').classList.remove('on');

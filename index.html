@@ -97,7 +97,7 @@ svg.drag{cursor:grabbing}
   <label for="sWho">الشخص المعني (يُملأ تلقائيًا بنسبه الكامل لتمييزه)</label><input id="sWho">
   <label for="sText">التفاصيل *</label><textarea id="sText" placeholder="مثال: أضيفوا محمد ابن الناصر، وُلد سنة 1995…"></textarea>
   <div class="err" id="sErr"></div>
-  <div class="row"><button id="sSend" class="sugb">إرسال الاقتراح</button><button id="sWa" class="sugb">إرسال عبر واتساب</button><button id="sMail" class="sugb">إرسال بالبريد</button><button id="sCp">نسخ النص</button><button id="sX">إلغاء</button></div>
+  <div class="row"><button id="sSend" class="sugb">إرسال الاقتراح</button><button id="sX">إلغاء</button></div>
 </div></div>
 
 <script>
@@ -327,7 +327,7 @@ function fullName(n){const anc=pathTo(n.id).slice(0,3);let s=n.name||'—';
   const x=[];if(n.spouse)x.push('الزوج/ة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
   return s+(x.length?' ('+x.join('، ')+')':'');}
 function sugOpen(who){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';$('#sErr').textContent='';$('#sName').focus();
-  const c=(data&&data.contact)||{};const k=true;$('#sSend').style.display=k?'':'none';$('#sWa').style.display=!k&&c.whatsapp?'':'none';$('#sMail').style.display=!k&&c.email?'':'none';$('#sCp').style.display=k?'none':'';$('#sErr').style.color='#c0392b';}
+  $('#sErr').style.color='#c0392b';}
 function sugOk(){if(!$('#sName').value.trim()){$('#sErr').textContent='اكتب اسمك أولًا.';$('#sName').focus();return false;}
   if(!$('#sText').value.trim()){$('#sErr').textContent='اكتب تفاصيل الاقتراح.';$('#sText').focus();return false;}return true;}
 $('#bSug').onclick=()=>sugOpen(sel&&find(sel)?fullName(find(sel).n):'');
@@ -338,9 +338,6 @@ $('#sSend').onclick=async()=>{if(!sugOk())return;const b=$('#sSend'),e=$('#sErr'
     if(!r.ok)throw new Error(r.status);
     e.style.color='#2a7a3b';e.textContent='تم الإرسال، شكرًا لك! وصل الاقتراح إلى مسؤول الشجرة.';['sText','sWho'].forEach(i=>document.getElementById(i).value='');
   }catch(x){e.style.color='#c0392b';e.textContent='تعذّر الإرسال، حاول لاحقًا.';}finally{b.disabled=false;}};
-$('#sWa').onclick=()=>{if(!sugOk())return;window.open('https://wa.me/'+data.contact.whatsapp+'?text='+encodeURIComponent(sugText()),'_blank');};
-$('#sMail').onclick=()=>{if(!sugOk())return;location.href='mailto:'+data.contact.email+'?subject='+encodeURIComponent('اقتراح لشجرة العائلة من '+$('#sName').value.trim())+'&body='+encodeURIComponent(sugText());};
-$('#sCp').onclick=async()=>{if(!sugOk())return;try{await navigator.clipboard.writeText(sugText());$('#sErr').style.color='#2a7a3b';$('#sErr').textContent='تم النسخ — أرسله لمسؤول الشجرة.';}catch(e){$('#sErr').textContent='تعذّر النسخ.';}};
 
 
 /* ---- print export (PNG with dpi) ---- */
