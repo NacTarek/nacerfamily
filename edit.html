@@ -105,6 +105,9 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
       <h2>عنوان الشجرة</h2>
       <label>العنوان</label><input type="text" id="fTitle" dir="auto">
       <label>العنوان الفرعي</label><input type="text" id="fSub" dir="auto">
+      <label>مفتاح استقبال الاقتراحات كإشعار (Web3Forms)</label><input type="text" id="fKey" dir="ltr">
+      <label>واتساب لاستقبال الاقتراحات (بالصيغة الدولية، مثل 2137…)</label><input type="text" id="fWa" dir="ltr" inputmode="tel">
+      <label>أو بريد إلكتروني لاستقبال الاقتراحات</label><input type="text" id="fMail" dir="ltr">
     </section>
     <section id="person"></section>
   </aside>
@@ -194,7 +197,7 @@ function migrate(d){
 }
 function normalize(d){
   d.settings=Object.assign({up:true,rtl:true},d.settings||{});d.title=d.title||'';d.subtitle=d.subtitle||'';
-  (function w(n){n.id=n.id||uid();n.name=n.name||'';['spouse','birth','death','place','note'].forEach(k=>n[k]=n[k]||'');if(n.edu){n.edu.log=n.edu.log||[];n.edu.achv=n.edu.achv||'';n.edu.honored=n.edu.honored||[];}n.unsure=!!n.unsure;n.children=Array.isArray(n.children)?n.children:[];n.children.forEach(w);})(d.root);
+  (function w(n){n.id=n.id||uid();n.name=n.name||'';['spouse','birth','death','place','note'].forEach(k=>n[k]=n[k]||'');n.dead=!!(n.dead||n.death);if(n.edu){n.edu.log=n.edu.log||[];n.edu.achv=n.edu.achv||'';n.edu.honored=n.edu.honored||[];}n.unsure=!!n.unsure;n.children=Array.isArray(n.children)?n.children:[];n.children.forEach(w);})(d.root);
   if(!d.v)migrate(d);
   if((d.v||0)<3){(function z(n){delete n.stack;n.children.forEach(z);})(d.root);d.v=3;migrated=true;}
   return d;
@@ -361,6 +364,26 @@ const STROKE='#c1cde4';
 function leafAt(g,x,y,ang,sc,col){return;el('path',{d:'M0,0 C4,-6 12,-6 17,0 C12,6 4,6 0,0Z',fill:col,opacity:.92,transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${ang.toFixed(0)}) scale(${sc.toFixed(2)})`},g);}
 function flower(g,x,y,col,r){return;for(let i=0;i<5;i++){const a=i*72*Math.PI/180;el('circle',{cx:(x+Math.cos(a)*r*.9).toFixed(1),cy:(y+Math.sin(a)*r*.9).toFixed(1),r:(r*.75).toFixed(1),fill:col,opacity:.95},g);}el('circle',{cx:x,cy:y,r:(r*.45).toFixed(1),fill:'#f7e3a3'},g);}
 
+
+/* ---- age ---- */
+function parseDate(s){s=String(s||'').replace(/[٠-٩]/g,c=>c.charCodeAt(0)-1632).replace(/[۰-۹]/g,c=>c.charCodeAt(0)-1776);let m;
+  if((m=s.match(/(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{4})/)))return{y:+m[3],m:+m[2],d:+m[1]};
+  if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:+m[3]};
+  if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:0};
+  if((m=s.match(/(\d{4})/)))return{y:+m[1],m:0,d:0};return null;}
+function ageOf(n){const b=parseDate(n.birth);if(!b)return null;
+  const dead=!!(n.dead||n.death);let e;
+  if(dead){e=parseDate(n.death);if(!e)return{age:null,dead:true};}
+  else{const t=new Date();e={y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}
+  let a=e.y-b.y;if(b.m&&e.m&&(e.m<b.m||(e.m===b.m&&b.d&&e.d&&e.d<b.d)))a--;
+  return a>=0&&a<125?{age:a,dead}:null;}
+function ageBadge(g,x,y,n){const r=ageOf(n);if(!r||r.age==null)return;
+  const cx=x+NW/2-4,cy=y-NH/2+2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
+  el('circle',{cx,cy,r:17,fill:col,stroke:'#fff','stroke-width':2.5},b);
+  el('path',{d:`M${cx-5},${cy-3} h10 v4.5 h-10z M${cx-5},${cy-3} q2.5,-3 5,0 q2.5,-3 5,0 M${cx},${cy-3} v-3.5`,fill:'none',stroke:'#fff','stroke-width':1.3,'stroke-linecap':'round','stroke-linejoin':'round'},b);
+  el('circle',{cx,cy:cy-7.4,r:1,fill:'#ffd36b'},b);
+  const t=el('text',{x:cx,y:cy+12,'text-anchor':'middle','font-size':11.5,'font-weight':700,'font-family':FF,fill:'#fff'},b);t.textContent=r.age;}
+
 function draw(){
   const svg=$('#svg');svg.innerHTML='';
   const {leaves,maxD}=layout();const up=data.settings.up;
@@ -448,6 +471,7 @@ function draw(){
     let ly=nl===1?y+16:y+6;
     if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse;fit.push([t2,14.5,NW-22]);ly+=15;}
     if(meta){const t3=el('text',{x,y:nl===1?ly:y+22,'text-anchor':'middle','font-size':11,'font-weight':500,'font-family':FF,fill:'#6b7a99'},g);t3.textContent=meta;fit.push([t3,11,NW-22]);}
+    ageBadge(g,x,y,n);
     {const st=stateAt(n,VY);let bt='',bc='';
       if(st.kind==='study'){bt=st.mile?'★ '+MILE_SHORT[st.mile]:LBL[st.lvl];bc=st.mile?'#d9962b':'#5f86ad';}
       else if(st.kind==='stopped'){bt='توقف';bc='#9a9087';}else if(st.kind==='working'){bt='يعمل';bc='#8a7fb0';}else if(st.kind==='done'){bt='متخرّج';bc='#6b9a6f';}
@@ -501,7 +525,10 @@ function renderPanel(){
   box.innerHTML=`<h2>الشخص</h2>
   <label>الاسم</label><input type="text" id="f_name" dir="auto">
   <label>الزوج / الزوجة</label><input type="text" id="f_spouse" dir="auto">
-  <div class="two"><div><label>الميلاد</label><input type="text" id="f_birth" dir="auto"></div><div><label>الوفاة</label><input type="text" id="f_death" dir="auto"></div></div>
+  <label>تاريخ الميلاد</label><input type="text" id="f_birth" dir="auto" placeholder="مثال: 1950 أو 1950-03-12 أو 12/03/1950">
+  <label class="chk"><input type="checkbox" id="f_dead"> متوفى</label>
+  <div id="deathBox"><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
+  <div class="hint" id="f_age" style="margin:4px 0 8px"></div>
   <label>المكان</label><input type="text" id="f_place" dir="auto">
   <label>ملاحظات (لا تظهر على الشجرة)</label><textarea id="f_note" dir="auto"></textarea>
   ${eduSection(n)}
@@ -516,7 +543,11 @@ function renderPanel(){
   ${n.children.length?`<div class="row"><button id="aStack" ${n.children.every(c=>!c.children.length)?'':'disabled title="متاح فقط إذا لم يكن لأبنائه أبناء"'}>${stacked(n)?'عرض الأبناء بشكل أفقي':'عرض الأبناء بشكل عمودي'}</button></div>`:''}
   <div class="hint" style="margin-top:10px">💡 اسحب هذا الشخص إلى وسط لوحة آخر ليصبح ابنه، أو إلى جانبها ليصبح أخاه.</div>
   <div class="row"><button class="danger" id="aDel" ${parent?'':'disabled'}>حذف</button><button id="aDesel">إلغاء التحديد</button></div>`;
-  ['name','spouse','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();});});
+  const ageTxt=()=>{const r=ageOf(n);$('#f_age').textContent=!r?(n.birth?'تعذّر قراءة تاريخ الميلاد — اكتب سنة من 4 أرقام.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
+  const deathVis=()=>{$('#deathBox').style.display=n.dead?'':'none';};
+  ['name','spouse','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();ageTxt();});});
+  $('#f_dead').checked=!!n.dead;deathVis();ageTxt();
+  $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();});
   $('#f_unsure').checked=n.unsure;$('#f_unsure').addEventListener('change',e=>{n.unsure=e.target.checked;draw();save();});
   wireEdu(n);
   const stk=$('#aStack');if(stk)stk.onclick=()=>{n.stack=!stacked(n);draw();renderPanel();save();};
@@ -539,7 +570,7 @@ function addParent(n){const f=find(n.id),m=P('شخص جديد',0);m.children=[n]
 function select(id){sel=id;draw();renderPanel();}
 
 /* ---- wiring ---- */
-function syncBar(){$('#bOri').textContent='اتجاه النمو: '+(data.settings.up?'لأعلى':'لأسفل');$('#bOrd').textContent='الترتيب: '+(data.settings.rtl?'من اليمين لليسار':'من اليسار لليمين');$('#fTitle').value=data.title;$('#fSub').value=data.subtitle;}
+function syncBar(){$('#bOri').textContent='اتجاه النمو: '+(data.settings.up?'لأعلى':'لأسفل');$('#bOrd').textContent='الترتيب: '+(data.settings.rtl?'من اليمين لليسار':'من اليسار لليمين');$('#fTitle').value=data.title;$('#fSub').value=data.subtitle;$('#fKey').value=(data.contact&&data.contact.formKey)||'';$('#fWa').value=(data.contact&&data.contact.whatsapp)||'';$('#fMail').value=(data.contact&&data.contact.email)||'';}
 function refreshAll(keepSel){if(!keepSel)sel=null;syncBar();draw();renderPanel();if(autoFit)fitZoom();}
 $('#svg').addEventListener('click',e=>{if(suppressClick)return;const a=e.target.closest('.add');if(a){const f=find(a.getAttribute('data-id'));if(!f)return;const act=a.getAttribute('data-act'),n=f.n;
     if(act==='child')addChild(n);else if(act==='parent')addParent(n);else if(act==='sibA')addSibling(n,true);else if(act==='sibB')addSibling(n,false);else addSibling(n,(act==='sibL')===data.settings.rtl);return;}
@@ -551,6 +582,9 @@ $('#bZo').onclick=()=>{autoFit=false;zoom=Math.max(.08,zoom/1.2);applyZoom();};
 $('#bFit').onclick=fitZoom;
 $('#fTitle').addEventListener('input',e=>{data.title=e.target.value;draw();save();});
 $('#fSub').addEventListener('input',e=>{data.subtitle=e.target.value;draw();save();});
+$('#fKey').addEventListener('input',e=>{data.contact=data.contact||{};data.contact.formKey=e.target.value.trim();save();});
+$('#fWa').addEventListener('input',e=>{data.contact=data.contact||{};data.contact.whatsapp=e.target.value.replace(/[^0-9]/g,'');save();});
+$('#fMail').addEventListener('input',e=>{data.contact=data.contact||{};data.contact.email=e.target.value.trim();save();});
 window.addEventListener('resize',()=>{if(autoFit)fitZoom();});
 
 /* ---- drag & drop: re-parent / reorder ---- */
@@ -643,8 +677,8 @@ $('#pdfClose').onclick=()=>$('#pdfm').classList.remove('on');
 $('#pdfOne').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('single');};
 $('#pdfTile').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('tile');};
 function publicData(){
-  const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
-  return {title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
+  const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
+  return {title:data.title,subtitle:data.subtitle,settings:data.settings,contact:data.contact||{},v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 $('#bPub').onclick=()=>{$('#pubjson').value=JSON.stringify(publicData(),null,2);$('#pubmsg').textContent='';$('#pubm').classList.add('on');};
 $('#pubClose').onclick=()=>$('#pubm').classList.remove('on');

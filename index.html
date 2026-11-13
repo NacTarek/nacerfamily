@@ -45,6 +45,17 @@ svg.drag{cursor:grabbing}
 #card .acts{display:flex;gap:6px;margin-top:12px}
 #card button{color:#1b2a4a;background:#fff;border-color:#d5ddec}
 #card button:hover{background:#eaf1ff}
+.sugb{background:#2b59c3;color:#fff;border-color:#2b59c3}.sugb:hover{background:#2250b0}
+#sug,#exp{position:fixed;inset:0;z-index:20;background:rgba(20,30,60,.45);display:none;align-items:center;justify-content:center;padding:14px}
+#sug .box,#exp .box{background:#fff;border-radius:18px;padding:20px;width:min(460px,100%);max-height:94vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+#sug h2,#exp h2{margin:0 0 4px;font-size:20px}#sug p,#exp p{margin:0 0 12px;font-size:13px;color:#6b7a99;line-height:1.7}
+#sug label,#exp label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+#sug input,#sug select,#sug textarea,#exp select{width:100%;font:inherit;font-size:14px;padding:9px 11px;border:1px solid #d5ddec;border-radius:10px;color:#1b2a4a;background:#fff}
+#sug textarea{min-height:110px;resize:vertical}
+#sug .row,#exp .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#sug .row button,#exp .row button{flex:1;min-width:120px;padding:10px}
+#sug .err,#exp .err{color:#c0392b;font-size:13px;min-height:18px;margin-top:8px}
+.hint-x{}#hint{margin:8px 12px 0;padding:8px 14px;background:#eaf1ff;color:#1f3f8f;border-radius:12px;font-size:13px;line-height:1.7}
 .foot{position:absolute;bottom:6px;inset-inline-start:12px;font-size:11px;color:#8a97b3;pointer-events:none}
 </style>
 </head>
@@ -55,15 +66,39 @@ svg.drag{cursor:grabbing}
   <span class="sp"></span>
   <button id="bZo" aria-label="تصغير">−</button><button id="bZi" aria-label="تكبير">+</button>
   <button id="bFit">عرض الكل</button>
-  <button id="bOri"></button>
   <button id="bCol"></button>
+  <button id="bExp">🖼 تصدير للطباعة</button>
+  <button id="bSug" class="sugb">✉ اقتراح تعديل</button>
 </header>
+<div id="hint">💡 الفروع مطويّة: اضغط على الرقم <b>(+)</b> أسفل الاسم لإظهار التفرّع، وانقر مرتين على أي اسم لطيّ فرعه أو فتحه.</div>
 <main id="stage">
   <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
   <div id="msg">جارٍ تحميل الشجرة…</div>
   <div class="foot" id="foot"></div>
 </main>
 <aside id="card"></aside>
+<div id="exp"><div class="box">
+  <h2>تصدير صورة للطباعة</h2>
+  <p>صورة PNG عالية الجودة بمقاس الورق، تحوي كل أفرع الشجرة (حتى المطوية). تُحفظ بدقة طباعة مدمجة في الملف.</p>
+  <label for="xSize">مقاس الورق</label>
+  <select id="xSize"><option value="A3">A3 — 420×297 مم</option><option value="A2">A2 — 594×420 مم</option><option value="A1" selected>A1 — 841×594 مم</option></select>
+  <label for="xOri">الاتجاه</label>
+  <select id="xOri"><option value="L">أفقي</option><option value="P">عمودي</option></select>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="xTight" style="width:auto"> قص الفراغ الزائد (الارتفاع حسب الشجرة)</label>
+  <div class="err" id="xErr" style="color:#6b7a99"></div>
+  <div class="row"><button id="xGo" class="sugb">تنزيل الصورة</button><button id="xX">إغلاق</button></div>
+</div></div>
+<div id="sug"><div class="box">
+  <h2>اقتراح تعديل أو إضافة</h2>
+  <p>ساعدنا في تحسين الشجرة: أرسل معلومة جديدة أو تصحيحًا. اكتب اسمك لنعرف من أرسل الاقتراح.</p>
+  <label for="sName">اسمك *</label><input id="sName" autocomplete="name">
+  <label for="sType">نوع الاقتراح</label>
+  <select id="sType"><option>إضافة شخص</option><option>تعديل معلومة</option><option>حذف / خطأ</option><option>أخرى</option></select>
+  <label for="sWho">الشخص المعني (اختياري)</label><input id="sWho">
+  <label for="sText">التفاصيل *</label><textarea id="sText" placeholder="مثال: أضيفوا محمد ابن الناصر، وُلد سنة 1995…"></textarea>
+  <div class="err" id="sErr"></div>
+  <div class="row"><button id="sSend" class="sugb">إرسال الاقتراح</button><button id="sWa" class="sugb">إرسال عبر واتساب</button><button id="sMail" class="sugb">إرسال بالبريد</button><button id="sCp">نسخ النص</button><button id="sX">إلغاء</button></div>
+</div></div>
 
 <script>
 const NS='http://www.w3.org/2000/svg';
@@ -102,6 +137,26 @@ function layout(){
     n._i=(k[0]._i+k[k.length-1]._i)/2;})(data.root,0);
   return{leaves:leaf,maxD};
 }
+
+
+/* ---- age ---- */
+function parseDate(s){s=String(s||'').replace(/[٠-٩]/g,c=>c.charCodeAt(0)-1632).replace(/[۰-۹]/g,c=>c.charCodeAt(0)-1776);let m;
+  if((m=s.match(/(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{4})/)))return{y:+m[3],m:+m[2],d:+m[1]};
+  if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:+m[3]};
+  if((m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})/)))return{y:+m[1],m:+m[2],d:0};
+  if((m=s.match(/(\d{4})/)))return{y:+m[1],m:0,d:0};return null;}
+function ageOf(n){const b=parseDate(n.birth);if(!b)return null;
+  const dead=!!(n.dead||n.death);let e;
+  if(dead){e=parseDate(n.death);if(!e)return{age:null,dead:true};}
+  else{const t=new Date();e={y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}
+  let a=e.y-b.y;if(b.m&&e.m&&(e.m<b.m||(e.m===b.m&&b.d&&e.d&&e.d<b.d)))a--;
+  return a>=0&&a<125?{age:a,dead}:null;}
+function ageBadge(g,x,y,n){const r=ageOf(n);if(!r||r.age==null)return;
+  const cx=x+NW/2-4,cy=y-NH/2+2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
+  el('circle',{cx,cy,r:17,fill:col,stroke:'#fff','stroke-width':2.5},b);
+  el('path',{d:`M${cx-5},${cy-3} h10 v4.5 h-10z M${cx-5},${cy-3} q2.5,-3 5,0 q2.5,-3 5,0 M${cx},${cy-3} v-3.5`,fill:'none',stroke:'#fff','stroke-width':1.3,'stroke-linecap':'round','stroke-linejoin':'round'},b);
+  el('circle',{cx,cy:cy-7.4,r:1,fill:'#ffd36b'},b);
+  const t=el('text',{x:cx,y:cy+12,'text-anchor':'middle','font-size':11.5,'font-weight':700,'font-family':FF,fill:'#fff'},b);t.textContent=r.age;}
 
 function draw(){
   const svg=$('#svg');svg.innerHTML='';
@@ -161,8 +216,9 @@ function draw(){
     let ly=nl===1?y+16:y+6;
     if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse;fit.push([t2,14.5,NW-22]);ly+=15;}
     if(meta){const t3=el('text',{x,y:nl===1?ly:y+22,'text-anchor':'middle','font-size':11,'font-weight':500,'font-family':FF,fill:'#6b7a99'},g);t3.textContent=meta;fit.push([t3,11,NW-22]);}
+    ageBadge(g,x,y,n);
     if(collapsed.has(n.id)&&n.children.length){
-      const tg=el('g',{class:'tog','data-id':n.id},nodesG),cnt='+'+countDesc(n),w=Math.max(40,cnt.length*9+18),oy=y+(up?-1:1)*(NH/2+14);
+      const tg=el('g',{class:'tog','data-id':n.id},nodesG),cnt='+'+countDesc(n),w=Math.max(40,cnt.length*9+18),oy=y+NH/2;
       el('rect',{x:x-w/2,y:oy-11,width:w,height:22,rx:11,fill:'#2b59c3',stroke:'#fff','stroke-width':1.5},tg);
       const tt=el('text',{x,y:oy+4.5,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':FF,fill:'#fff'},tg);tt.textContent=cnt;}
   });
@@ -176,9 +232,13 @@ function draw(){
 
 /* ---- pan / zoom ---- */
 const stage=$('#stage'),svgEl=$('#svg');
-function applyView(){const w=$('#world');if(w)w.setAttribute('transform',`translate(${view.x.toFixed(1)},${view.y.toFixed(1)}) scale(${view.k.toFixed(4)})`);}
+function clampView(){const{w,h}=sz();const m=40,cw=WH.W*view.k,ch=WH.H*view.k;
+  view.x=cw+2*m<=w?(w-cw)/2:Math.min(m,Math.max(w-cw-m,view.x));
+  view.y=ch+2*m<=h?(h-ch)/2:Math.min(m,Math.max(h-ch-m,view.y));}
+function minK(){const{w,h}=sz();return Math.min(w/WH.W,h/WH.H)*.97;}
+function applyView(){clampView();const w=$('#world');if(w)w.setAttribute('transform',`translate(${view.x.toFixed(1)},${view.y.toFixed(1)}) scale(${view.k.toFixed(4)})`);}
 function sz(){const r=stage.getBoundingClientRect();return{w:r.width,h:r.height};}
-function zoomAt(cx,cy,f){const k=Math.min(3,Math.max(.06,view.k*f)),r=k/view.k;view.x=cx-(cx-view.x)*r;view.y=cy-(cy-view.y)*r;view.k=k;applyView();}
+function zoomAt(cx,cy,f){const k=Math.min(3,Math.max(minK(),view.k*f)),r=k/view.k;view.x=cx-(cx-view.x)*r;view.y=cy-(cy-view.y)*r;view.k=k;applyView();}
 function fitAll(){const{w,h}=sz();const k=Math.min(w/WH.W,h/WH.H)*.97;view.k=k;view.x=(w-WH.W*k)/2;view.y=(h-WH.H*k)/2;applyView();}
 function startView(){const{w,h}=sz();const k=Math.max(Math.min(w/WH.W,h/WH.H)*.97,Math.min(.7,w/1000));view.k=k;view.x=(w-WH.W*k)/2;view.y=(h-WH.H*k)/2;applyView();}
 function focusOn(n,minK){const{w,h}=sz();const k=Math.max(view.k,minK||.9);view.k=k;view.x=w/2-n._x*k;view.y=h/2-n._y*k;applyView();}
@@ -222,13 +282,15 @@ function showCard(){
   c.innerHTML=`<h2>${esc(n.name||'—')}</h2>
   ${n.spouse?`<div class="sp2">الزوج/الزوجة: ${esc(n.spouse)}</div>`:''}
   ${years.map(y=>`<div class="row">${y}</div>`).join('')}
+  ${(()=>{const r=ageOf(n);return r&&r.age!=null?`<div class="row"><b>${r.dead?'العمر عند الوفاة':'العمر'}:</b> ${r.age} سنة</div>`:'';})()}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
   ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
   ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
-  <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cClose">إغلاق</button></div>`;
+  <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button><button id="cClose">إغلاق</button></div>`;
   c.style.display='block';
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
   const t=$('#cTog');if(t)t.onclick=()=>toggle(n.id);
+  $('#cSug').onclick=()=>sugOpen(n.name);
   $('#cClose').onclick=()=>{sel=null;draw();showCard();};
 }
 function goTo(id){pathTo(id).forEach(a=>collapsed.delete(a.id));sel=id;draw();showCard();const f=find(id);if(f&&f.n._x!=null)focusOn(f.n,.9);}
@@ -246,16 +308,89 @@ $('#q').addEventListener('input',e=>{
 document.addEventListener('click',e=>{if(!e.target.closest('.search'))$('#res').style.display='none';});
 
 /* ---- toolbar ---- */
-function syncBtns(){$('#bOri').textContent=up?'الجذع: أسفل':'الجذع: أعلى';$('#bCol').textContent=collapsedAll?'فتح كل الفروع':'طيّ الفروع';}
+function syncBtns(){$('#bCol').textContent=collapsedAll?'فتح كل الفروع':'طيّ الفروع';}
 $('#bZi').onclick=()=>{const{w,h}=sz();zoomAt(w/2,h/2,1.25);};
 $('#bZo').onclick=()=>{const{w,h}=sz();zoomAt(w/2,h/2,.8);};
 $('#bFit').onclick=fitAll;
-$('#bOri').onclick=()=>{up=!up;syncBtns();draw();startView();};
 $('#bCol').onclick=()=>{
   collapsedAll=!collapsedAll;collapsed.clear();sel=null;
   if(collapsedAll)everyone().forEach(({n})=>{if(n.children.length&&n!==data.root&&!(n===data.root.children[0]))collapsed.add(n.id);});
   syncBtns();draw();startView();showCard();};
 window.addEventListener('resize',()=>applyView());
+
+
+/* ---- suggestions ---- */
+function sugText(){const g=id=>document.getElementById(id).value.trim();
+  return `اقتراح لشجرة «${(data&&data.title)||''}»\nالمرسِل: ${g('sName')}\nالنوع: ${g('sType')}\n`+(g('sWho')?`الشخص: ${g('sWho')}\n`:'')+`التفاصيل:\n${g('sText')}`;}
+function sugOpen(who){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';$('#sErr').textContent='';$('#sName').focus();
+  const c=(data&&data.contact)||{};const k=!!c.formKey;$('#sSend').style.display=k?'':'none';$('#sWa').style.display=!k&&c.whatsapp?'':'none';$('#sMail').style.display=!k&&c.email?'':'none';$('#sCp').style.display=k?'none':'';$('#sErr').style.color='#c0392b';}
+function sugOk(){if(!$('#sName').value.trim()){$('#sErr').textContent='اكتب اسمك أولًا.';$('#sName').focus();return false;}
+  if(!$('#sText').value.trim()){$('#sErr').textContent='اكتب تفاصيل الاقتراح.';$('#sText').focus();return false;}return true;}
+$('#bSug').onclick=()=>sugOpen(sel&&find(sel)?find(sel).n.name:'');
+$('#sX').onclick=()=>{$('#sug').style.display='none';};
+$('#sug').addEventListener('click',e=>{if(e.target.id==='sug')$('#sug').style.display='none';});
+$('#sSend').onclick=async()=>{if(!sugOk())return;const b=$('#sSend'),e=$('#sErr');b.disabled=true;e.style.color='#6b7a99';e.textContent='جارٍ الإرسال…';
+  try{const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({access_key:data.contact.formKey,subject:'اقتراح لشجرة العائلة من '+$('#sName').value.trim(),from_name:$('#sName').value.trim(),name:$('#sName').value.trim(),message:sugText()})});
+    const j=await r.json();if(!j.success)throw new Error(j.message||'fail');
+    e.style.color='#2a7a3b';e.textContent='تم الإرسال، شكرًا لك! سيصل الاقتراح إلى مسؤول الشجرة.';['sText','sWho'].forEach(i=>document.getElementById(i).value='');
+  }catch(x){e.style.color='#c0392b';e.textContent='تعذّر الإرسال، حاول لاحقًا.';}finally{b.disabled=false;}};
+$('#sWa').onclick=()=>{if(!sugOk())return;window.open('https://wa.me/'+data.contact.whatsapp+'?text='+encodeURIComponent(sugText()),'_blank');};
+$('#sMail').onclick=()=>{if(!sugOk())return;location.href='mailto:'+data.contact.email+'?subject='+encodeURIComponent('اقتراح لشجرة العائلة من '+$('#sName').value.trim())+'&body='+encodeURIComponent(sugText());};
+$('#sCp').onclick=async()=>{if(!sugOk())return;try{await navigator.clipboard.writeText(sugText());$('#sErr').style.color='#2a7a3b';$('#sErr').textContent='تم النسخ — أرسله لمسؤول الشجرة.';}catch(e){$('#sErr').textContent='تعذّر النسخ.';}};
+
+
+/* ---- print export (PNG with dpi) ---- */
+const PAPER={A3:[420,297],A2:[594,420],A1:[841,594]};
+let fontCss=null;
+async function embedFont(){
+  if(fontCss!==null)return fontCss;fontCss='';
+  try{const l=[...document.querySelectorAll('link[rel=stylesheet]')].find(x=>/fonts\.googleapis/.test(x.href));if(!l)return fontCss;
+    let css=await (await fetch(l.href)).text();
+    const urls=[...new Set([...css.matchAll(/url\((https:[^)]+)\)/g)].map(m=>m[1]))];
+    for(const u of urls){const b=await (await fetch(u)).blob();
+      const d=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b);});css=css.split(u).join(d);}
+    fontCss=css;}catch(e){fontCss='';}
+  return fontCss;}
+function crcTable(){const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;}
+function addDpi(buf,dpi){const u=new Uint8Array(buf),ppm=Math.round(dpi/0.0254),T=crcTable();
+  const chunk=new Uint8Array(21);const dv=new DataView(chunk.buffer);dv.setUint32(0,9);chunk.set([112,72,89,115],4);dv.setUint32(8,ppm);dv.setUint32(12,ppm);chunk[16]=1;
+  let c=0xFFFFFFFF;for(let i=4;i<17;i++)c=T[(c^chunk[i])&255]^(c>>>8);dv.setUint32(17,(c^0xFFFFFFFF)>>>0);
+  const out=new Uint8Array(u.length+21);out.set(u.subarray(0,33));out.set(chunk,33);out.set(u.subarray(33),54);return out;}
+async function exportPrint(){
+  const err=$('#xErr');err.style.color='#6b7a99';err.textContent='جارٍ التجهيز… قد يستغرق عدة ثوانٍ.';$('#xGo').disabled=true;
+  const saved=new Set(collapsed),oldSel=sel;
+  try{
+    collapsed.clear();sel=null;draw();
+    const css=await embedFont();
+    const w=$('#world').cloneNode(true);w.removeAttribute('transform');
+    const{W,H}=WH;
+    let[pw,ph]=PAPER[$('#xSize').value];if($('#xOri').value==='P'){const t=pw;pw=ph;ph=t;}
+    const tight=$('#xTight').checked,mobile=/iPhone|iPad|Android/i.test(navigator.userAgent);
+    const maxArea=mobile?14e6:110e6,maxSide=mobile?8000:16000;
+    const wantDpi=300;let dpi=wantDpi;
+    const outH_mm=tight?Math.min(ph,pw*H/W):ph;
+    let pxW=pw/25.4*dpi,pxH=outH_mm/25.4*dpi;
+    const f=Math.min(1,maxSide/pxW,maxSide/pxH,Math.sqrt(maxArea/(pxW*pxH)));
+    dpi=Math.floor(dpi*f);pxW=Math.round(pw/25.4*dpi);pxH=Math.round(outH_mm/25.4*dpi);
+    const pad=24,vbW=W+pad*2,vbH=H+pad*2;
+    const ser=new XMLSerializer().serializeToString(w);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${pxW}" height="${pxH}" viewBox="${-pad} ${-pad} ${vbW} ${vbH}" preserveAspectRatio="xMidYMid meet"><style>${css}.ring{display:none}text{font-family:Alexandria,Tahoma,sans-serif}</style><rect x="${-pad}" y="${-pad}" width="${vbW}" height="${vbH}" fill="#ffffff"/>${ser}</svg>`;
+    const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
+    const img=new Image();await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src=url;});
+    const cv=document.createElement('canvas');cv.width=pxW;cv.height=pxH;const ctx=cv.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,pxW,pxH);ctx.drawImage(img,0,0,pxW,pxH);URL.revokeObjectURL(url);
+    const blob=await new Promise(r=>cv.toBlob(r,'image/png'));if(!blob)throw new Error('canvas');
+    const png=addDpi(await blob.arrayBuffer(),dpi);
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([png],{type:'image/png'}));
+    a.download=(data.title||'family-tree')+'-'+$('#xSize').value+'.png';document.body.appendChild(a);a.click();a.remove();
+    err.style.color='#2a7a3b';err.textContent=`تم: ${pxW}×${pxH} بكسل بدقة ${dpi} نقطة/إنش`+(dpi<300?' (خُفّضت الدقة لحدود المتصفح)':'')+(css?'':' — تعذّر تضمين الخط فاستُخدم خط بديل')+'.';
+  }catch(e){err.style.color='#c0392b';err.textContent='تعذّر التصدير على هذا المتصفح. جرّب مقاسًا أصغر أو متصفح حاسوب.';}
+  finally{collapsed.clear();saved.forEach(x=>collapsed.add(x));sel=oldSel;draw();showCard();$('#xGo').disabled=false;}
+}
+$('#bExp').onclick=()=>{$('#exp').style.display='flex';$('#xErr').textContent='';};
+$('#xX').onclick=()=>{$('#exp').style.display='none';};
+$('#exp').addEventListener('click',e=>{if(e.target.id==='exp')$('#exp').style.display='none';});
+$('#xGo').onclick=exportPrint;
 
 /* ---- load ---- */
 function normalize(d){
@@ -274,9 +409,10 @@ async function init(){
     return;
   }
   $('#msg').style.display='none';
-  up=data.settings?data.settings.up!==false:true;rtl=data.settings?data.settings.rtl!==false:true;
+  up=true;rtl=data.settings?data.settings.rtl!==false:true;
   document.title=data.title||'شجرة العائلة';$('#ttl').textContent='🌳 '+(data.title||'شجرة العائلة');
   if(data.updated)$('#foot').textContent='آخر تحديث: '+data.updated;
+  collapsedAll=true;everyone().forEach(({n})=>{if(n.children.length&&n!==data.root&&!(n===data.root.children[0]))collapsed.add(n.id);});
   syncBtns();draw();startView();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(data){draw();}});
 }
