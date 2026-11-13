@@ -334,7 +334,7 @@ window.addEventListener('resize',()=>applyView());
 function sugText(){const g=id=>document.getElementById(id).value.trim();
   return `اقتراح لشجرة «${(data&&data.title)||''}»\nالمرسِل: ${g('sName')}\nالنوع: ${g('sType')}\n`+(g('sWho')?`الشخص: ${g('sWho')}\n`:'')+`التفاصيل:\n${g('sText')}`;}
 function fullName(n){const anc=pathTo(n.id).slice(0,3);let s=n.name||'—';
-  if(anc.length)s+='، من أبناء '+anc.map(a=>a.name).join('، من أبناء ');
+  if(anc.length)s+=(n.female?' بنت ':' بن ')+anc.map(a=>a.name).join(' بن ');
   const x=[];if(n.spouse)x.push('الزوجة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
   return s+(x.length?' ('+x.join('، ')+')':'');}
 function sugOpen(who){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';$('#sErr').textContent='';$('#sName').focus();
