@@ -77,6 +77,14 @@ svg.drag{cursor:grabbing}
 #lst summary{cursor:pointer;padding:7px 4px;list-style-position:inside;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #lst .lr{padding:7px 4px 7px 4px;margin-inline-start:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-inline-start:2px solid #e3e8f2;padding-inline-start:10px}
 #lst .ln{font-weight:700;font-size:15px}#lst .ls{color:#d6336c;font-size:13px}#lst .lm{color:#6b7a99;font-size:12px}
+#gm{position:fixed;inset:0;z-index:31;background:rgba(15,25,50,.45);display:none}
+#gm .rbox{max-width:520px;margin:40px auto 0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35);max-height:calc(100% - 60px);display:flex;flex-direction:column}
+#gm .lh{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #e3e8f2}#gm .lh b{font-size:17px}#gm .lsub{flex:1;font-size:12px;color:#6b7a99}
+#gm .rb{padding:14px 16px 18px;overflow:auto}
+#gm .cl{background:#f1f5fd;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:15px}
+#gm .op{display:block;width:100%;text-align:right;margin:7px 0;padding:11px 12px;border:1.5px solid #cfd8ea;border-radius:12px;background:#fff;font:inherit;font-size:15px;cursor:pointer}
+#gm .op.ok{background:#dff5e3;border-color:#3aa655}#gm .op.no{background:#fde4e4;border-color:#d55}
+#gm .gb{padding:9px 16px;border-radius:10px;border:0;background:#2b59c3;color:#fff;font:inherit;cursor:pointer;margin:8px 4px 0 0}#gm .gb.s{background:#e8eefb;color:#234}
 #rel{position:fixed;inset:0;z-index:31;background:rgba(15,25,50,.45);display:none}
 #rel .rbox{max-width:520px;margin:40px auto 0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35);max-height:calc(100% - 60px);display:flex;flex-direction:column}
 #rel .lh{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #e3e8f2;flex-wrap:wrap}#rel .lh b{font-size:17px}#rel .lsub{flex:1;font-size:12px;color:#6b7a99}
@@ -110,7 +118,7 @@ svg.drag{cursor:grabbing}
   <button id="bExp" style="display:none">🖼 تصدير للطباعة</button>
   <button id="bSug" class="sugb">✉ اقتراح تعديل</button>
 </header>
-<div id="sbar"><div class="search"><span class="si">🔍</span><input id="q" type="text" placeholder="ابحث عن اسم… (مثال: ناصر بن يوسف)" autocomplete="off"><div id="res"></div></div><button id="bList">☰ قائمة العائلة</button></div>
+<div id="sbar"><div class="search"><span class="si">🔍</span><input id="q" type="text" placeholder="ابحث عن اسم… (مثال: ناصر بن يوسف)" autocomplete="off"><div id="res"></div></div><button id="bList">☰ قائمة العائلة</button><button id="bGame">🎮 من أنا؟</button></div>
 <div id="hint"><button id="hintX" aria-label="إخفاء" title="إخفاء">✕</button>
   <div>💡 الفروع مطويّة: اضغط على الرقم <b>(+)</b> أسفل الاسم لفتح الفرع أو طيّه، واضغط على الاسم لعرض بطاقته.</div>
   <div class="hp">📱 <b>على الهاتف:</b> اسحب بإصبع واحد للتنقل، وباعد أو قرّب بين إصبعين للتكبير والتصغير.</div>
@@ -123,6 +131,7 @@ svg.drag{cursor:grabbing}
 </main>
 <aside id="card"></aside>
 <div id="lst"><div class="lbox"><div class="lh"><b>قائمة العائلة</b><span class="lsub">اضغط على السهم لفتح الأبناء، وعلى «عرض» للذهاب إلى الشجرة</span><button id="lX" aria-label="إغلاق">✕</button></div><div class="lb" id="lBody"></div></div></div>
+<div id="gm"><div class="rbox"><div class="lh"><b>🎮 من أنا؟</b><span class="lsub" id="gSub"></span><button id="gX" aria-label="إغلاق">✕</button></div><div class="rb" id="gBody"></div></div></div>
 <div id="rel"><div class="rbox"><div class="lh"><b>صلة القرابة</b><span class="lsub" id="rSub"></span><button id="rX" aria-label="إغلاق">✕</button></div>
   <div class="rb"><div id="rRes"></div>
   <div id="rPick"><label for="rQ">من أنت؟ ابحث عن اسمك في الشجرة</label><input id="rQ" autocomplete="off" placeholder="اكتب اسمك أو اسم أبيك…"><div id="rList"></div></div></div></div></div>
@@ -623,6 +632,54 @@ async function init(){
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(data){draw();}});
   try{const qp=new URLSearchParams(location.search),pid=qp.get('p');if(pid&&find(pid)){setTimeout(()=>goTo(pid),50);if(qp.get('c')==='1')setTimeout(()=>profOpen(find(pid).n),400);}}catch(e){}
 }
+/* ---- لعبة من أنا ---- */
+let G=null;
+function gInfo(n,p){const sib=p?p.children:[n];const gp=p?find(p.id).p:null;
+  return{f:p?p.name:null,g:gp?gp.name:null,k:n.children.length,r:sib.indexOf(n)+1,sn:sib.length,sp:!!n.spouse,fe:!!n.female};}
+function gPool(){return everyone().filter(x=>x.p&&x.n.name&&x.p.name);}
+function gNames(){const c={};gPool().forEach(x=>c[x.n.name]=(c[x.n.name]||0)+1);return c;}
+function gMake(){const pool=gPool(),cnt=gNames();
+  const good=pool.filter(x=>cnt[x.n.name]===1);const base=good.length>=4?good:pool;
+  const t=base[Math.floor(Math.random()*base.length)];const ti=gInfo(t.n,t.p);
+  const same=x=>{const i=gInfo(x.n,x.p);return i.f===ti.f&&i.g===ti.g&&i.k===ti.k&&i.r===ti.r&&i.fe===ti.fe;};
+  const others=pool.filter(x=>x.n!==t.n&&x.n.name!==t.n.name&&!same(x));
+  const sh=a=>a.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]);
+  // نفضّل مشتتات من نفس الجنس
+  const pref=sh(others.filter(x=>!!x.n.female===!!t.n.female));const rest=sh(others);const seen=new Set([t.n.name]),opts=[t];
+  for(const x of pref.concat(rest)){if(opts.length>=4)break;if(seen.has(x.n.name))continue;seen.add(x.n.name);opts.push(x);}
+  const cl=[];const g=ti.fe?'أنثى':'ذكر';
+  cl.push('أنا '+g+' وأبي اسمه <b>'+ti.f+'</b>');
+  if(ti.g)cl.push('جدّي اسمه <b>'+ti.g+'</b>');
+  cl.push(ti.k?'لدي <b>'+ti.k+'</b> '+(ti.k===1?'ابن/ابنة':ti.k===2?'ابنان/ابنتان':'أبناء'):'ليس لدي أبناء في الشجرة');
+  if(ti.sn>1)cl.push('ترتيبي بين إخوتي: <b>'+ti.r+'</b> من '+ti.sn);else cl.push('أنا الوحيد/ة لأبي في الشجرة');
+  if(ti.sp)cl.push('متزوّج/ة');
+  return{t,opts:sh(opts),cl,shown:Math.min(2,cl.length),done:false};}
+function gDraw(){const B=$('#gBody');
+  if(G.round>G.total){const pct=G.score/(G.total*3);
+    B.innerHTML=`<div style="text-align:center;padding:18px 0"><div style="font-size:42px">${pct>.7?'🏆':pct>.4?'👏':'🌱'}</div><div style="font-size:22px;font-weight:700;margin:6px 0">نتيجتك ${G.score} من ${G.total*3}</div><div style="color:#6b7a99">${pct>.7?'تعرف عائلتك جيدًا!':pct>.4?'معرفة طيبة، العب مرة أخرى!':'فرصة لتتعرّف على العائلة أكثر 🙂'}</div><button class="gb" id="gAgain">العب مرة أخرى</button><button class="gb s" id="gClose">إغلاق</button></div>`;
+    $('#gAgain').onclick=()=>gStart();$('#gClose').onclick=gCloseF;$('#gSub').textContent='';return;}
+  const q=G.q;$('#gSub').textContent='السؤال '+G.round+' من '+G.total+' · النقاط '+G.score;
+  B.innerHTML=q.cl.slice(0,q.shown).map(c=>'<div class="cl">'+c+'</div>').join('')+
+   (q.done?'':(q.shown<q.cl.length?'<button class="gb s" id="gHint">💡 تلميح آخر (ينقص نقطة)</button>':''))+
+   '<div style="margin-top:10px;font-weight:600">من أنا؟</div>'+
+   q.opts.map((o,i)=>'<button class="op" data-i="'+i+'">'+o.n.name+' <span style="color:#8a97b3;font-size:12px">بن '+o.p.name+'</span></button>').join('')+
+   (q.done?'<div id="gRes" style="margin:8px 0;font-weight:600"></div><button class="gb" id="gNext">'+(G.round>=G.total?'النتيجة':'التالي')+'</button><button class="gb s" id="gGo">اعرض على الشجرة</button>':'');
+  const h=$('#gHint');if(h)h.onclick=()=>{q.shown++;gDraw();};
+  B.querySelectorAll('.op').forEach(b=>b.onclick=()=>{if(q.done)return;const i=+b.dataset.i,ok=q.opts[i]===q.t;q.done=true;
+    const pts=ok?Math.max(1,3-(q.shown-Math.min(2,q.cl.length))):0;if(ok)G.score+=pts;gDraw();
+    B.querySelectorAll('.op').forEach((x,j)=>{if(q.opts[j]===q.t)x.classList.add('ok');else if(j===i)x.classList.add('no');});
+    $('#gRes').textContent=ok?'✅ أحسنت! +'+pts+' نقطة':'❌ الجواب: '+q.t.n.name+' بن '+q.t.p.name;});
+  const nx=$('#gNext');if(nx){nx.onclick=()=>{G.round++;if(G.round<=G.total)G.q=gMake();gDraw();};$('#gGo').onclick=()=>{gCloseF();goTo(q.t.n.id);};}}
+function gStart(){if(gPool().length<4){alert('عدد الأشخاص في الشجرة قليل للعبة.');return;}G={round:1,total:8,score:0,q:null};G.q=gMake();gDraw();}
+function gCloseF(){$('#gm').style.display='none';}
+$('#bGame').onclick=()=>{$('#gm').style.display='block';gStart();};$('#gX').onclick=gCloseF;
+$('#gm').addEventListener('click',e=>{if(e.target.id==='gm')gCloseF();});
+/* ---- عداد الزيارات ---- */
+function countVisit(){try{if(localStorage.getItem('famSess')||sessionStorage.getItem('v1'))return;
+  let v=localStorage.getItem('famVid');if(!v){v=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,'').slice(0,32);localStorage.setItem('famVid',v);}
+  sessionStorage.setItem('v1','1');
+  fetch(SB.url+'/rest/v1/visits',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({vid:v,path:(location.pathname||'/').slice(0,100)}),keepalive:true}).catch(()=>{});}catch(e){}}
+countVisit();
 init();
 </script>
 </body>
