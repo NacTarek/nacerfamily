@@ -36,6 +36,7 @@ svg.drag{cursor:grabbing}
 #card{position:fixed;z-index:6;background:#ffffff;border:1px solid #e3e8f2;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:14px 16px;display:none;
   left:24px;top:84px;width:310px;max-height:calc(100vh - 110px);overflow:auto}
 @media(max-width:700px){#card{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:50vh}}
+#card{padding-top:36px}#card #cClose{position:absolute;top:8px;left:10px;width:28px;height:28px;padding:0;border-radius:50%;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;color:#6b7a99}
 #card h2{margin:0 0 4px;font-size:20px;font-weight:700}
 #card .sp2{color:#d6336c;font-weight:600;font-size:15px;margin-bottom:6px}
 #card .row{font-size:13px;color:#5a4f48;margin:4px 0}
@@ -109,7 +110,7 @@ const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 let data=null,sel=null,up=true,rtl=true,collapsedAll=false;
 const collapsed=new Set();
 let view={x:0,y:0,k:.6},WH={W:1000,H:700};
-const NW=158,NH=62,GX=26,LG=112,M=70;
+const NW=168,NH=76,GX=26,LG=112,M=70;
 const GREENS=['#7fae7a','#2b59c3','#9db8f0','#6b9f7e','#88b98a'];
 const BLOOM=['#f08a7a','#b89ad0','#f2c04e','#e9a0b8'];
 const STROKE='#c1cde4';
@@ -153,8 +154,8 @@ function calcAge(bs,ds,dd){const b=parseDate(bs);if(!b)return null;
   return a>=0&&a<125?{age:a,dead}:null;}
 function ageOf(n){return calcAge(n.birth,n.death,n.dead);}
 function spAgeOf(n){return calcAge(n.spouseBirth,n.spouseDeath,n.spouseDead);}
-function ageBadge(g,x,y,n){const NW=158,NH=62,r=ageOf(n);if(!r||r.age==null)return;
-  const cx=x+NW/2+2,cy=y-NH/2-2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
+function ageBadge(g,x,y,n){const NW=168,NH=76,r=ageOf(n);if(!r||r.age==null)return;
+  const cx=x+NW/2+9,cy=y-NH/2-8,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
   el('circle',{cx,cy,r:25,fill:col,stroke:'#fff','stroke-width':3},b);
   const t=el('text',{x:cx,y:cy+5,'text-anchor':'middle','font-size':r.age>99?17:20,'font-weight':700,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff'},b);t.textContent=r.age;
   const u=el('text',{x:cx,y:cy+17,'text-anchor':'middle','font-size':9.5,'font-weight':600,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff',opacity:.92},b);u.textContent='سنة';}
@@ -213,12 +214,12 @@ function draw(){
     el('rect',{class:'ring',x:x-NW/2-10,y:y-NH/2-4,width:NW+20,height:NH+8,rx:18},g);
     const dua=(n.dead||n.death)?(n.female?'رحمها الله':'رحمه الله'):'';const years=[n.birth,n.death].filter(Boolean).join(' – '),meta=[years,n.place].filter(Boolean).join(' · ');
     const items=[['name',n.name||'—']];if(dua)items.push(['dua',dua]);if(n.spouse)items.push(['sp',n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'')]);if(meta)items.push(['meta',meta]);
-    const YS={1:[7],2:[-5,16],3:[-11,6,22],4:[-14,-2,12,26]}[items.length];
+    const YS={1:[7],2:[-6,18],3:[-14,6,26],4:[-19,-5,12,31]}[items.length];
     const ST={name:[17,700,'#1b2a4a'],dua:[10.5,500,'#8a97b3'],sp:[14.5,600,'#d6336c'],meta:[11,500,'#6b7a99']};
     items.forEach((it,i)=>{const s=ST[it[0]],t=el('text',{x,y:y+YS[i]-(items.length===4&&it[0]==='sp'?0:0),'text-anchor':'middle','font-size':s[0],'font-weight':s[1],'font-family':FF,fill:s[2]},g);t.textContent=it[1];fit.push([t,s[0],NW-22]);});
     ageBadge(g,x,y,n);
     if(collapsed.has(n.id)&&n.children.length){
-      const tg=el('g',{class:'tog','data-id':n.id},nodesG),cnt='+'+countDesc(n),w=Math.max(40,cnt.length*9+18),oy=y+NH/2;
+      const tg=el('g',{class:'tog','data-id':n.id},nodesG),cnt='+'+countDesc(n),w=Math.max(40,cnt.length*9+18),oy=y+NH/2+8;
       el('rect',{x:x-w/2,y:oy-11,width:w,height:22,rx:11,fill:'#2b59c3',stroke:'#fff','stroke-width':1.5},tg);
       const tt=el('text',{x,y:oy+4.5,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':FF,fill:'#fff'},tg);tt.textContent=cnt;}
   });
@@ -274,7 +275,11 @@ svgEl.addEventListener('wheel',e=>{e.preventDefault();const r=stage.getBoundingC
 
 /* ---- selection / card ---- */
 function select(id){sel=id;draw();showCard();}
-function toggle(id){const f=find(id);if(!f||!f.n.children.length)return;if(collapsed.has(id))collapsed.delete(id);else collapsed.add(id);sel=id;draw();showCard();}
+function toggle(id){const f=find(id);if(!f||!f.n.children.length)return;if(collapsed.has(id))collapsed.delete(id);else collapsed.add(id);draw();}
+function fitBranch(n){const{w,h}=sz();let x0=n._x,x1=n._x,y0=n._y,y1=n._y;
+  (function v(m){x0=Math.min(x0,m._x);x1=Math.max(x1,m._x);y0=Math.min(y0,m._y);y1=Math.max(y1,m._y);if(!collapsed.has(m.id))m.children.forEach(v);})(n);
+  const bw=x1-x0+NW+60,bh=y1-y0+NH+90,k=Math.min(3,Math.max(minK(),Math.min(w/bw,h/bh)*.92));
+  view.k=k;view.x=w/2-((x0+x1)/2)*k;view.y=h/2-((y0+y1)/2)*k;applyView();}
 function showCard(){
   const c=$('#card');if(!sel){c.style.display='none';return;}
   const f=find(sel);if(!f){c.style.display='none';return;}
@@ -286,10 +291,10 @@ function showCard(){
   ${n.spouse?`<div class="sp2">الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(رحمها الله)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
   ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
   ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
-  <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button><button id="cClose">إغلاق</button></div>`;
+  <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
   c.style.display='block';
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
-  const t=$('#cTog');if(t)t.onclick=()=>toggle(n.id);
+  const t=$('#cTog');if(t)t.onclick=()=>{const opening=collapsed.has(n.id);toggle(n.id);sel=null;draw();showCard();if(opening)fitBranch(n);};
   $('#cSug').onclick=()=>sugOpen(fullName(n));
   $('#cClose').onclick=()=>{sel=null;draw();showCard();};
 }

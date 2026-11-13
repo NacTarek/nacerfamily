@@ -385,8 +385,8 @@ function calcAge(bs,ds,dd){const b=parseDate(bs);if(!b)return null;
   return a>=0&&a<125?{age:a,dead}:null;}
 function ageOf(n){return calcAge(n.birth,n.death,n.dead);}
 function spAgeOf(n){return calcAge(n.spouseBirth,n.spouseDeath,n.spouseDead);}
-function ageBadge(g,x,y,n){const NW=158,NH=62,r=ageOf(n);if(!r||r.age==null)return;
-  const cx=x+NW/2+2,cy=y-NH/2-2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
+function ageBadge(g,x,y,n){const NW=168,NH=76,r=ageOf(n);if(!r||r.age==null)return;
+  const cx=x+NW/2+9,cy=y-NH/2-8,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
   el('circle',{cx,cy,r:25,fill:col,stroke:'#fff','stroke-width':3},b);
   const t=el('text',{x:cx,y:cy+5,'text-anchor':'middle','font-size':r.age>99?17:20,'font-weight':700,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff'},b);t.textContent=r.age;
   const u=el('text',{x:cx,y:cy+17,'text-anchor':'middle','font-size':9.5,'font-weight':600,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff',opacity:.92},b);u.textContent='سنة';}
@@ -394,7 +394,7 @@ function ageBadge(g,x,y,n){const NW=158,NH=62,r=ageOf(n);if(!r||r.age==null)retu
 function draw(){
   const svg=$('#svg');svg.innerHTML='';
   const {leaves,maxD}=layout();const up=data.settings.up;
-  const NW=158,NH=62,GX=26,LG=112,M=70;
+  const NW=168,NH=76,GX=26,LG=112,M=70;
   const W=Math.max(leaves,1)*(NW+GX)+M*2;
   const top=up?90:150,trunk=up?90:0,titleH=up?140:0,bot=up?0:70;
   const H=top+maxD*LG+NH+trunk+titleH+bot;
@@ -473,7 +473,7 @@ function draw(){
     const meta=[years,n.place].filter(Boolean).join(' · ');
     const FF="Alexandria,Tahoma,sans-serif";
     const items=[['name',n.name||'—']];if(dua)items.push(['dua',dua]);if(n.spouse)items.push(['sp',n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'')]);if(meta)items.push(['meta',meta]);
-    const YS={1:[7],2:[-5,16],3:[-11,6,22],4:[-14,-2,12,26]}[items.length];
+    const YS={1:[7],2:[-6,18],3:[-14,6,26],4:[-19,-5,12,31]}[items.length];
     const ST={name:[17,700,'#1b2a4a'],dua:[10.5,500,'#8a97b3'],sp:[14.5,600,'#d6336c'],meta:[11,500,'#6b7a99']};
     items.forEach((it,i)=>{const s=ST[it[0]],t=el('text',{x,y:y+YS[i]-(items.length===4&&it[0]==='sp'?0:0),'text-anchor':'middle','font-size':s[0],'font-weight':s[1],'font-family':FF,fill:s[2]},g);t.textContent=it[1];fit.push([t,s[0],NW-22]);});
     ageBadge(g,x,y,n);
