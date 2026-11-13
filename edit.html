@@ -85,7 +85,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 
 .sg{border:1px solid #d5ddec;border-radius:10px;padding:10px 12px;background:#fff}.sg.new{border-color:#2b59c3;background:#f3f7ff}.sg.done{opacity:.6}
 .sgh{font-size:13px;color:#6b7a99}.sgh em{background:#2b59c3;color:#fff;border-radius:8px;padding:0 7px;margin-inline-start:6px;font-style:normal}.sgw{font-size:13px;margin-top:4px}.sgb{white-space:pre-wrap;margin-top:6px;font-size:14px}
-#bInbox.hot{background:#2b59c3;color:#fff;border-color:#2b59c3}
+.nb{display:inline-block;min-width:20px;height:20px;line-height:20px;padding:0 6px;border-radius:10px;background:#e03131;color:#fff;font-size:12px;font-weight:700;text-align:center;margin-inline-start:4px}
 </style>
 </head>
 <body>
@@ -781,7 +781,7 @@ async function publishNow(){const m=$('#pubmsg');m.style.color='#6b7a99';m.textC
   try{await up('tree_public',{data:publicData()});m.style.color='#2a7a3b';m.textContent='✓ نُشرت الشجرة، وسيراها الزوّار فورًا '+hhmm();}catch(e){m.style.color='#a3361f';m.textContent='تعذّر النشر. سجّل الدخول من جديد ثم أعد المحاولة.';}}
 /* suggestions inbox */
 const esc2=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-async function inboxCount(){try{const r=await sb('suggestions?status=eq.new&select=id');const n=r.length;$('#bInbox').textContent='📥 الاقتراحات'+(n?' ('+n+')':'');$('#bInbox').classList.toggle('hot',n>0);}catch(e){}}
+async function inboxCount(){try{const r=await sb('suggestions?status=eq.new&select=id');const n=r.length;$('#bInbox').innerHTML='📥 الاقتراحات'+(n?' <span class="nb">'+n+'</span>':'');}catch(e){}}
 async function inboxOpen(){
   $('#inboxM').classList.add('on');const L=$('#inboxList');L.textContent='جارٍ التحميل…';
   try{const rows=await sb('suggestions?select=*&order=created_at.desc&limit=200');
