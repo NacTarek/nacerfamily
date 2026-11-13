@@ -99,7 +99,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
   <button id="bOrd"></button>
   <button id="bZo">−</button><button id="bZi">+</button><button id="bFit">ملاءمة</button>
   <span id="fstat" class="fstat"></span><span id="cstat" class="fstat"></span><button id="bLink" style="display:none"></button><button id="bDl" style="display:none">تنزيل نسخة محدّثة</button>
-  <button id="bStudy">🎓 الدراسة</button><button id="bPdf">📄 تصدير PDF</button>
+  <button id="bUndo" title="تراجع (Cmd/Ctrl+Z)" disabled>↶</button><button id="bRedo" title="إعادة (Cmd/Ctrl+Shift+Z)" disabled>↷</button><button id="bStudy">🎓 الدراسة</button><button id="bPdf">📄 تصدير PDF</button>
   <button id="bInbox">📥 الاقتراحات</button><button id="bPub">🌐 نشر للعرض</button><button id="bOut" style="display:none">خروج</button>
   <button id="bData">نسخ احتياطي / استيراد</button>
 </div>
@@ -191,7 +191,7 @@ function load(){
   if(pick!==emb)needSave=true;
   return normalize(pick);
 }
-let saveT;function save(){clearTimeout(saveT);data.savedAt=Date.now();saveT=setTimeout(()=>{try{localStorage.setItem(KEY,exportJSON());}catch(e){}scheduleFileSave();scheduleCloud();},250);}
+let saveT;function save(){clearTimeout(saveT);data.savedAt=Date.now();if(typeof histNote==='function')histNote();saveT=setTimeout(()=>{try{localStorage.setItem(KEY,exportJSON());}catch(e){}scheduleFileSave();scheduleCloud();},250);}
 function exportJSON(){return JSON.stringify(data,(k,v)=>k[0]==='_'?undefined:v,2);}
 let migrated=false;
 function migrate(d){
@@ -552,12 +552,13 @@ function renderPanel(){
     <button id="aUp" ${parent?'':'disabled'} title="تغيير ترتيب الإخوة (في القائمة العمودية: أقرب إلى الأب)">تقديم</button>
     <button id="aDn" ${parent?'':'disabled'} title="تغيير ترتيب الإخوة">تأخير</button>
   </div>
+  ${n.children.length>1?`<div class="row"><button id="aSort" title="الأكبر أولًا حسب سنة الميلاد">ترتيب الأبناء حسب الميلاد</button></div>`:''}
   ${n.children.length?`<div class="row"><button id="aStack" ${n.children.every(c=>!c.children.length)?'':'disabled title="متاح فقط إذا لم يكن لأبنائه أبناء"'}>${stacked(n)?'عرض الأبناء بشكل أفقي':'عرض الأبناء بشكل عمودي'}</button></div>`:''}
   <div class="hint" style="margin-top:10px">💡 اسحب هذا الشخص إلى وسط لوحة آخر ليصبح ابنه، أو إلى جانبها ليصبح أخاه.</div>
   <div class="row"><button class="danger" id="aDel" ${parent?'':'disabled'}>حذف</button><button id="aDesel">إلغاء التحديد</button></div>`;
   const ageTxt=()=>{const r=ageOf(n);$('#f_age').textContent=!r?(n.birth?'تعذّر قراءة تاريخ الميلاد — اكتب سنة من 4 أرقام.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
   const deathVis=()=>{$('#deathBox').style.display=n.dead?'':'none';};
-  ['name','spouse','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();ageTxt();});});
+  ['name','spouse','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;if(k==='birth'){const ff=find(n.id);if(ff&&ff.parent)sortKids(ff.parent);}draw();save();ageTxt();});});
   const spTxt=()=>{const r=spAgeOf(n);$('#f_spAge').textContent=!r?(n.spouseBirth?'تعذّر قراءة تاريخ الميلاد.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
   const spVis=()=>{$('#spBox').style.display=n.spouse?'':'none';$('#spDeathBox').style.display=n.spouseDead?'':'none';};
   ['spouseBirth','spouseDeath'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();spTxt();});});
@@ -569,6 +570,7 @@ function renderPanel(){
   $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();renderPanel();renderNotice&&renderNotice();});
   $('#f_unsure').checked=n.unsure;$('#f_unsure').addEventListener('change',e=>{n.unsure=e.target.checked;draw();save();});
   wireEdu(n);
+  const srt=$('#aSort');if(srt)srt.onclick=()=>{if(sortKids(n)){draw();save();toast('رُتّب الأبناء من الأكبر إلى الأصغر','ok');}else toast('لا تغيير: إمّا مرتّبون أو بلا سنوات ميلاد');};
   const stk=$('#aStack');if(stk)stk.onclick=()=>{n.stack=!stacked(n);draw();renderPanel();save();};
   $('#aChild').onclick=()=>addChild(n);
   $('#aPar').onclick=()=>addParent(n);
@@ -851,11 +853,43 @@ async function inboxOpen(){
   $('#inboxM').classList.add('on');const L=$('#inboxList');L.textContent='جارٍ التحميل…';
   try{const rows=await sb('suggestions?select=*&order=created_at.desc&limit=200');
     if(!rows.length){L.innerHTML='<div class="hint">لا توجد اقتراحات بعد.</div>';return;}
-    L.innerHTML=rows.map(r=>`<div class="sg ${r.status}" data-id="${r.id}"><div class="sgh"><b>${esc2(r.sender)}</b> · ${esc2(r.kind)} · <span>${new Date(r.created_at).toLocaleString('ar',{dateStyle:'medium',timeStyle:'short'})}</span>${r.status==='new'?'<em>جديد</em>':''}</div>${r.who?`<div class="sgw">الشخص: ${esc2(r.who)}</div>`:''}<div class="sgb">${esc2(r.body)}</div><div class="row" style="margin-top:6px"><button data-a="done">تمّ</button><button data-a="new">إرجاع كجديد</button><button class="danger" data-a="del">حذف</button></div></div>`).join('');
+    L.innerHTML=rows.map(r=>`<div class="sg ${r.status}" data-id="${r.id}"><div class="sgh"><b>${esc2(r.sender)}</b> · ${esc2(r.kind)} · <span>${new Date(r.created_at).toLocaleString('ar',{dateStyle:'medium',timeStyle:'short'})}</span>${r.status==='new'?'<em>جديد</em>':''}</div>${r.who?`<div class="sgw">الشخص: ${esc2(r.who)}</div>`:''}<div class="sgb">${esc2(r.body)}</div><div class="row" style="margin-top:6px">${r.person_id?'<button data-a="open">فتح الشخص</button>':''}${r.person_id&&r.payload&&((r.payload.t==='add')||(r.payload.t==='edit'&&SUG_FIELDS[r.payload.f]))?'<button class="primary" data-a="apply">'+(r.payload.t==='add'?'إضافة هذا الشخص':'تطبيق التعديل')+'</button>':''}<button data-a="done">تمّ</button><button data-a="new">إرجاع كجديد</button><button class="danger" data-a="del">حذف</button></div></div>`).join('');
     L.querySelectorAll('.sg button').forEach(b=>b.onclick=async()=>{const id=b.closest('.sg').dataset.id,a=b.dataset.a;
-      try{if(a==='del'){if(!confirm('حذف هذا الاقتراح؟'))return;await sb('suggestions?id=eq.'+id,{method:'DELETE'});}else await sb('suggestions?id=eq.'+id,{method:'PATCH',body:{status:a}});await inboxOpen();inboxCount();}catch(e){alert('تعذّر التنفيذ');}});
+      try{if(a==='open'||a==='apply'){const row=rows.find(x=>x.id===id),res=applySug(row,a==='apply');if(!res)return;if(res==='applied'){await sb('suggestions?id=eq.'+id,{method:'PATCH',body:{status:'done'}});inboxCount();toast('✓ طُبّق الاقتراح (يمكنك التراجع بـ ↶)','ok');}$('#inboxM').classList.remove('on');return;}
+        if(a==='del'){if(!confirm('حذف هذا الاقتراح؟'))return;await sb('suggestions?id=eq.'+id,{method:'DELETE'});}else await sb('suggestions?id=eq.'+id,{method:'PATCH',body:{status:a}});await inboxOpen();inboxCount();}catch(e){alert('تعذّر التنفيذ');}});
   }catch(e){L.textContent='تعذّر تحميل الاقتراحات.';}}
 $('#bInbox').onclick=inboxOpen;$('#inboxClose').onclick=()=>$('#inboxM').classList.remove('on');$('#pubNow').onclick=publishNow;
+
+/* auto-sort children by birth year (oldest first); undated keep their slots */
+function birthYear(n){const b=parseDate(n.birth);return b?b.y:null;}
+function sortKids(p){if(!p||!p.children)return false;const a=p.children,idx=[];a.forEach((c,i)=>{if(birthYear(c)!=null)idx.push(i);});
+  const key=c=>{const b=parseDate(c.birth);return b.y*10000+b.m*100+b.d;};
+  const sorted=idx.map(i=>a[i]).sort((x,y)=>key(x)-key(y));let ch=false;
+  idx.forEach((i,k)=>{if(a[i]!==sorted[k]){a[i]=sorted[k];ch=true;}});return ch;}
+/* undo / redo */
+let lastState=null,undoS=[],redoS=[],lastEdit=0,noHist=false;
+function histNote(){if(noHist)return;const now=Date.now();
+  if(lastState!==null&&now-lastEdit>1200){undoS.push(lastState);if(undoS.length>60)undoS.shift();redoS=[];}
+  lastEdit=now;setTimeout(()=>{lastState=exportJSON();syncUR();},300);}
+function syncUR(){const u=$('#bUndo'),r=$('#bRedo');if(u)u.disabled=!undoS.length;if(r)r.disabled=!redoS.length;}
+function loadState(str){noHist=true;try{data=normalize(JSON.parse(str));if(sel&&!find(sel))sel=null;syncBar();draw();renderPanel();save();lastState=str;}finally{noHist=false;}syncUR();}
+function undo(){if(!undoS.length)return;redoS.push(exportJSON());loadState(undoS.pop());}
+function redo(){if(!redoS.length)return;undoS.push(exportJSON());loadState(redoS.pop());}
+$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;
+document.addEventListener('keydown',e=>{if(!(e.metaKey||e.ctrlKey)||e.key.toLowerCase()!=='z')return;
+  const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;e.preventDefault();e.shiftKey?redo():undo();});
+setTimeout(()=>{if(lastState===null){lastState=exportJSON();}syncUR();},1500);
+/* apply a suggestion */
+function centerNode(id){const g=document.querySelector('.node[data-id="'+id+'"]'),P=$('#paper');if(!g||!P||!P.getBoundingClientRect)return;
+  const a=g.getBoundingClientRect(),b=P.getBoundingClientRect();P.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2);P.scrollTop+=(a.top+a.height/2)-(b.top+b.height/2);}
+const SUG_FIELDS={name:'الاسم',birth:'تاريخ الميلاد',death:'تاريخ الوفاة',spouse:'الزوجة',spouseBirth:'تاريخ ميلاد الزوجة',place:'مكان الإقامة'};
+function applySug(r,doApply){
+  const f=r.person_id&&find(r.person_id);
+  if(!f){alert('لم أجد هذا الشخص في الشجرة (ربما حُذف). ابحث عنه بالاسم: '+(r.who||''));return false;}
+  const p=r.payload||{};let m=f.n,done=false;
+  if(doApply&&p.t==='add'){const c=P((p.name||'شخص جديد').trim(),0,{birth:p.birth||'',note:p.mother?('الأم: '+p.mother):''});f.n.children.push(c);sortKids(f.n);m=c;done=true;}
+  else if(doApply&&p.t==='edit'&&SUG_FIELDS[p.f]){f.n[p.f]=String(p.v||'').trim();if(p.f==='death'&&f.n.death)f.n.dead=true;if(p.f==='birth'&&f.parent)sortKids(f.parent);done=true;}
+  sel=m.id;draw();renderPanel();if(done)save();setTimeout(()=>centerNode(m.id),60);return done?'applied':'opened';}
 /* login gate */
 async function ownerCheck(){
   try{if(await sb('rpc/is_owner',{method:'POST',body:{}})===true)return true;}catch(e){}

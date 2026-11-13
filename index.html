@@ -60,12 +60,31 @@ svg.drag{cursor:grabbing}
 .foot{position:absolute;bottom:6px;inset-inline-start:12px;font-size:11px;color:#8a97b3;pointer-events:none}
 #hintX{position:absolute;top:6px;left:8px;width:26px;height:26px;padding:0;border-radius:50%;border:0;background:rgba(31,63,143,.12);color:#1f3f8f;font-size:12px;cursor:pointer}
 @media(pointer:coarse){#hint .hd{display:none}}@media(pointer:fine){#hint .hp{display:none}}
+#sbar{display:flex;gap:8px;align-items:center;padding:10px 12px 0;position:relative;z-index:8}
+#sbar .search{flex:1;max-width:none;position:relative}
+#sbar .search input{font-size:17px;padding:12px 14px 12px 40px;border-radius:14px;border:1.5px solid #c9d6ef;box-shadow:0 2px 8px rgba(40,70,140,.07)}
+#sbar .si{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:16px}
+#sbar .search input{padding-inline-end:40px;padding-inline-start:14px}
+#bList{padding:12px 14px;font-size:14px;border-radius:14px;white-space:nowrap;font-weight:600}
+#res div b{font-weight:700}#res small{display:block;margin:2px 0 0}
+#lst{position:fixed;inset:0;z-index:30;background:rgba(15,25,50,.45);display:none}
+#lst .lbox{max-width:680px;margin:16px auto;height:calc(100% - 32px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+#lst .lh{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #e3e8f2;flex-wrap:wrap}
+#lst .lh b{font-size:17px}#lst .lsub{flex:1;font-size:12px;color:#6b7a99}
+#lst .lb{overflow:auto;padding:8px 12px 24px}
+#lst details{margin-inline-start:14px;border-inline-start:2px solid #e3e8f2;padding-inline-start:8px}
+#lst .lb>details,#lst .lb>.lr{margin-inline-start:0;border:0;padding:0}
+#lst summary{cursor:pointer;padding:7px 4px;list-style-position:inside;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#lst .lr{padding:7px 4px 7px 4px;margin-inline-start:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-inline-start:2px solid #e3e8f2;padding-inline-start:10px}
+#lst .ln{font-weight:700;font-size:15px}#lst .ls{color:#d6336c;font-size:13px}#lst .lm{color:#6b7a99;font-size:12px}
+#lst summary::-webkit-details-marker{display:none}#lst summary::before{content:'◂';color:#6b7a99;font-size:13px;width:14px}#lst details[open]>summary::before{content:'▾'}
+#lst .lgo{margin-inline-start:auto;font-size:12px;padding:3px 10px}
+@media(max-width:700px){#lst .lbox{margin:0;height:100%;border-radius:0}#bList{padding:12px 10px;font-size:13px}#sbar .search input{font-size:16px}}
 </style>
 </head>
 <body>
 <header class="bar">
   <h1 id="ttl">🌳 شجرة العائلة</h1>
-  <div class="search"><input id="q" type="text" placeholder="ابحث عن اسم…" autocomplete="off"><div id="res"></div></div>
   <span class="sp"></span>
   <button id="bZo" aria-label="تصغير">−</button><button id="bZi" aria-label="تكبير">+</button>
   <button id="bFit">عرض الكل</button>
@@ -73,6 +92,7 @@ svg.drag{cursor:grabbing}
   <button id="bExp" style="display:none">🖼 تصدير للطباعة</button>
   <button id="bSug" class="sugb">✉ اقتراح تعديل</button>
 </header>
+<div id="sbar"><div class="search"><span class="si">🔍</span><input id="q" type="text" placeholder="ابحث عن اسم… (مثال: ناصر بن يوسف)" autocomplete="off"><div id="res"></div></div><button id="bList">☰ قائمة العائلة</button></div>
 <div id="hint"><button id="hintX" aria-label="إخفاء" title="إخفاء">✕</button>
   <div>💡 الفروع مطويّة: اضغط على الرقم <b>(+)</b> أسفل الاسم لفتح الفرع أو طيّه، واضغط على الاسم لعرض بطاقته.</div>
   <div class="hp">📱 <b>على الهاتف:</b> اسحب بإصبع واحد للتنقل، وباعد أو قرّب بين إصبعين للتكبير والتصغير.</div>
@@ -84,6 +104,7 @@ svg.drag{cursor:grabbing}
   <div class="foot" id="foot"></div>
 </main>
 <aside id="card"></aside>
+<div id="lst"><div class="lbox"><div class="lh"><b>قائمة العائلة</b><span class="lsub">اضغط على السهم لفتح الأبناء، وعلى «عرض» للذهاب إلى الشجرة</span><button id="lX" aria-label="إغلاق">✕</button></div><div class="lb" id="lBody"></div></div></div>
 <div id="exp"><div class="box">
   <h2>تصدير صورة للطباعة</h2>
   <p>صورة PNG عالية الجودة بمقاس الورق، تحوي كل أفرع الشجرة (حتى المطوية). تُحفظ بدقة طباعة مدمجة في الملف.</p>
@@ -100,10 +121,16 @@ svg.drag{cursor:grabbing}
   <p>ساعدنا في تحسين الشجرة: أرسل معلومة جديدة أو تصحيحًا. اكتب اسمك لنعرف من أرسل الاقتراح.</p>
   <label for="sName">اسمك *</label><input id="sName" autocomplete="name">
   <label for="sType">نوع الاقتراح</label>
-  <select id="sType"><option>إضافة شخص</option><option>تعديل معلومة</option><option>حذف / خطأ</option><option>أخرى</option></select>
-  <label for="sWho">الشخص المعني (يُملأ تلقائيًا بنسبه الكامل لتمييزه)</label><input id="sWho">
+  <select id="sType"><option value="add">إضافة ابن أو بنت</option><option value="edit">تصحيح أو تعديل معلومة</option><option value="del">حذف / خطأ</option><option value="other">أخرى</option></select>
+  <label for="sWho" id="lWho">الشخص المعني (يُملأ تلقائيًا بنسبه الكامل لتمييزه)</label><input id="sWho">
   <div id="sFill" style="display:none;margin:6px 0;padding:8px 10px;background:#fff4e0;border:1px dashed #e0a030;border-radius:10px;color:#8a5a00;font-size:13px">📚 خانة «السنة الدراسية / العمل» فارغة لهذا الشخص وتنتظر الملء. إن كنتم تعرفونها فاكتبوها أدناه (مثال: يدرس 2 ثانوي، أو يعمل في…).</div>
-  <label for="sText">التفاصيل *</label><textarea id="sText" placeholder="مثال: أضيفوا محمد ابن الناصر، وُلد سنة 1995…"></textarea>
+  <div id="fAdd"><label for="aName">اسم الابن / البنت *</label><input id="aName" dir="auto">
+    <label for="aBirth">سنة الميلاد (إن عُرفت)</label><input id="aBirth" inputmode="numeric" dir="auto" placeholder="مثال: 1995">
+    <label for="aMother">اسم الأم (إن عُرف)</label><input id="aMother" dir="auto"></div>
+  <div id="fEdit" style="display:none"><label for="eField">ما الذي تريد تصحيحه؟</label>
+    <select id="eField"><option value="name">الاسم</option><option value="birth">تاريخ الميلاد</option><option value="death">تاريخ الوفاة</option><option value="spouse">اسم الزوجة</option><option value="spouseBirth">تاريخ ميلاد الزوجة</option><option value="study">السنة الدراسية / العمل</option><option value="place">مكان الإقامة</option><option value="other">شيء آخر</option></select>
+    <label for="eVal">القيمة الصحيحة *</label><input id="eVal" dir="auto"></div>
+  <label for="sText" id="lText">ملاحظات إضافية (اختياري)</label><textarea id="sText" placeholder="أي تفصيل يساعدنا…"></textarea>
   <div class="err" id="sErr"></div>
   <div class="row"><button id="sSend" class="sugb">إرسال الاقتراح</button><button id="sX">إلغاء</button></div>
 </div></div>
@@ -310,15 +337,30 @@ function goTo(id){pathTo(id).forEach(a=>collapsed.delete(a.id));sel=id;draw();sh
 
 /* ---- search ---- */
 const norm=s=>String(s||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase().trim();
+const lineage=n=>pathTo(n.id).map(a=>a.name).join(' بن ');
+let __hits=[];
 $('#q').addEventListener('input',e=>{
-  const q=norm(e.target.value),box=$('#res');
-  if(!q){box.style.display='none';return;}
-  const hits=everyone().filter(({n})=>norm(n.name).includes(q)||norm(n.spouse).includes(q)).slice(0,12);
-  box.innerHTML=hits.length?hits.map(({n,p})=>`<div data-id="${n.id}">${esc(n.name)}${p?`<small>ابن/ة ${esc(p.name)}</small>`:''}</div>`).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج</div>';
+  const words=norm(e.target.value).split(/\s+/).filter(w=>w&&w!=='بن'&&w!=='بنت'),box=$('#res');
+  if(!words.length){box.style.display='none';__hits=[];return;}
+  __hits=everyone().filter(({n})=>{const hay=norm(n.name+' '+lineage(n)+' '+(n.spouse||''));return words.every(w=>hay.includes(w));}).slice(0,20);
+  box.innerHTML=__hits.length?__hits.map(({n})=>{const l=lineage(n);return `<div data-id="${n.id}"><b>${esc(n.name)}</b>${l?`<small>بن ${esc(l)}</small>`:''}</div>`;}).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج، جرّب كلمة أقصر</div>';
   box.style.display='block';
-  box.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{box.style.display='none';e.target.value='';goTo(d.getAttribute('data-id'));});
+  box.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{box.style.display='none';$('#q').value='';goTo(d.getAttribute('data-id'));});
 });
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter'&&__hits.length){$('#res').style.display='none';$('#q').value='';$('#q').blur();goTo(__hits[0].n.id);}});
 document.addEventListener('click',e=>{if(!e.target.closest('.search'))$('#res').style.display='none';});
+
+/* ---- list view ---- */
+function listHtml(n,top){
+  const dead=n.dead||n.death,ai=(()=>{try{const r=ageOf(n);return r&&r.age!=null?r.age+' سنة':'';}catch(e){return '';}})();
+  const si=studyInfo(n),st=si&&si.kind==='study'?' · 📚 '+esc(si.label):'';
+  const head=`<span class="ln">${esc(n.name||'—')}</span>${n.spouse?`<span class="ls">${esc(n.spouse)}</span>`:''}<span class="lm">${dead?(n.female?'رحمها الله':'رحمه الله')+' · ':''}${ai}${st}</span><button class="lgo" data-go="${n.id}">عرض</button>`;
+  if(!n.children.length)return `<div class="lr">${head}</div>`;
+  return `<details${top?' open':''}><summary>${head}<span class="lm">(${n.children.length})</span></summary>${n.children.map(c=>listHtml(c,false)).join('')}</details>`;}
+$('#bList').onclick=()=>{$('#lBody').innerHTML=listHtml(data.root,true);$('#lst').style.display='block';};
+$('#lX').onclick=()=>{$('#lst').style.display='none';};
+$('#lst').addEventListener('click',e=>{if(e.target.id==='lst'){$('#lst').style.display='none';return;}
+  const g=e.target.closest('[data-go]');if(g){$('#lst').style.display='none';goTo(g.getAttribute('data-go'));}});
 
 /* ---- toolbar ---- */
 function syncBtns(){$('#bCol').textContent=collapsedAll?'فتح كل الفروع':'طيّ الفروع';}
@@ -344,19 +386,40 @@ function fullName(n){const anc=pathTo(n.id).slice(0,3);let s=n.name||'—';
   if(anc.length)s+=(n.female?' بنت ':' بن ')+anc.map(a=>a.name).join(' بن ');
   const x=[];if(n.spouse)x.push('الزوجة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
   return s+(x.length?' ('+x.join('، ')+')':'');}
-function sugOpen(who,n){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';
+let sugPid=null,sugUnk=false;
+function sugSync(){const t=$('#sType').value;$('#sFill').style.display=(sugUnk&&t==='edit')?'block':'none';$('#fAdd').style.display=t==='add'?'':'none';$('#fEdit').style.display=t==='edit'?'':'none';
+  $('#lText').textContent=t==='del'?'اشرح الخطأ أو سبب الحذف *':t==='other'?'التفاصيل *':'ملاحظات إضافية (اختياري)';
+  $('#sText').placeholder=t==='del'?'مثال: هذا الاسم مكرر، أو معلومة خاطئة…':'أي تفصيل يساعدنا…';
+  $('#lWho').textContent=t==='add'?'الأب / الأم (الذي يُضاف له الابن)':'الشخص المعني (يُملأ تلقائيًا بنسبه الكامل لتمييزه)';}
+$('#sType').onchange=sugSync;
+function sugOpen(who,n){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';sugPid=n?n.id:null;
+  ['aName','aBirth','aMother','eVal','sText'].forEach(i=>$('#'+i).value='');
   const fi=n?studyInfo(n):null,F=$('#sFill');
-  if(F){if(fi&&fi.kind==='unknown'){F.style.display='block';const t=$('#sText');if(!t.value.trim())t.value='السنة الدراسية / العمل: ';}else{F.style.display='none';const t=$('#sText');if(t.value==='السنة الدراسية / العمل: ')t.value='';}}$('#sErr').textContent='';$('#sName').focus();
+  sugUnk=!!(fi&&fi.kind==='unknown');
+  if(sugUnk){$('#sType').value='edit';$('#eField').value='study';}
+  else{$('#sType').value=n?'add':'edit';$('#eField').value='name';}
+  sugSync();$('#sErr').textContent='';$('#sName').focus();
   $('#sErr').style.color='#c0392b';}
-function sugOk(){if(!$('#sName').value.trim()){$('#sErr').textContent='اكتب اسمك أولًا.';$('#sName').focus();return false;}
-  if(!$('#sText').value.trim()){$('#sErr').textContent='اكتب تفاصيل الاقتراح.';$('#sText').focus();return false;}return true;}
+function sugOk(){const e=$('#sErr'),t=$('#sType').value,v=id=>$('#'+id).value.trim();
+  const bad=(m,id)=>{e.textContent=m;$('#'+id).focus();return false;};
+  if(!v('sName'))return bad('اكتب اسمك أولًا.','sName');
+  if(t==='add'&&!v('aName'))return bad('اكتب اسم الابن أو البنت.','aName');
+  if(t==='edit'&&!v('eVal'))return bad('اكتب القيمة الصحيحة.','eVal');
+  if((t==='del'||t==='other')&&!v('sText'))return bad('اكتب التفاصيل.','sText');return true;}
+function sugBuild(){const t=$('#sType').value,v=id=>$('#'+id).value.trim(),note=v('sText');let body='',payload={t};
+  if(t==='add'){payload.name=v('aName').slice(0,100);payload.birth=v('aBirth').slice(0,30);payload.mother=v('aMother').slice(0,100);
+    body='إضافة ابن/بنت: '+payload.name+(payload.birth?'\nالميلاد: '+payload.birth:'')+(payload.mother?'\nالأم: '+payload.mother:'');}
+  else if(t==='edit'){const fl=$('#eField').selectedOptions[0].text;payload.f=$('#eField').value;payload.v=v('eVal').slice(0,200);body='تعديل «'+fl+'» إلى: '+payload.v;}
+  else body='';
+  if(note)body+=(body?'\n\nملاحظات: ':'')+note;
+  return {body:body.slice(0,2000),payload};}
 $('#bSug').onclick=()=>sugOpen(sel&&find(sel)?fullName(find(sel).n):'',sel&&find(sel)?find(sel).n:null);
 $('#sX').onclick=()=>{$('#sug').style.display='none';};
 $('#sug').addEventListener('click',e=>{if(e.target.id==='sug')$('#sug').style.display='none';});
 $('#sSend').onclick=async()=>{if(!sugOk())return;const b=$('#sSend'),e=$('#sErr'),g=id=>document.getElementById(id).value.trim();b.disabled=true;e.style.color='#6b7a99';e.textContent='جارٍ الإرسال…';
-  try{const r=await fetch(SB.url+'/rest/v1/suggestions',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({sender:g('sName').slice(0,80),kind:g('sType'),who:g('sWho').slice(0,300),body:g('sText').slice(0,2000)})});
+  try{const r=await fetch(SB.url+'/rest/v1/suggestions',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify((()=>{const sb=sugBuild();return {sender:g('sName').slice(0,80),kind:$('#sType').selectedOptions[0].text,who:g('sWho').slice(0,300),body:sb.body||'—',person_id:sugPid,payload:sb.payload};})())});
     if(!r.ok)throw new Error(r.status);
-    e.style.color='#2a7a3b';e.textContent='تم الإرسال، شكرًا لك! وصل الاقتراح إلى مسؤول الشجرة.';['sText','sWho'].forEach(i=>document.getElementById(i).value='');
+    e.style.color='#2a7a3b';e.textContent='تم الإرسال، شكرًا لك! وصل الاقتراح إلى مسؤول الشجرة.';['sText','sWho','aName','aBirth','aMother','eVal'].forEach(i=>document.getElementById(i).value='');
   }catch(x){e.style.color='#c0392b';e.textContent='تعذّر الإرسال، حاول لاحقًا.';}finally{b.disabled=false;}};
 
 
