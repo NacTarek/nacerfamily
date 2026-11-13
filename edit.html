@@ -88,6 +88,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 .nb{display:inline-block;min-width:20px;height:20px;line-height:20px;padding:0 6px;border-radius:10px;background:#e03131;color:#fff;font-size:12px;font-weight:700;text-align:center;margin-inline-start:4px}
 .sep{border:0;border-top:1px solid #d5ddec;margin:14px 0}
 #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1b2a4a;color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.25);display:none}#toast.on{display:block}#toast.ok{background:#2a7a3b}#toast.err{background:#c0392b}
+#bPub.dirty{background:#fff4e0;border-color:#e0a030;color:#8a5a00}#bPub.dirty::after{content:' ● تعديلات غير منشورة';font-size:12px}
 </style>
 </head>
 <body>
@@ -727,7 +728,7 @@ function publicData(){
 function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
   e.textContent=t;e.className='on '+(kind||'');clearTimeout(e._t);e._t=setTimeout(()=>{e.className='';},kind==='err'?6000:3500);}
 async function publishQuick(){const b=$('#bPub');b.disabled=true;toast('جارٍ النشر…');
-  try{await up('tree_public',{data:publicData()});toast('✓ نُشرت الشجرة — يراها الزوّار الآن','ok');}
+  try{await up('tree_public',{data:publicData()});markPublished();toast('✓ نُشرت الشجرة — يراها الزوّار الآن','ok');}
   catch(e){toast('تعذّر النشر. سجّل الدخول من جديد ثم أعد المحاولة.','err');}
   finally{b.disabled=false;}}
 $('#bPub').onclick=()=>{if(cloudOn){publishQuick();return;}$('#pubjson').value=JSON.stringify(publicData(),null,2);$('#pubmsg').textContent='';$('#pubm').classList.add('on');};
@@ -826,10 +827,19 @@ async function cloudInit(){
       data.savedAt=Date.now();try{await up('tree_private',{data:JSON.parse(exportJSON())});cstat('☁ رُفعت أول نسخة إلى السحابة');}catch(e){cstat('☁ تعذّر الرفع الأول',true);}}
   }catch(e){cstat('☁ تعذّر الاتصال بالسحابة',true);}
   inboxCount();setInterval(inboxCount,60000);
+  markPublished();
 }
+/* unpublished-changes guard */
+let pubSnap=null;
+const snapNow=()=>{try{return JSON.stringify(publicData());}catch(e){return null;}};
+function isDirty(){return cloudOn&&pubSnap!==null&&snapNow()!==pubSnap;}
+function markPublished(){pubSnap=snapNow();refreshDirty();}
+function refreshDirty(){const b=$('#bPub');if(b)b.classList.toggle('dirty',isDirty());}
+setInterval(refreshDirty,1500);
+window.addEventListener('beforeunload',e=>{if(isDirty()){e.preventDefault();e.returnValue='';return '';}});
 /* publish */
 async function publishNow(){const m=$('#pubmsg');m.style.color='#6b7a99';m.textContent='جارٍ النشر…';
-  try{await up('tree_public',{data:publicData()});m.style.color='#2a7a3b';m.textContent='✓ نُشرت الشجرة، وسيراها الزوّار فورًا '+hhmm();}catch(e){m.style.color='#a3361f';m.textContent='تعذّر النشر. سجّل الدخول من جديد ثم أعد المحاولة.';}}
+  try{await up('tree_public',{data:publicData()});m.style.color='#2a7a3b';m.textContent='✓ نُشرت الشجرة، وسيراها الزوّار فورًا '+hhmm();markPublished();}catch(e){m.style.color='#a3361f';m.textContent='تعذّر النشر. سجّل الدخول من جديد ثم أعد المحاولة.';}}
 /* suggestions inbox */
 const esc2=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function inboxCount(){try{const r=await sb('suggestions?status=eq.new&select=id');const n=r.length;$('#bInbox').innerHTML='📥 الاقتراحات'+(n?' <span class="nb">'+n+'</span>':'');}catch(e){}}
