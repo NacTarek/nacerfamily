@@ -722,8 +722,12 @@ $('#pdfClose').onclick=()=>$('#pdfm').classList.remove('on');
 $('#pdfOne').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('single');};
 $('#pdfTile').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('tile');};
 function publicData(){
-  const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
-  return {title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
+  const Y0=curYear(),pe=n=>{if(n.dead)return {};const st=stateAt(n,Y0);
+    if(st.kind==='none')return {};
+    if(st.kind==='study')return {es:'study',ec:CH_DOC.includes(st.chain[0])?'d':'m',ei:st.idx,ey:Y0};
+    return {es:st.kind};};
+  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)},pe(n));
+  return {lab:{m:CH_MAIN.map(k=>LBL[k]),d:CH_DOC.map(k=>LBL[k])},title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
   e.textContent=t;e.className='on '+(kind||'');clearTimeout(e._t);e._t=setTimeout(()=>{e.className='';},kind==='err'?6000:3500);}

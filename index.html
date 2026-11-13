@@ -102,6 +102,7 @@ svg.drag{cursor:grabbing}
   <label for="sType">نوع الاقتراح</label>
   <select id="sType"><option>إضافة شخص</option><option>تعديل معلومة</option><option>حذف / خطأ</option><option>أخرى</option></select>
   <label for="sWho">الشخص المعني (يُملأ تلقائيًا بنسبه الكامل لتمييزه)</label><input id="sWho">
+  <div id="sFill" style="display:none;margin:6px 0;padding:8px 10px;background:#fff4e0;border:1px dashed #e0a030;border-radius:10px;color:#8a5a00;font-size:13px">📚 خانة «السنة الدراسية / العمل» فارغة لهذا الشخص وتنتظر الملء. إن كنتم تعرفونها فاكتبوها أدناه (مثال: يدرس 2 ثانوي، أو يعمل في…).</div>
   <label for="sText">التفاصيل *</label><textarea id="sText" placeholder="مثال: أضيفوا محمد ابن الناصر، وُلد سنة 1995…"></textarea>
   <div class="err" id="sErr"></div>
   <div class="row"><button id="sSend" class="sugb">إرسال الاقتراح</button><button id="sX">إلغاء</button></div>
@@ -294,6 +295,7 @@ function showCard(){
   ${years.map(y=>`<div class="row">${y}</div>`).join('')}
   ${(()=>{const r=ageOf(n);return r&&r.age!=null?`<div class="row"><b>${r.dead?'العمر عند الوفاة':'العمر'}:</b> ${r.age} سنة</div>`:'';})()}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
+  ${(()=>{const i=studyInfo(n);if(!i)return '';if(i.kind==='study')return `<div class="row">📚 <b>يدرس:</b> ${esc(i.label)}</div>`;if(i.kind==='unknown')return `<div class="row" style="color:#8a97b3">📚 السنة الدراسية / العمل: <i>فارغة، بانتظار المعلومة</i></div>`;return '';})()}
   ${n.spouse?`<div class="sp2">الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(رحمها الله)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
   ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
   ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
@@ -301,7 +303,7 @@ function showCard(){
   c.style.display='block';
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
   const t=$('#cTog');if(t)t.onclick=()=>{const opening=collapsed.has(n.id);toggle(n.id);sel=null;draw();showCard();if(opening)fitBranch(n);};
-  $('#cSug').onclick=()=>sugOpen(fullName(n));
+  $('#cSug').onclick=()=>sugOpen(fullName(n),n);
   $('#cClose').onclick=()=>{sel=null;draw();showCard();};
 }
 function goTo(id){pathTo(id).forEach(a=>collapsed.delete(a.id));sel=id;draw();showCard();const f=find(id);if(f&&f.n._x!=null)focusOn(f.n,.9);}
@@ -333,15 +335,22 @@ window.addEventListener('resize',()=>applyView());
 /* ---- suggestions ---- */
 function sugText(){const g=id=>document.getElementById(id).value.trim();
   return `اقتراح لشجرة «${(data&&data.title)||''}»\nالمرسِل: ${g('sName')}\nالنوع: ${g('sType')}\n`+(g('sWho')?`الشخص: ${g('sWho')}\n`:'')+`التفاصيل:\n${g('sText')}`;}
+function curYear(){const d=new Date();return d.getMonth()>=8?d.getFullYear():d.getFullYear()-1;}
+function studyInfo(n){if(n.dead||n.death)return null;if(!n.es)return{kind:'unknown'};
+  if(n.es!=='study')return{kind:n.es};
+  const L=(data.lab&&data.lab[n.ec])||[],j=(n.ei||0)+(curYear()-(n.ey||curYear()));
+  return j>=0&&j<L.length?{kind:'study',label:L[j]}:{kind:'done'};}
 function fullName(n){const anc=pathTo(n.id).slice(0,3);let s=n.name||'—';
   if(anc.length)s+=(n.female?' بنت ':' بن ')+anc.map(a=>a.name).join(' بن ');
   const x=[];if(n.spouse)x.push('الزوجة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
   return s+(x.length?' ('+x.join('، ')+')':'');}
-function sugOpen(who){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';$('#sErr').textContent='';$('#sName').focus();
+function sugOpen(who,n){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';
+  const fi=n?studyInfo(n):null,F=$('#sFill');
+  if(F){if(fi&&fi.kind==='unknown'){F.style.display='block';const t=$('#sText');if(!t.value.trim())t.value='السنة الدراسية / العمل: ';}else{F.style.display='none';const t=$('#sText');if(t.value==='السنة الدراسية / العمل: ')t.value='';}}$('#sErr').textContent='';$('#sName').focus();
   $('#sErr').style.color='#c0392b';}
 function sugOk(){if(!$('#sName').value.trim()){$('#sErr').textContent='اكتب اسمك أولًا.';$('#sName').focus();return false;}
   if(!$('#sText').value.trim()){$('#sErr').textContent='اكتب تفاصيل الاقتراح.';$('#sText').focus();return false;}return true;}
-$('#bSug').onclick=()=>sugOpen(sel&&find(sel)?fullName(find(sel).n):'');
+$('#bSug').onclick=()=>sugOpen(sel&&find(sel)?fullName(find(sel).n):'',sel&&find(sel)?find(sel).n:null);
 $('#sX').onclick=()=>{$('#sug').style.display='none';};
 $('#sug').addEventListener('click',e=>{if(e.target.id==='sug')$('#sug').style.display='none';});
 $('#sSend').onclick=async()=>{if(!sugOk())return;const b=$('#sSend'),e=$('#sErr'),g=id=>document.getElementById(id).value.trim();b.disabled=true;e.style.color='#6b7a99';e.textContent='جارٍ الإرسال…';
