@@ -86,6 +86,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 .sg{border:1px solid #d5ddec;border-radius:10px;padding:10px 12px;background:#fff}.sg.new{border-color:#2b59c3;background:#f3f7ff}.sg.done{opacity:.6}
 .sgh{font-size:13px;color:#6b7a99}.sgh em{background:#2b59c3;color:#fff;border-radius:8px;padding:0 7px;margin-inline-start:6px;font-style:normal}.sgw{font-size:13px;margin-top:4px}.sgb{white-space:pre-wrap;margin-top:6px;font-size:14px}
 .nb{display:inline-block;min-width:20px;height:20px;line-height:20px;padding:0 6px;border-radius:10px;background:#e03131;color:#fff;font-size:12px;font-weight:700;text-align:center;margin-inline-start:4px}
+.sep{border:0;border-top:1px solid #d5ddec;margin:14px 0}
 </style>
 </head>
 <body>
@@ -231,7 +232,7 @@ function stateAt(n,Y){
   if(j>=ch.length)return {kind:'done'};
   return {kind:'study',lvl:ch[j],mile:MILE[ch[j]]||null,chain:ch,idx:j};
 }
-function allPeople(){const out=[];(function w(n,p){out.push({n,p});n.children.forEach(c=>w(c,n));})(data.root,null);return out;}
+function allPeople(){const out=[];(function w(n,p){if(!n.dead)out.push({n,p});n.children.forEach(c=>w(c,n));})(data.root,null);return out;}
 function milestonesAt(Y){const out=[];allPeople().forEach(({n})=>{const s=stateAt(n,Y);if(s.kind==='study'&&s.mile)out.push({n,mile:s.mile,lvl:s.lvl});});return out;}
 function passedOf(n,Y){
   const res={},log=(n.edu&&n.edu.log)||[];if(!log.length)return res;
@@ -267,6 +268,7 @@ function stateText(st){
   return {none:'لم يُحدَّد',stopped:'توقف عن الدراسة',working:'يعمل',done:'أنهى دراسته'}[st.kind];
 }
 function eduSection(n){
+  if(n.dead)return '';
   const st=stateAt(n,VY),ps=passedOf(n,VY),h=(n.edu&&n.edu.honored)||[];
   const pk=MILE_ORDER.filter(m=>ps[m]!==undefined);
   return `<div class="edu"><h2>الدراسة</h2>
@@ -277,6 +279,7 @@ function eduSection(n){
   <label>إنجازات / جوائز / نتائج</label><textarea id="e_achv" dir="auto" placeholder="مثال: BAC 2027 — معدل 16.5">${esc((n.edu&&n.edu.achv)||'')}</textarea></div>`;
 }
 function wireEdu(n){
+  if(n.dead||!$('#e_sel'))return;
   $('#e_sel').onchange=e=>{setEdu(n,e.target.value,VY);renderPanel();};
   $('#e_rep').onclick=()=>{const st=stateAt(n,VY);if(st.kind==='study'&&st.idx>0)setEdu(n,st.chain[st.idx-1],VY),renderPanel();};
   $('#e_fail').onclick=()=>{const st=stateAt(n,VY);if(st.kind!=='study')return;const e=ensureEdu(n);e.log=e.log.filter(x=>x.year!==VY+1);e.log.push({year:VY+1,st:'study',lvl:st.lvl});draw();save();renderPanel();};
@@ -381,12 +384,12 @@ function calcAge(bs,ds,dd){const b=parseDate(bs);if(!b)return null;
   return a>=0&&a<125?{age:a,dead}:null;}
 function ageOf(n){return calcAge(n.birth,n.death,n.dead);}
 function spAgeOf(n){return calcAge(n.spouseBirth,n.spouseDeath,n.spouseDead);}
-function ageBadge(g,x,y,n){const r=ageOf(n);if(!r||r.age==null)return;
+function ageBadge(g,x,y,n){const NW=158,NH=62,r=ageOf(n);if(!r||r.age==null)return;
   const cx=x+NW/2-4,cy=y-NH/2+2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
   el('circle',{cx,cy,r:17,fill:col,stroke:'#fff','stroke-width':2.5},b);
   el('path',{d:`M${cx-5},${cy-3} h10 v4.5 h-10z M${cx-5},${cy-3} q2.5,-3 5,0 q2.5,-3 5,0 M${cx},${cy-3} v-3.5`,fill:'none',stroke:'#fff','stroke-width':1.3,'stroke-linecap':'round','stroke-linejoin':'round'},b);
   el('circle',{cx,cy:cy-7.4,r:1,fill:'#ffd36b'},b);
-  const t=el('text',{x:cx,y:cy+12,'text-anchor':'middle','font-size':11.5,'font-weight':700,'font-family':FF,fill:'#fff'},b);t.textContent=r.age;}
+  const t=el('text',{x:cx,y:cy+12,'text-anchor':'middle','font-size':11.5,'font-weight':700,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff'},b);t.textContent=r.age;}
 
 function draw(){
   const svg=$('#svg');svg.innerHTML='';
@@ -528,16 +531,18 @@ function renderPanel(){
   const {n,parent}=find(sel);
   box.innerHTML=`<h2>الشخص</h2>
   <label>الاسم</label><input type="text" id="f_name" dir="auto">
-  <label>الزوج / الزوجة</label><input type="text" id="f_spouse" dir="auto">
-  <div id="spBox"><label>تاريخ ميلاد الزوج / الزوجة</label><input type="text" id="f_spouseBirth" dir="auto" placeholder="مثال: 1955 أو 1955-02-10">
-  <label class="chk"><input type="checkbox" id="f_spouseDead"> الزوج / الزوجة متوفى / متوفاة</label>
-  <div id="spDeathBox"><label>تاريخ الوفاة</label><input type="text" id="f_spouseDeath" dir="auto" placeholder="مثال: 2018"></div>
-  <div class="hint" id="f_spAge" style="margin:4px 0 8px"></div></div>
   <label>تاريخ الميلاد</label><input type="text" id="f_birth" dir="auto" placeholder="مثال: 1950 أو 1950-03-12 أو 12/03/1950">
   <label class="chk"><input type="checkbox" id="f_dead"> متوفى</label>
   <div id="deathBox"><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
   <div class="hint" id="f_age" style="margin:4px 0 8px"></div>
-  <label>المكان</label><input type="text" id="f_place" dir="auto">
+  <hr class="sep">
+  <label>الزوجة</label><input type="text" id="f_spouse" dir="auto">
+  <div id="spBox"><label>تاريخ ميلاد الزوجة</label><input type="text" id="f_spouseBirth" dir="auto" placeholder="مثال: 1955 أو 1955-02-10">
+  <label class="chk"><input type="checkbox" id="f_spouseDead"> الزوجة متوفاة</label>
+  <div id="spDeathBox"><label>تاريخ الوفاة</label><input type="text" id="f_spouseDeath" dir="auto" placeholder="مثال: 2018"></div>
+  <div class="hint" id="f_spAge" style="margin:4px 0 8px"></div></div>
+  <hr class="sep">
+  <label>مكان الإقامة (اختياري، مثل: سكيكدة)</label><input type="text" id="f_place" dir="auto">
   <label>ملاحظات (لا تظهر على الشجرة)</label><textarea id="f_note" dir="auto"></textarea>
   ${eduSection(n)}
   <label class="chk"><input type="checkbox" id="f_unsure"> قراءة غير مؤكدة (إطار متقطع + ؟)</label>
@@ -561,7 +566,7 @@ function renderPanel(){
   $('#f_spouseDead').checked=!!n.spouseDead;spVis();spTxt();
   $('#f_spouseDead').addEventListener('change',e=>{n.spouseDead=e.target.checked;if(!n.spouseDead){n.spouseDeath='';$('#f_spouseDeath').value='';}spVis();draw();save();spTxt();});
   $('#f_dead').checked=!!n.dead;deathVis();ageTxt();
-  $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();});
+  $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();renderPanel();renderNotice&&renderNotice();});
   $('#f_unsure').checked=n.unsure;$('#f_unsure').addEventListener('change',e=>{n.unsure=e.target.checked;draw();save();});
   wireEdu(n);
   const stk=$('#aStack');if(stk)stk.onclick=()=>{n.stack=!stacked(n);draw();renderPanel();save();};

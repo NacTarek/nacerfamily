@@ -153,12 +153,12 @@ function calcAge(bs,ds,dd){const b=parseDate(bs);if(!b)return null;
   return a>=0&&a<125?{age:a,dead}:null;}
 function ageOf(n){return calcAge(n.birth,n.death,n.dead);}
 function spAgeOf(n){return calcAge(n.spouseBirth,n.spouseDeath,n.spouseDead);}
-function ageBadge(g,x,y,n){const r=ageOf(n);if(!r||r.age==null)return;
+function ageBadge(g,x,y,n){const NW=158,NH=62,r=ageOf(n);if(!r||r.age==null)return;
   const cx=x+NW/2-4,cy=y-NH/2+2,col=r.dead?'#8a97b3':'#2b59c3',b=el('g',{class:'age'},g);
   el('circle',{cx,cy,r:17,fill:col,stroke:'#fff','stroke-width':2.5},b);
   el('path',{d:`M${cx-5},${cy-3} h10 v4.5 h-10z M${cx-5},${cy-3} q2.5,-3 5,0 q2.5,-3 5,0 M${cx},${cy-3} v-3.5`,fill:'none',stroke:'#fff','stroke-width':1.3,'stroke-linecap':'round','stroke-linejoin':'round'},b);
   el('circle',{cx,cy:cy-7.4,r:1,fill:'#ffd36b'},b);
-  const t=el('text',{x:cx,y:cy+12,'text-anchor':'middle','font-size':11.5,'font-weight':700,'font-family':FF,fill:'#fff'},b);t.textContent=r.age;}
+  const t=el('text',{x:cx,y:cy+12,'text-anchor':'middle','font-size':11.5,'font-weight':700,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff'},b);t.textContent=r.age;}
 
 function draw(){
   const svg=$('#svg');svg.innerHTML='';
@@ -285,7 +285,7 @@ function showCard(){
   ${years.map(y=>`<div class="row">${y}</div>`).join('')}
   ${(()=>{const r=ageOf(n);return r&&r.age!=null?`<div class="row"><b>${r.dead?'العمر عند الوفاة':'العمر'}:</b> ${r.age} سنة</div>`:'';})()}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
-  ${n.spouse?`<div class="sp2">الزوج/الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(متوفى/ة)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
+  ${n.spouse?`<div class="sp2">الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(متوفاة)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
   ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
   ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
   <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button><button id="cClose">إغلاق</button></div>`;
@@ -326,7 +326,7 @@ function sugText(){const g=id=>document.getElementById(id).value.trim();
   return `اقتراح لشجرة «${(data&&data.title)||''}»\nالمرسِل: ${g('sName')}\nالنوع: ${g('sType')}\n`+(g('sWho')?`الشخص: ${g('sWho')}\n`:'')+`التفاصيل:\n${g('sText')}`;}
 function fullName(n){const anc=pathTo(n.id).slice(0,3);let s=n.name||'—';
   if(anc.length)s+='، من أبناء '+anc.map(a=>a.name).join('، من أبناء ');
-  const x=[];if(n.spouse)x.push('الزوج/ة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
+  const x=[];if(n.spouse)x.push('الزوجة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
   return s+(x.length?' ('+x.join('، ')+')':'');}
 function sugOpen(who){const b=$('#sug');b.style.display='flex';$('#sWho').value=who||'';$('#sErr').textContent='';$('#sName').focus();
   $('#sErr').style.color='#c0392b';}
