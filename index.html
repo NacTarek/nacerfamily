@@ -209,13 +209,13 @@ function draw(){
   shown.forEach(n=>{
     const x=n._x,y=n._y,g=el('g',{class:'node'+(n.id===sel?' sel':''),'data-id':n.id},nodesG);
     el('rect',{x:x-NW/2+2,y:y-NH/2+3,width:NW,height:NH,rx:14,fill:'#2b59c3',opacity:.10},g);
-    el('rect',{class:'main',x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:14,fill:'url(#scroll)',stroke:'#d5ddec','stroke-width':1.2},g);
+    el('rect',{class:'main',x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:14,fill:(n.dead||n.death)?'#e9edf4':'url(#scroll)',stroke:'#d5ddec','stroke-width':1.2},g);
     el('rect',{class:'ring',x:x-NW/2-10,y:y-NH/2-4,width:NW+20,height:NH+8,rx:18},g);
-    const years=[n.birth,n.death].filter(Boolean).join(' – '),meta=[years,n.place].filter(Boolean).join(' · ');
+    const dua=(n.dead||n.death)?(n.female?'رحمها الله':'رحمه الله'):'';const years=[n.birth,n.death].filter(Boolean).join(' – '),meta=[dua,years,n.place].filter(Boolean).join(' · ');
     const nl=(n.spouse?1:0)+(meta?1:0);
     const t1=el('text',{x,y:nl===0?y+7:(nl===1?y-5:y-11),'text-anchor':'middle','font-size':17,'font-weight':700,'font-family':FF,fill:'#1b2a4a'},g);t1.textContent=n.name||'—';fit.push([t1,17,NW-22]);
     let ly=nl===1?y+16:y+6;
-    if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse;fit.push([t2,14.5,NW-22]);ly+=15;}
+    if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'');fit.push([t2,14.5,NW-22]);ly+=15;}
     if(meta){const t3=el('text',{x,y:nl===1?ly:y+22,'text-anchor':'middle','font-size':11,'font-weight':500,'font-family':FF,fill:'#6b7a99'},g);t3.textContent=meta;fit.push([t3,11,NW-22]);}
     ageBadge(g,x,y,n);
     if(collapsed.has(n.id)&&n.children.length){
@@ -280,11 +280,11 @@ function showCard(){
   const c=$('#card');if(!sel){c.style.display='none';return;}
   const f=find(sel);if(!f){c.style.display='none';return;}
   const n=f.n,p=f.p,years=[n.birth&&('الميلاد: '+esc(n.birth)),n.death&&('الوفاة: '+esc(n.death))].filter(Boolean);
-  c.innerHTML=`<h2>${esc(n.name||'—')}${n.dead||n.death?' <small style="font-size:13px;color:#8a97b3;font-weight:500">(متوفى)</small>':''}</h2>
+  c.innerHTML=`<h2>${esc(n.name||'—')}${n.dead||n.death?' <small style="font-size:13px;color:#8a97b3;font-weight:500">('+(n.female?'رحمها الله':'رحمه الله')+')</small>':''}</h2>
   ${years.map(y=>`<div class="row">${y}</div>`).join('')}
   ${(()=>{const r=ageOf(n);return r&&r.age!=null?`<div class="row"><b>${r.dead?'العمر عند الوفاة':'العمر'}:</b> ${r.age} سنة</div>`:'';})()}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
-  ${n.spouse?`<div class="sp2">الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(متوفاة)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
+  ${n.spouse?`<div class="sp2">الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(رحمها الله)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
   ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
   ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
   <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button><button id="cClose">إغلاق</button></div>`;

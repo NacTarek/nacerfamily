@@ -87,6 +87,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 .sgh{font-size:13px;color:#6b7a99}.sgh em{background:#2b59c3;color:#fff;border-radius:8px;padding:0 7px;margin-inline-start:6px;font-style:normal}.sgw{font-size:13px;margin-top:4px}.sgb{white-space:pre-wrap;margin-top:6px;font-size:14px}
 .nb{display:inline-block;min-width:20px;height:20px;line-height:20px;padding:0 6px;border-radius:10px;background:#e03131;color:#fff;font-size:12px;font-weight:700;text-align:center;margin-inline-start:4px}
 .sep{border:0;border-top:1px solid #d5ddec;margin:14px 0}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1b2a4a;color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.25);display:none}#toast.on{display:block}#toast.ok{background:#2a7a3b}#toast.err{background:#c0392b}
 </style>
 </head>
 <body>
@@ -466,16 +467,16 @@ function draw(){
     const x=X(n),y=Y(n);n._x=x;n._y=y;const g=el('g',{class:'node'+(n.id===sel?' sel':''),'data-id':n.id},nodesG);
     const sc=n.unsure?'#d08a2e':'#d5ddec';
     el('rect',{x:x-NW/2+2,y:y-NH/2+3,width:NW,height:NH,rx:14,fill:'#2b59c3',opacity:.10},g);
-    el('rect',{class:'main',x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:14,fill:'url(#scroll)',stroke:sc,'stroke-width':n.unsure?1.6:1,'stroke-dasharray':n.unsure?'4 2.5':'none'},g);
+    el('rect',{class:'main',x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:14,fill:(n.dead||n.death)?'#e9edf4':'url(#scroll)',stroke:sc,'stroke-width':n.unsure?1.6:1,'stroke-dasharray':n.unsure?'4 2.5':'none'},g);
     el('rect',{class:'ring',x:x-NW/2-10,y:y-NH/2-4,width:NW+20,height:NH+8,rx:18},g);
-    const years=[n.birth,n.death].filter(Boolean).join(' – ');
-    const meta=[years,n.place].filter(Boolean).join(' · ');
+    const dua=(n.dead||n.death)?(n.female?'رحمها الله':'رحمه الله'):'';const years=[n.birth,n.death].filter(Boolean).join(' – ');
+    const meta=[dua,years,n.place].filter(Boolean).join(' · ');
     const nl=(n.spouse?1:0)+(meta?1:0);
     const FF="Alexandria,Tahoma,sans-serif";
     const t1=el('text',{x,y:nl===0?y+7:(nl===1?y-5:y-11),'text-anchor':'middle','font-size':17,'font-weight':700,'font-family':FF,fill:'#1b2a4a'},g);t1.textContent=n.name||'—';
     fit.push([t1,17,NW-22]);
     let ly=nl===1?y+16:y+6;
-    if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse;fit.push([t2,14.5,NW-22]);ly+=15;}
+    if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'');fit.push([t2,14.5,NW-22]);ly+=15;}
     if(meta){const t3=el('text',{x,y:nl===1?ly:y+22,'text-anchor':'middle','font-size':11,'font-weight':500,'font-family':FF,fill:'#6b7a99'},g);t3.textContent=meta;fit.push([t3,11,NW-22]);}
     ageBadge(g,x,y,n);
     {const st=stateAt(n,VY);let bt='',bc='';
@@ -532,7 +533,7 @@ function renderPanel(){
   <label>الاسم</label><input type="text" id="f_name" dir="auto">
   <label>تاريخ الميلاد</label><input type="text" id="f_birth" dir="auto" placeholder="مثال: 1950 أو 1950-03-12 أو 12/03/1950">
   <label class="chk"><input type="checkbox" id="f_dead"> متوفى</label>
-  <div id="deathBox"><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
+  <div id="deathBox"><label class="chk"><input type="checkbox" id="f_female"> أنثى (تظهر «رحمها الله»)</label><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
   <div class="hint" id="f_age" style="margin:4px 0 8px"></div>
   <hr class="sep">
   <label>الزوجة</label><input type="text" id="f_spouse" dir="auto">
@@ -565,6 +566,7 @@ function renderPanel(){
   $('#f_spouseDead').checked=!!n.spouseDead;spVis();spTxt();
   $('#f_spouseDead').addEventListener('change',e=>{n.spouseDead=e.target.checked;if(!n.spouseDead){n.spouseDeath='';$('#f_spouseDeath').value='';}spVis();draw();save();spTxt();});
   $('#f_dead').checked=!!n.dead;deathVis();ageTxt();
+  $('#f_female').checked=!!n.female;$('#f_female').addEventListener('change',e=>{n.female=e.target.checked;draw();save();});
   $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();renderPanel();renderNotice&&renderNotice();});
   $('#f_unsure').checked=n.unsure;$('#f_unsure').addEventListener('change',e=>{n.unsure=e.target.checked;draw();save();});
   wireEdu(n);
@@ -721,10 +723,16 @@ $('#pdfClose').onclick=()=>$('#pdfm').classList.remove('on');
 $('#pdfOne').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('single');};
 $('#pdfTile').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('tile');};
 function publicData(){
-  const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
+  const strip=n=>({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)});
   return {title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
-$('#bPub').onclick=()=>{$('#pubjson').value=JSON.stringify(publicData(),null,2);$('#pubmsg').textContent='';$('#pubm').classList.add('on');};
+function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
+  e.textContent=t;e.className='on '+(kind||'');clearTimeout(e._t);e._t=setTimeout(()=>{e.className='';},kind==='err'?6000:3500);}
+async function publishQuick(){const b=$('#bPub');b.disabled=true;toast('جارٍ النشر…');
+  try{await up('tree_public',{data:publicData()});toast('✓ نُشرت الشجرة — يراها الزوّار الآن','ok');}
+  catch(e){toast('تعذّر النشر. سجّل الدخول من جديد ثم أعد المحاولة.','err');}
+  finally{b.disabled=false;}}
+$('#bPub').onclick=()=>{if(cloudOn){publishQuick();return;}$('#pubjson').value=JSON.stringify(publicData(),null,2);$('#pubmsg').textContent='';$('#pubm').classList.add('on');};
 $('#pubClose').onclick=()=>$('#pubm').classList.remove('on');
 $('#pubCopy').onclick=async()=>{const t=$('#pubjson');t.select();try{await navigator.clipboard.writeText(t.value);$('#pubmsg').textContent='تم النسخ.';}catch(e){$('#pubmsg').textContent='النص محدد — اضغط Ctrl+C للنسخ.';}};
 $('#pubDl').onclick=()=>{try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('#pubjson').value],{type:'application/json'}));a.download='tree.json';document.body.appendChild(a);a.click();a.remove();$('#pubmsg').textContent='تم تنزيل tree.json (إن لم يبدأ التنزيل استخدم «نسخ النص»).';}catch(e){$('#pubmsg').textContent='تعذّر التنزيل — استخدم «نسخ النص».';}};
