@@ -213,14 +213,14 @@ function count(n){return 1+n.children.reduce((a,c)=>a+count(c),0);}
 /* ---- study tracking (levels advance automatically each academic year) ---- */
 const CH_MAIN=['KG','PR','AP1','AP2','AP3','AP4','AP5','AM1','AM2','AM3','AM4','AS1','AS2','AS3','L1','L2','L3','M1','M2'];
 const CH_DOC=['D1','D2','D3'];
-const CH_MED=['ME1','ME2','ME3','ME4','ME5','ME6','ME7'],CH_PH=['PH1','PH2','PH3','PH4','PH5','PH6'];
-const chainOf=l=>CH_DOC.includes(l)?CH_DOC:CH_MED.includes(l)?CH_MED:CH_PH.includes(l)?CH_PH:CH_MAIN;
-const chainKey=c=>c===CH_DOC?'d':c===CH_MED?'e':c===CH_PH?'p':'m';
-const LBL={KG:'روضة',PR:'تحضيري',ME1:'طب 1',ME2:'طب 2',ME3:'طب 3',ME4:'طب 4',ME5:'طب 5',ME6:'طب 6',ME7:'طب 7 (سنة التربص)',PH1:'صيدلة 1',PH2:'صيدلة 2',PH3:'صيدلة 3',PH4:'صيدلة 4',PH5:'صيدلة 5',PH6:'صيدلة 6 (التربص)',AP1:'1 ابتدائي',AP2:'2 ابتدائي',AP3:'3 ابتدائي',AP4:'4 ابتدائي',AP5:'5 ابتدائي',AM1:'1 متوسط',AM2:'2 متوسط',AM3:'3 متوسط',AM4:'4 متوسط',AS1:'1 ثانوي',AS2:'2 ثانوي',AS3:'3 ثانوي',L1:'ليسانس 1',L2:'ليسانس 2',L3:'ليسانس 3',M1:'ماستر 1',M2:'ماستر 2',D1:'دكتوراه 1',D2:'دكتوراه 2',D3:'دكتوراه 3'};
-const MILE={AM4:'BEM',AS3:'BAC',L3:'LIC',M2:'MAS',D3:'DOC',ME7:'MD',PH6:'PD'};
-const MILE_FULL={BEM:'شهادة التعليم المتوسط (BEM)',BAC:'البكالوريا (BAC)',LIC:'الليسانس',MAS:'الماستر',DOC:'الدكتوراه',MD:'دكتور في الطب',PD:'دكتور في الصيدلة'};
-const MILE_SHORT={BEM:'BEM',BAC:'BAC',LIC:'ليسانس',MAS:'ماستر',DOC:'دكتوراه',MD:'طب',PD:'صيدلة'};
-const MILE_ORDER=['BEM','BAC','LIC','MAS','DOC','MD','PD'];
+const CH_MED=['ME1','ME2','ME3','ME4','ME5','ME6','ME7'],CH_PH=['PH1','PH2','PH3','PH4','PH5','PH6'],CH_SP=['SP1','SP2','SP3','SP4','SP5'],CH_PM=['PM1','PM2','PM3'];
+const chainOf=l=>CH_DOC.includes(l)?CH_DOC:CH_MED.includes(l)?CH_MED:CH_PH.includes(l)?CH_PH:CH_SP.includes(l)?CH_SP:CH_PM.includes(l)?CH_PM:CH_MAIN;
+const chainKey=c=>c===CH_DOC?'d':c===CH_MED?'e':c===CH_PH?'p':c===CH_SP?'s':c===CH_PM?'q':'m';
+const LBL={PM1:'شبه طبي 1',PM2:'شبه طبي 2',PM3:'شبه طبي 3',SP1:'تخصص طبي 1',SP2:'تخصص طبي 2',SP3:'تخصص طبي 3',SP4:'تخصص طبي 4',SP5:'تخصص طبي 5',KG:'روضة',PR:'تحضيري',ME1:'طب 1',ME2:'طب 2',ME3:'طب 3',ME4:'طب 4',ME5:'طب 5',ME6:'طب 6',ME7:'طب 7 (سنة التربص)',PH1:'صيدلة 1',PH2:'صيدلة 2',PH3:'صيدلة 3',PH4:'صيدلة 4',PH5:'صيدلة 5',PH6:'صيدلة 6 (التربص)',AP1:'1 ابتدائي',AP2:'2 ابتدائي',AP3:'3 ابتدائي',AP4:'4 ابتدائي',AP5:'5 ابتدائي',AM1:'1 متوسط',AM2:'2 متوسط',AM3:'3 متوسط',AM4:'4 متوسط',AS1:'1 ثانوي',AS2:'2 ثانوي',AS3:'3 ثانوي',L1:'ليسانس 1',L2:'ليسانس 2',L3:'ليسانس 3',M1:'ماستر 1',M2:'ماستر 2',D1:'دكتوراه 1',D2:'دكتوراه 2',D3:'دكتوراه 3'};
+const MILE={AM4:'BEM',AS3:'BAC',L3:'LIC',M2:'MAS',D3:'DOC',ME7:'MD',PH6:'PD',SP5:'SP',PM3:'PM'};
+const MILE_FULL={BEM:'شهادة التعليم المتوسط (BEM)',BAC:'البكالوريا (BAC)',LIC:'الليسانس',MAS:'الماستر',DOC:'الدكتوراه',MD:'دكتور في الطب',PD:'دكتور في الصيدلة',SP:'التخصص الطبي',PM:'شهادة شبه طبي'};
+const MILE_SHORT={BEM:'BEM',BAC:'BAC',LIC:'ليسانس',MAS:'ماستر',DOC:'دكتوراه',MD:'طب',PD:'صيدلة',SP:'تخصص',PM:'شبه طبي'};
+const MILE_ORDER=['BEM','BAC','LIC','MAS','DOC','MD','PD','SP','PM'];
 function curYear(){const d=new Date();return d.getMonth()>=8?d.getFullYear():d.getFullYear()-1;}
 let VY=curYear();
 const yl=y=>'\u2066'+y+'-'+(y+1)+'\u2069';
@@ -266,7 +266,7 @@ function stateValue(st){return st.kind==='study'?st.lvl:(st.kind==='none'?'':st.
 function eduOptions(val){
   const o=(v,t)=>`<option value="${v}"${v===val?' selected':''}>${t}</option>`;
   const g=(t,arr)=>`<optgroup label="${t}">${arr.map(k=>o(k,(MILE[k]?'★ ':'')+LBL[k]+(k==='AM4'?' (BEM)':k==='AS3'?' (BAC)':''))).join('')}</optgroup>`;
-  return o('','— غير محدد —')+'<optgroup label="قبل المدرسة">'+o('notyet','لا يدرس بعد')+CH_MAIN.slice(0,2).map(k=>o(k,LBL[k])).join('')+'</optgroup>'+g('ابتدائي',CH_MAIN.slice(2,7))+g('متوسط',CH_MAIN.slice(7,11))+g('ثانوي',CH_MAIN.slice(11,14))+g('ليسانس',CH_MAIN.slice(14,17))+g('ماستر',CH_MAIN.slice(17))+g('دكتوراه',CH_DOC)+g('الطب (7 سنوات)',CH_MED)+g('الصيدلة (6 سنوات)',CH_PH)+'<optgroup label="غير دارس">'+o('stopped','توقف عن الدراسة')+o('working','يعمل')+o('done','أنهى دراسته')+'</optgroup>';
+  return o('','— غير محدد —')+'<optgroup label="قبل المدرسة">'+o('notyet','لا يدرس بعد')+CH_MAIN.slice(0,2).map(k=>o(k,LBL[k])).join('')+'</optgroup>'+g('ابتدائي',CH_MAIN.slice(2,7))+g('متوسط',CH_MAIN.slice(7,11))+g('ثانوي',CH_MAIN.slice(11,14))+g('ليسانس',CH_MAIN.slice(14,17))+g('ماستر',CH_MAIN.slice(17))+g('دكتوراه',CH_DOC)+g('الطب (7 سنوات)',CH_MED)+g('الصيدلة (6 سنوات)',CH_PH)+g('التخصص الطبي (5 سنوات)',CH_SP)+g('شبه طبي: قابلة، تمريض… (3 سنوات)',CH_PM)+'<optgroup label="غير دارس">'+o('stopped','توقف عن الدراسة')+o('working','يعمل')+o('done','أنهى دراسته')+'</optgroup>';
 }
 function stateText(st){
   if(st.kind==='study')return LBL[st.lvl]+(st.mile?' — ★ سنة '+MILE_FULL[st.mile]:'');
@@ -282,6 +282,7 @@ function eduSection(n){
   <label>المستوى في ${yl(VY)} (يتقدّم تلقائياً كل سنة)</label><select id="e_sel">${eduOptions(stateValue(st))}</select>
   <div class="row"><button id="e_rep" ${st.kind==='study'&&st.idx>0?'':'disabled'} title="يبقى في مستوى السنة الماضية">أعاد السنة</button><button id="e_fail" ${st.kind==='study'?'':'disabled'} title="يعيد هذا المستوى في السنة القادمة">لم ينجح هذه السنة</button></div>
   ${pk.length?'<div style="margin-top:8px">'+pk.map(m=>`<label class="chk"><input type="checkbox" data-m="${m}" ${h.includes(m)?'checked':''}> تم تكريمه — ${MILE_FULL[m]} (${yl(ps[m])})</label>`).join('')+'</div>':''}
+  ${(st.kind==='study'&&!CH_MAIN.slice(0,14).includes(st.lvl))||st.kind==='done'?`<label>التخصص الجامعي (اختياري)</label><input type="text" id="e_major" dir="auto" placeholder="مثال: الإعلام الآلي، الحقوق، قابلة، تمريض" value="${esc((n.edu&&n.edu.major)||'')}"><label>الجامعة / المعهد (اختياري)</label><input type="text" id="e_uni" dir="auto" placeholder="مثال: جامعة سكيكدة، جامعة قسنطينة 3" value="${esc((n.edu&&n.edu.uni)||'')}">`:''}
   <label>إنجازات / جوائز / نتائج</label><textarea id="e_achv" dir="auto" placeholder="مثال: BAC 2027 — معدل 16.5">${esc((n.edu&&n.edu.achv)||'')}</textarea></div>`;
 }
 function wireEdu(n){
@@ -291,6 +292,8 @@ function wireEdu(n){
   $('#e_rep').onclick=()=>{const st=stateAt(n,VY);if(st.kind==='study'&&st.idx>0)setEdu(n,st.chain[st.idx-1],VY),renderPanel();};
   $('#e_fail').onclick=()=>{const st=stateAt(n,VY);if(st.kind!=='study')return;const e=ensureEdu(n);e.log=e.log.filter(x=>x.year!==VY+1);e.log.push({year:VY+1,st:'study',lvl:st.lvl});draw();save();renderPanel();};
   $('#e_achv').oninput=e=>{ensureEdu(n).achv=e.target.value;save();};
+  const mj=$('#e_major');if(mj)mj.oninput=e=>{ensureEdu(n).major=e.target.value;save();};
+  const un=$('#e_uni');if(un)un.oninput=e=>{ensureEdu(n).uni=e.target.value;save();};
   document.querySelectorAll('#person input[data-m]').forEach(c=>c.onchange=()=>{const e=ensureEdu(n),m=c.getAttribute('data-m');e.honored=e.honored.filter(x=>x!==m);if(c.checked)e.honored.push(m);save();renderNotice();});
 }
 /* banner shown on open */
@@ -731,10 +734,10 @@ $('#pdfTile').onclick=()=>{$('#pdfm').classList.remove('on');exportPDF('tile');}
 function publicData(){
   const Y0=curYear(),pe=n=>{if(n.dead)return {};const st=stateAt(n,Y0);
     if(st.kind==='none')return {};
-    if(st.kind==='study')return {es:'study',ec:chainKey(st.chain),ei:st.idx,ey:Y0};
+    if(st.kind==='study')return Object.assign({es:'study',ec:chainKey(st.chain),ei:st.idx,ey:Y0},((n.edu&&n.edu.major)||'').trim()?{em:n.edu.major.trim().slice(0,80)}:{},((n.edu&&n.edu.uni)||'').trim()?{eu:n.edu.uni.trim().slice(0,80)}:{});
     return {es:st.kind};};
   const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)},pe(n));
-  return {lab:{m:CH_MAIN.map(k=>LBL[k]),d:CH_DOC.map(k=>LBL[k]),e:CH_MED.map(k=>LBL[k]),p:CH_PH.map(k=>LBL[k])},title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
+  return {lab:{m:CH_MAIN.map(k=>LBL[k]),d:CH_DOC.map(k=>LBL[k]),e:CH_MED.map(k=>LBL[k]),p:CH_PH.map(k=>LBL[k]),s:CH_SP.map(k=>LBL[k]),q:CH_PM.map(k=>LBL[k])},title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
   e.textContent=t;e.className='on '+(kind||'');clearTimeout(e._t);e._t=setTimeout(()=>{e.className='';},kind==='err'?6000:3500);}
@@ -858,7 +861,7 @@ async function inboxOpen(){
   $('#inboxM').classList.add('on');const L=$('#inboxList');L.textContent='جارٍ التحميل…';
   try{const rows=await sb('suggestions?select=*&order=created_at.desc&limit=200');
     if(!rows.length){L.innerHTML='<div class="hint">لا توجد اقتراحات بعد.</div>';return;}
-    L.innerHTML=rows.map(r=>`<div class="sg ${r.status}" data-id="${r.id}"><div class="sgh"><b>${esc2(r.sender)}</b> · ${esc2(r.kind)} · <span>${new Date(r.created_at).toLocaleString('ar',{dateStyle:'medium',timeStyle:'short'})}</span>${r.status==='new'?'<em>جديد</em>':''}</div>${r.who?`<div class="sgw">الشخص: ${esc2(r.who)}</div>`:''}<div class="sgb">${esc2(r.body)}</div><div class="row" style="margin-top:6px">${r.person_id?'<button data-a="open">فتح الشخص</button>':''}${r.person_id&&r.payload&&((r.payload.t==='add')||(r.payload.t==='edit'&&SUG_FIELDS[r.payload.f]))?'<button class="primary" data-a="apply">'+(r.payload.t==='add'?'إضافة هذا الشخص':'تطبيق التعديل')+'</button>':''}<button data-a="done">تمّ</button><button data-a="new">إرجاع كجديد</button><button class="danger" data-a="del">حذف</button></div></div>`).join('');
+    L.innerHTML=rows.map(r=>`<div class="sg ${r.status}" data-id="${r.id}"><div class="sgh"><b>${esc2(r.sender)}</b> · ${esc2(r.kind)} · <span>${new Date(r.created_at).toLocaleString('ar',{dateStyle:'medium',timeStyle:'short'})}</span>${r.status==='new'?'<em>جديد</em>':''}</div>${r.who?`<div class="sgw">الشخص: ${esc2(r.who)}</div>`:''}<div class="sgb">${esc2(r.body)}</div><div class="row" style="margin-top:6px">${r.person_id?'<button data-a="open">فتح الشخص</button>':''}${r.person_id&&r.payload&&((r.payload.t==='add')||(r.payload.t==='profile')||(r.payload.t==='edit'&&SUG_FIELDS[r.payload.f]))?'<button class="primary" data-a="apply">'+(r.payload.t==='add'?'إضافة هذا الشخص':r.payload.t==='profile'?'تطبيق كل المعلومات':'تطبيق التعديل')+'</button>':''}<button data-a="done">تمّ</button><button data-a="new">إرجاع كجديد</button><button class="danger" data-a="del">حذف</button></div></div>`).join('');
     L.querySelectorAll('.sg button').forEach(b=>b.onclick=async()=>{const id=b.closest('.sg').dataset.id,a=b.dataset.a;
       try{if(a==='open'||a==='apply'){const row=rows.find(x=>x.id===id),res=applySug(row,a==='apply');if(!res)return;if(res==='applied'){await sb('suggestions?id=eq.'+id,{method:'PATCH',body:{status:'done'}});inboxCount();toast('✓ طُبّق الاقتراح (يمكنك التراجع بـ ↶)','ok');}$('#inboxM').classList.remove('on');return;}
         if(a==='del'){if(!confirm('حذف هذا الاقتراح؟'))return;await sb('suggestions?id=eq.'+id,{method:'DELETE'});}else await sb('suggestions?id=eq.'+id,{method:'PATCH',body:{status:a}});await inboxOpen();inboxCount();}catch(e){alert('تعذّر التنفيذ');}});
@@ -894,6 +897,13 @@ function applySug(r,doApply){
   const p=r.payload||{};let m=f.n,done=false;
   if(doApply&&p.t==='add'){const c=P((p.name||'شخص جديد').trim(),0,{birth:p.birth||'',note:p.mother?('الأم: '+p.mother):''});f.n.children.push(c);sortKids(f.n);m=c;done=true;}
   else if(doApply&&p.t==='edit'&&SUG_FIELDS[p.f]){f.n[p.f]=String(p.v||'').trim();if(p.f==='death'&&f.n.death)f.n.dead=true;if(p.f==='birth'&&f.parent)sortKids(f.parent);done=true;}
+  if(doApply&&p.t==='profile'){const me=p.me||{},nn=f.n,key=x=>String(x||'').replace(/\s+/g,' ').trim();
+    ['birth','spouse','spouseBirth','place'].forEach(k=>{if(me[k])nn[k]=String(me[k]).trim();});
+    if(me.study)nn.note=(nn.note?nn.note+'\n':'')+'الدراسة/العمل (من الاقتراح): '+me.study;
+    const add=(par,list)=>{let c=0;(list||[]).forEach(x=>{if(!x.n||par.children.some(k=>key(k.name)===key(x.n)))return;par.children.push(P(key(x.n),0,{birth:x.b||''}));c++;});sortKids(par);return c;};
+    let a1=add(nn,p.kids),a2=0;if(f.parent)a2=add(f.parent,p.sib);else if((p.sib||[]).length)alert('هذا الشخص هو الجذر، فلا يمكن إضافة إخوة له.');
+    if(me.birth&&f.parent)sortKids(f.parent);
+    done=true;toast('طُبّق: '+a1+' أبناء و '+a2+' إخوة أُضيفوا','ok');}
   sel=m.id;draw();renderPanel();if(done)save();setTimeout(()=>centerNode(m.id),60);return done?'applied':'opened';}
 /* login gate */
 async function ownerCheck(){

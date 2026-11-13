@@ -85,6 +85,16 @@ svg.drag{cursor:grabbing}
 #rRes .me{margin-top:12px;font-size:13px}#rRes .me button{margin-inline-start:6px}
 #rPick input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:1.5px solid #c9d6ef;border-radius:12px;margin-top:6px}
 #rList div{padding:9px 10px;border-bottom:1px solid #e3e8f2;cursor:pointer}#rList div:hover{background:#eaf1ff}#rList small{display:block;color:#6b7a99;font-size:12px}
+#prof{position:fixed;inset:0;z-index:32;background:rgba(15,25,50,.45);display:none}
+#prof .pbox{max-width:540px;margin:16px auto;max-height:calc(100% - 32px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+#prof .lh{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #e3e8f2;flex-wrap:wrap}#prof .lh b{font-size:17px}#prof .lsub{flex:1;font-size:12px;color:#6b7a99}
+#prof .pb{padding:12px 16px 18px;overflow:auto}
+#prof label{display:block;font-size:13px;color:#6b7a99;margin:10px 0 4px}
+#prof input{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:9px 11px;border:1px solid #d5ddec;border-radius:10px}
+#prof .psec{margin:18px 0 4px;font-weight:700;font-size:15px;border-top:1px solid #e3e8f2;padding-top:12px}
+#prof .phint{font-size:12px;color:#6b7a99;line-height:1.7}
+#prof .prow{display:flex;gap:6px;margin:6px 0}#prof .prow input:first-child{flex:2}#prof .prow input:nth-child(2){flex:1}#prof .prow button{padding:4px 9px}
+#prof .err{color:#c0392b;font-size:13px;margin-top:10px;min-height:18px}#prof .row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 #lst summary::-webkit-details-marker{display:none}#lst summary::before{content:'◂';color:#6b7a99;font-size:13px;width:14px}#lst details[open]>summary::before{content:'▾'}
 #lst .lgo{margin-inline-start:auto;font-size:12px;padding:3px 10px}
 @media(max-width:700px){#lst .lbox{margin:0;height:100%;border-radius:0}#bList{padding:12px 10px;font-size:13px}#sbar .search input{font-size:16px}}
@@ -116,6 +126,20 @@ svg.drag{cursor:grabbing}
 <div id="rel"><div class="rbox"><div class="lh"><b>صلة القرابة</b><span class="lsub" id="rSub"></span><button id="rX" aria-label="إغلاق">✕</button></div>
   <div class="rb"><div id="rRes"></div>
   <div id="rPick"><label for="rQ">من أنت؟ ابحث عن اسمك في الشجرة</label><input id="rQ" autocomplete="off" placeholder="اكتب اسمك أو اسم أبيك…"><div id="rList"></div></div></div></div></div>
+<div id="prof"><div class="pbox"><div class="lh"><b id="pTitle">إكمال المعلومات</b><span class="lsub">املأ ما تعرفه فقط، ويصل إلى مسؤول الشجرة للمراجعة</span><button id="pX" aria-label="إغلاق">✕</button></div>
+  <div class="pb">
+    <label for="pName">اسمك *</label><input id="pName" autocomplete="name">
+    <div class="psec">معلوماتك</div>
+    <label for="pBirth">تاريخ الميلاد</label><input id="pBirth" dir="auto" placeholder="مثال: 1990 أو 1990-05-12">
+    <label for="pSpouse">اسم الزوجة</label><input id="pSpouse" dir="auto">
+    <label for="pSpouseBirth">تاريخ ميلاد الزوجة</label><input id="pSpouseBirth" dir="auto" placeholder="مثال: 1992">
+    <label for="pPlace">مكان الإقامة</label><input id="pPlace" dir="auto" placeholder="مثال: سكيكدة">
+    <label for="pStudy">السنة الدراسية أو العمل</label><input id="pStudy" dir="auto" placeholder="مثال: يدرس 2 ثانوي، أو يعمل معلّمًا">
+    <div class="psec">الإخوة والأخوات</div><div class="phint" id="pSibKnown"></div><div id="pSibs"></div><button type="button" id="pAddSib">+ إضافة أخ أو أخت</button>
+    <div class="psec">الأبناء</div><div class="phint" id="pKidKnown"></div><div id="pKids"></div><button type="button" id="pAddKid">+ إضافة ابن أو بنت</button>
+    <div class="err" id="pErr"></div>
+    <div class="row"><button id="pSend" class="sugb">إرسال المعلومات</button><button id="pLink" type="button">🔗 نسخ رابط لإرساله له</button></div>
+  </div></div></div>
 <div id="exp"><div class="box">
   <h2>تصدير صورة للطباعة</h2>
   <p>صورة PNG عالية الجودة بمقاس الورق، تحوي كل أفرع الشجرة (حتى المطوية). تُحفظ بدقة طباعة مدمجة في الملف.</p>
@@ -333,18 +357,20 @@ function showCard(){
   ${years.map(y=>`<div class="row">${y}</div>`).join('')}
   ${(()=>{const r=ageOf(n);return r&&r.age!=null?`<div class="row"><b>${r.dead?'العمر عند الوفاة':'العمر'}:</b> ${r.age} سنة</div>`:'';})()}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
-  ${(()=>{const i=studyInfo(n);if(!i)return '';if(i.kind==='study')return `<div class="row">📚 <b>يدرس:</b> ${esc(i.label)}</div>`;if(i.kind==='unknown')return `<div class="row" style="color:#8a97b3">📚 السنة الدراسية / العمل: <i>فارغة، بانتظار المعلومة</i></div>`;return '';})()}
+  ${(()=>{const i=studyInfo(n);if(!i)return '';if(i.kind==='study')return `<div class="row">📚 <b>يدرس:</b> ${esc(i.label)}</div>`+(i.uni?`<div class="row">🏛 <b>الجامعة:</b> ${esc(i.uni)}</div>`:'');if(i.kind==='unknown')return `<div class="row" style="color:#8a97b3">📚 السنة الدراسية / العمل: <i>فارغة، بانتظار المعلومة</i></div>`;return '';})()}
   ${n.spouse?`<div class="sp2">الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(رحمها الله)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
   ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
   ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
   <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button></div>
-  <div class="acts"><button id="cLink">🔗 نسخ رابط هذا الشخص</button><button id="cRel">🧬 ما صلتي به؟</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
+  <div class="acts"><button id="cLink">🔗 نسخ رابط هذا الشخص</button><button id="cRel">🧬 ما صلتي به؟</button></div>
+  <div class="acts"><button id="cProf">✍ إكمال معلومات هذا الشخص</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
   c.style.display='block';
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
   const t=$('#cTog');if(t)t.onclick=()=>{const opening=collapsed.has(n.id);toggle(n.id);sel=null;draw();showCard();if(opening)fitBranch(n);};
   $('#cSug').onclick=()=>sugOpen(fullName(n),n);
   $('#cLink').onclick=e=>copyLink(n.id,e.currentTarget);
   $('#cRel').onclick=()=>relOpen(n);
+  $('#cProf').onclick=()=>profOpen(n);
   $('#cClose').onclick=()=>{sel=null;draw();showCard();};
 }
 function goTo(id){pathTo(id).forEach(a=>collapsed.delete(a.id));sel=id;draw();showCard();const f=find(id);if(f&&f.n._x!=null)focusOn(f.n,.9);}
@@ -404,10 +430,43 @@ $('#rQ').addEventListener('input',e=>{const w=norm(e.target.value).split(/\s+/).
   const hits=everyone().filter(({n})=>{const h=norm(n.name+' '+lineage(n));return w.every(x=>h.includes(x));}).slice(0,15);
   L.innerHTML=hits.length?hits.map(({n})=>`<div data-id="${n.id}"><b>${esc(n.name)}</b><small>بن ${esc(lineage(n))}</small></div>`).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج</div>';
   L.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{setMe(d.getAttribute('data-id'));relRender();});});
-function copyLink(id,btn){const url=location.origin+location.pathname+'?p='+encodeURIComponent(id);
+function copyLink(id,btn,prof){const url=location.origin+location.pathname+'?p='+encodeURIComponent(id)+(prof?'&c=1':'');
   const done=()=>{const t=btn.textContent;btn.textContent='✓ نُسخ الرابط';setTimeout(()=>{btn.textContent=t;},1800);};
   const fb=()=>{const ta=document.createElement('textarea');ta.value=url;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){prompt('انسخ الرابط:',url);}ta.remove();};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,fb);else fb();}
+
+/* ---- profile completion (personal link) ---- */
+let profPerson=null;
+function profRow(box,n,b){const d=document.createElement('div');d.className='prow';
+  d.innerHTML='<input placeholder="الاسم" dir="auto"><input placeholder="سنة الميلاد" dir="auto" inputmode="numeric"><button type="button" aria-label="حذف">✕</button>';
+  d.querySelector('input').value=n||'';d.querySelectorAll('input')[1].value=b||'';d.querySelector('button').onclick=()=>d.remove();box.appendChild(d);}
+function profRows(box){return [...box.querySelectorAll('.prow')].map(r=>{const i=r.querySelectorAll('input');return {n:i[0].value.trim().slice(0,100),b:i[1].value.trim().slice(0,30)};}).filter(x=>x.n).slice(0,12);}
+function profOpen(n){profPerson=n;const f=find(n.id),sibs=f&&f.p?f.p.children.filter(c=>c!==n):[];
+  $('#pTitle').textContent='إكمال معلومات: '+(n.name||'');
+  $('#pName').value=n.name||'';$('#pBirth').value=n.birth||'';$('#pSpouse').value=n.spouse||'';$('#pSpouseBirth').value=n.spouseBirth||'';$('#pPlace').value=n.place||'';$('#pStudy').value='';
+  $('#pSibs').innerHTML='';$('#pKids').innerHTML='';
+  $('#pSibKnown').textContent=sibs.length?'المسجّلون حاليًا: '+sibs.map(c=>c.name).join('، ')+' — أضف الناقصين فقط.':'لا يوجد إخوة مسجّلون بعد.';
+  $('#pKidKnown').textContent=n.children.length?'المسجّلون حاليًا: '+n.children.map(c=>c.name).join('، ')+' — أضف الناقصين فقط.':'لا يوجد أبناء مسجّلون بعد.';
+  $('#pErr').textContent='';$('#pErr').style.color='#c0392b';$('#prof').style.display='block';$('#pName').focus();}
+$('#pX').onclick=()=>{$('#prof').style.display='none';};
+$('#prof').addEventListener('click',e=>{if(e.target.id==='prof')$('#prof').style.display='none';});
+$('#pAddSib').onclick=()=>profRow($('#pSibs'));$('#pAddKid').onclick=()=>profRow($('#pKids'));
+$('#pLink').onclick=e=>{if(profPerson)copyLink(profPerson.id,e.currentTarget,true);};
+$('#pSend').onclick=async()=>{const n=profPerson;if(!n)return;const E=$('#pErr'),v=id=>$('#'+id).value.trim();
+  if(!v('pName')){E.textContent='اكتب اسمك أولًا.';$('#pName').focus();return;}
+  const me={},ch=(k,val,old)=>{if(val&&val!==(old||''))me[k]=val.slice(0,100);};
+  ch('birth',v('pBirth'),n.birth);ch('spouse',v('pSpouse'),n.spouse);ch('spouseBirth',v('pSpouseBirth'),n.spouseBirth);ch('place',v('pPlace'),n.place);if(v('pStudy'))me.study=v('pStudy').slice(0,100);
+  const sib=profRows($('#pSibs')),kids=profRows($('#pKids'));
+  if(!Object.keys(me).length&&!sib.length&&!kids.length){E.textContent='لم تُضف أي معلومة جديدة.';return;}
+  const L=[];const nm={birth:'الميلاد',spouse:'الزوجة',spouseBirth:'ميلاد الزوجة',place:'الإقامة',study:'الدراسة/العمل'};
+  Object.keys(me).forEach(k=>L.push(nm[k]+': '+me[k]));
+  if(sib.length)L.push('إخوة: '+sib.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
+  if(kids.length)L.push('أبناء: '+kids.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
+  const b=$('#pSend');b.disabled=true;E.style.color='#6b7a99';E.textContent='جارٍ الإرسال…';
+  try{const r=await fetch(SB.url+'/rest/v1/suggestions',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({sender:v('pName').slice(0,80),kind:'إكمال معلومات شخصية',who:fullName(n).slice(0,300),body:L.join('\n').slice(0,2000),person_id:n.id,payload:{t:'profile',me,sib,kids}})});
+    if(!r.ok)throw new Error(r.status);
+    E.style.color='#2a7a3b';E.textContent='تم الإرسال، جزاك الله خيرًا! ستظهر المعلومات بعد مراجعتها.';
+  }catch(x){E.style.color='#c0392b';E.textContent='تعذّر الإرسال، حاول لاحقًا.';}finally{b.disabled=false;}};
 
 /* ---- list view ---- */
 function listHtml(n,top){
@@ -440,7 +499,7 @@ function curYear(){const d=new Date();return d.getMonth()>=8?d.getFullYear():d.g
 function studyInfo(n){if(n.dead||n.death)return null;if(!n.es)return{kind:'unknown'};
   if(n.es!=='study')return{kind:n.es};
   const L=(data.lab&&data.lab[n.ec])||[],j=(n.ei||0)+(curYear()-(n.ey||curYear()));
-  return j>=0&&j<L.length?{kind:'study',label:L[j]}:{kind:'done'};}
+  return j>=0&&j<L.length?{kind:'study',label:L[j]+(n.em?' — '+n.em:''),uni:n.eu||''}:{kind:'done'};}
 function fullName(n){const anc=pathTo(n.id).slice(0,3);let s=n.name||'—';
   if(anc.length)s+=(n.female?' بنت ':' بن ')+anc.map(a=>a.name).join(' بن ');
   const x=[];if(n.spouse)x.push('الزوجة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
@@ -562,7 +621,7 @@ async function init(){
   collapsedAll=true;everyone().forEach(({n})=>{if(n.children.length&&n!==data.root&&!(n===data.root.children[0]))collapsed.add(n.id);});
   syncBtns();draw();startView();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(data){draw();}});
-  try{const pid=new URLSearchParams(location.search).get('p');if(pid&&find(pid))setTimeout(()=>goTo(pid),50);}catch(e){}
+  try{const qp=new URLSearchParams(location.search),pid=qp.get('p');if(pid&&find(pid)){setTimeout(()=>goTo(pid),50);if(qp.get('c')==='1')setTimeout(()=>profOpen(find(pid).n),400);}}catch(e){}
 }
 init();
 </script>
