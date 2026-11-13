@@ -470,14 +470,12 @@ function draw(){
     el('rect',{class:'main',x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:14,fill:(n.dead||n.death)?'#e9edf4':'url(#scroll)',stroke:sc,'stroke-width':n.unsure?1.6:1,'stroke-dasharray':n.unsure?'4 2.5':'none'},g);
     el('rect',{class:'ring',x:x-NW/2-10,y:y-NH/2-4,width:NW+20,height:NH+8,rx:18},g);
     const dua=(n.dead||n.death)?(n.female?'رحمها الله':'رحمه الله'):'';const years=[n.birth,n.death].filter(Boolean).join(' – ');
-    const meta=[dua,years,n.place].filter(Boolean).join(' · ');
-    const nl=(n.spouse?1:0)+(meta?1:0);
+    const meta=[years,n.place].filter(Boolean).join(' · ');
     const FF="Alexandria,Tahoma,sans-serif";
-    const t1=el('text',{x,y:nl===0?y+7:(nl===1?y-5:y-11),'text-anchor':'middle','font-size':17,'font-weight':700,'font-family':FF,fill:'#1b2a4a'},g);t1.textContent=n.name||'—';
-    fit.push([t1,17,NW-22]);
-    let ly=nl===1?y+16:y+6;
-    if(n.spouse){const t2=el('text',{x,y:ly,'text-anchor':'middle','font-size':14.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},g);t2.textContent=n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'');fit.push([t2,14.5,NW-22]);ly+=15;}
-    if(meta){const t3=el('text',{x,y:nl===1?ly:y+22,'text-anchor':'middle','font-size':11,'font-weight':500,'font-family':FF,fill:'#6b7a99'},g);t3.textContent=meta;fit.push([t3,11,NW-22]);}
+    const items=[['name',n.name||'—']];if(dua)items.push(['dua',dua]);if(n.spouse)items.push(['sp',n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'')]);if(meta)items.push(['meta',meta]);
+    const YS={1:[7],2:[-5,16],3:[-11,6,22],4:[-14,-2,12,26]}[items.length];
+    const ST={name:[17,700,'#1b2a4a'],dua:[10.5,500,'#8a97b3'],sp:[14.5,600,'#d6336c'],meta:[11,500,'#6b7a99']};
+    items.forEach((it,i)=>{const s=ST[it[0]],t=el('text',{x,y:y+YS[i]-(items.length===4&&it[0]==='sp'?0:0),'text-anchor':'middle','font-size':s[0],'font-weight':s[1],'font-family':FF,fill:s[2]},g);t.textContent=it[1];fit.push([t,s[0],NW-22]);});
     ageBadge(g,x,y,n);
     {const st=stateAt(n,VY);let bt='',bc='';
       if(st.kind==='study'){bt=st.mile?'★ '+MILE_SHORT[st.mile]:LBL[st.lvl];bc=st.mile?'#d9962b':'#5f86ad';}
