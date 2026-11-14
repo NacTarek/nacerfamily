@@ -67,7 +67,8 @@ svg.drag{cursor:grabbing}
 #sbar .search input{padding-inline-end:40px;padding-inline-start:14px}
 #bList{padding:12px 14px;font-size:14px;border-radius:14px;white-space:nowrap;font-weight:600}
 #res div b{font-weight:700}#res small{display:block;margin:2px 0 0}
-#shr{position:fixed;inset:0;z-index:35;background:rgba(15,25,50,.6);display:none;align-items:center;justify-content:center;padding:12px}#shr .sbx{background:#fff;border-radius:16px;width:min(480px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden}#shr .lh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e3e8f2}#shr .sb{padding:12px;overflow:auto;text-align:center}#shr img{width:100%;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.15)}#shr .row{display:flex;gap:8px;margin-top:10px}#shr .row button{flex:1;padding:11px}#shr .sh{font-size:12px;color:#8a97b3;margin-top:8px}
+#shr{position:fixed;inset:0;z-index:35;background:rgba(15,25,50,.6);display:none;align-items:center;justify-content:center;padding:12px}#shr .sbx{background:#fff;border-radius:16px;width:min(480px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden}#shr .lh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e3e8f2}#shr .sb{padding:12px;overflow:auto;text-align:center}#shr img{width:100%;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.15)}#shr .row{display:flex;gap:8px;margin-top:10px}#shr .row button{flex:1;padding:11px}#shr .shk{display:flex;gap:6px;margin-bottom:10px}#shr .shk button{flex:1;padding:9px;border-radius:999px}#shr .shk button.on{background:#2b59c3;color:#fff;border-color:#2b59c3}#shr img{max-height:62vh;object-fit:contain;background:#f4f6fb}
+#shr .sh{font-size:12px;color:#8a97b3;margin-top:8px}
 #fam{position:fixed;inset:0;z-index:30;background:rgba(15,25,50,.45);display:none}#fam .lbox{max-width:720px;margin:16px auto;height:calc(100% - 32px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #fam .lh{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #e3e8f2;flex-wrap:wrap}#fam .lh b{font-size:17px}#fam .tabs{flex:1;display:flex;gap:6px}#fam .tabs button{padding:6px 12px;border-radius:999px}#fam .tabs button.on{background:#2b59c3;color:#fff;border-color:#2b59c3}
 #fam .lb{overflow:auto;padding:14px 16px 28px}#fam .kp{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:16px}#fam .kp div{border:1px solid #e3e8f2;border-radius:12px;padding:10px;text-align:center}#fam .kp b{display:block;font-size:24px;color:#1b2a4a}#fam .kp span{font-size:12px;color:#6b7a99}
@@ -149,7 +150,7 @@ svg.drag{cursor:grabbing}
 <aside id="card"></aside>
 <div id="lst"><div class="lbox"><div class="lh"><b>قائمة العائلة</b><span class="lsub">اضغط على السهم لفتح الأبناء، وعلى «عرض» للذهاب إلى الشجرة</span><button id="lX" aria-label="إغلاق">✕</button></div><div class="lb" id="lBody"></div></div></div>
 <div id="fam"><div class="lbox"><div class="lh"><b>📊 العائلة</b><div class="tabs"><button data-t="st" class="on">إحصاءات</button><button data-t="mem">🤲 ذكرى من رحلوا</button></div><button id="famX" aria-label="إغلاق">✕</button></div><div class="lb" id="famBody"></div></div></div>
-<div id="shr"><div class="sbx"><div class="lh"><b>📤 صورة للمشاركة</b><button id="shrX" aria-label="إغلاق">✕</button></div><div class="sb"><img id="shrImg" alt="إحصاءات العائلة"><div class="row"><button id="shrGo" class="sugb">مشاركة</button><button id="shrDl">⬇ تنزيل الصورة</button></div><div class="sh">مقاس مناسب لواتساب وإنستغرام وفيسبوك.</div></div></div></div>
+<div id="shr"><div class="sbx"><div class="lh"><b>📤 صورة للمشاركة</b><button id="shrX" aria-label="إغلاق">✕</button></div><div class="sb"><div class="shk"><button data-k="s" class="on">بطاقة مختصرة</button><button data-k="f">تقرير كامل</button></div><img id="shrImg" alt="إحصاءات العائلة"><div class="row"><button id="shrGo" class="sugb">مشاركة</button><button id="shrDl">⬇ تنزيل الصورة</button></div><div class="sh">مقاس مناسب لواتساب وإنستغرام وفيسبوك.</div></div></div></div>
 <div id="gm"><div class="rbox"><div class="lh"><b>🎮 من أنا؟</b><span class="lsub" id="gSub"></span><button id="gX" aria-label="إغلاق">✕</button></div><div class="rb" id="gBody"></div></div></div>
 <div id="rel"><div class="rbox"><div class="lh"><b>صلة القرابة</b><span class="lsub" id="rSub"></span><button id="rX" aria-label="إغلاق">✕</button></div>
   <div class="rb"><div id="rRes"></div>
@@ -724,12 +725,59 @@ async function famImage(){const D=famData(),W=1080,H=1350,cv=document.createElem
   // footer
   g.textAlign='center';g.fillStyle='#6b7a99';g.font=F(500,26);g.fillText('تصفّح الشجرة كاملة: '+location.host+location.pathname.replace(/index\.html$/,''),W/2,H-40);
   return cv;}
-let shrBlob=null;
-async function famShare(){$('#shr').style.display='flex';$('#shrImg').src='';const cv=await famImage();$('#shrImg').src=cv.toDataURL('image/png');shrBlob=await new Promise(r=>cv.toBlob(r,'image/png'));
+/* full report: every stat, tall image */
+function famAll(){const C=Cx(),D=famData(),ppl=everyone().map(x=>x.n),alive=ppl.filter(n=>!(n.dead||n.death));
+  const cnt={};ppl.forEach(n=>{const k=(n.name||'').trim();if(k&&k!=='شخص جديد')cnt[k]=(cnt[k]||0)+1;});
+  const names=Object.entries(cnt).filter(x=>x[1]>1).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const big=ppl.filter(n=>n.children.length).sort((a,b)=>b.children.length-a.children.length).slice(0,6).map(n=>[n.name+' '+FAM.nasab(C,n,1),n.children.length]);
+  const aged=alive.map(n=>({n,b:parseDate(n.birth)})).filter(x=>x.b).sort((a,b)=>(a.b.y*400+a.b.m*31+a.b.d)-(b.b.y*400+b.b.m*31+b.b.d)),k=Math.min(5,Math.floor(aged.length/2));
+  const lab=n=>{const r=ageOf(n);return n.name+' '+FAM.nasab(C,n,1)+(r&&r.age!=null?' · '+r.age+' سنة':'');};
+  const grp={},G=l=>/ابتدائي|روضة|تحضيري/.test(l)?'الابتدائي وما قبله':/متوسط/.test(l)?'المتوسط':/ثانوي/.test(l)?'الثانوي':'الجامعة والتكوين';
+  alive.forEach(n=>{const i=studyInfo(n);if(!i)return;const kk=i.kind==='study'?G(i.label):({working:'يعملون',done:'أنهوا دراستهم',stopped:'توقفوا عن الدراسة'})[i.kind];if(kk)grp[kk]=(grp[kk]||0)+1;});
+  const order=['الابتدائي وما قبله','المتوسط','الثانوي','الجامعة والتكوين','يعملون','أنهوا دراستهم','توقفوا عن الدراسة'];
+  const dec={};ppl.forEach(n=>{const b=parseDate(n.birth);if(b){const d=Math.floor(b.y/10)*10;dec[d]=(dec[d]||0)+1;}});
+  return {D,old:aged.slice(0,k).map(x=>lab(x.n)),young:aged.slice(-k).reverse().map(x=>lab(x.n)),big,names,study:order.filter(x=>grp[x]).map(x=>[x,grp[x]]),dec:Object.keys(dec).sort().map(d=>[d+' – '+(+d+9),dec[d]])};}
+async function famImageFull(){const A=famAll(),D=A.D,W=1080,mx=60,cw=W-mx*2;
+  try{await Promise.all(['800 60px Alexandria','700 40px Alexandria','500 30px Alexandria'].map(f=>document.fonts.load(f)));}catch(e){}
+  const secs=[];
+  if(A.old.length)secs.push({t:'👴 أكبر الأحياء سنًّا',list:A.old},{t:'👶 أصغر أفراد العائلة',list:A.young});
+  if(A.big.length)secs.push({t:'👨‍👩‍👧‍👦 أكبر العائلات (عدد الأبناء)',bars:A.big});
+  if(A.names.length)secs.push({t:'🔤 أكثر الأسماء تكرارًا',bars:A.names});
+  if(A.study.length)secs.push({t:'📚 الدراسة والعمل هذا العام',bars:A.study});
+  if(A.dec.length)secs.push({t:'📅 المواليد حسب العقد',bars:A.dec});
+  const RH=58,secH=s=>90+(s.list?s.list.length*RH:s.bars.length*RH)+24;
+  const kpH=2*(150+22),H=320+30+kpH+secs.reduce((a,s)=>a+secH(s)+24,0)+110;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');g.direction='rtl';
+  const F=(w,s)=>`${w} ${s}px Alexandria, Tahoma, sans-serif`,fit=(t,maxW,w,s)=>{g.font=F(w,s);while(g.measureText(t).width>maxW&&s>14){s-=1;g.font=F(w,s);}return s;};
+  const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();};
+  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#f7f4ec');bg.addColorStop(1,'#eef2fa');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  const hd=g.createLinearGradient(0,0,W,320);hd.addColorStop(0,'#1b2a4a');hd.addColorStop(1,'#2b59c3');g.fillStyle=hd;rr(0,-40,W,360,48);g.fill();
+  g.globalAlpha=.08;g.fillStyle='#fff';for(let i=0;i<7;i++){g.beginPath();g.arc(90+i*160,300-((i%2)*60),70+((i*37)%50),0,Math.PI*2);g.fill();}g.globalAlpha=1;
+  g.textAlign='center';g.fillStyle='#fff';g.font=F(500,40);g.fillText('🌳',W/2,92);const title=data.title||'شجرة العائلة';fit(title,W-140,800,66);g.fillText(title,W/2,172);
+  g.fillStyle='#c9d6f5';g.font=F(600,34);g.fillText('تقرير العائلة الكامل',W/2,228);
+  const mo=['جانفي','فيفري','مارس','أفريل','ماي','جوان','جويلية','أوت','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],now=new Date();g.fillStyle='#9fb3e3';g.font=F(500,26);g.fillText(mo[now.getMonth()]+' '+now.getFullYear(),W/2,272);
+  const kp=[[D.n,'فردًا في الشجرة'],[D.gen,'أجيال'],[D.alive,'على قيد الحياة'],[D.dead,'رحمهم الله']];if(D.fem)kp.push([D.male+' · '+D.fem,'ذكور · إناث']);kp.push([D.mar,'متزوجون']);if(kp.length<6)kp.push([D.study+D.work,'يدرسون أو يعملون']);
+  const tw=(cw-44)/3,th=150,ty=350;
+  kp.forEach((k,i)=>{const c=i%3,r=Math.floor(i/3),x=W-mx-tw-c*(tw+22),y=ty+r*(th+22);g.shadowColor='rgba(27,42,74,.10)';g.shadowBlur=24;g.shadowOffsetY=8;g.fillStyle='#fff';rr(x,y,tw,th,28);g.fill();g.shadowColor='transparent';
+    g.textAlign='center';g.fillStyle=i===3?'#7a879f':'#1b2a4a';fit(String(k[0]),tw-30,800,62);g.fillText(String(k[0]),x+tw/2,y+82);g.fillStyle='#6b7a99';fit(k[1],tw-30,500,26);g.fillText(k[1],x+tw/2,y+124);});
+  let y=ty+kpH+24;
+  secs.forEach(s=>{const h=secH(s);g.shadowColor='rgba(27,42,74,.08)';g.shadowBlur=20;g.shadowOffsetY=6;g.fillStyle='#fff';rr(mx,y,cw,h,28);g.fill();g.shadowColor='transparent';
+    g.textAlign='right';g.fillStyle='#1b2a4a';g.font=F(700,32);g.fillText(s.t,W-mx-30,y+56);let yy=y+90;
+    if(s.list)s.list.forEach((t,i)=>{g.fillStyle=i%2?'#fff':'#f5f7fc';rr(mx+20,yy,cw-40,RH-8,14);g.fill();g.fillStyle='#1b2a4a';fit(t,cw-90,600,27);g.textAlign='right';g.fillText(t,W-mx-40,yy+36);yy+=RH;});
+    else{const m=Math.max(...s.bars.map(b=>b[1])),lw=330,bx0=mx+30+60,bw=cw-60-lw-70;
+      s.bars.forEach(b=>{g.textAlign='right';g.fillStyle='#3b4a6b';fit(b[0],lw-10,500,26);g.fillText(b[0],W-mx-30,yy+34);
+        g.fillStyle='#eef2fa';rr(bx0,yy+12,bw,28,10);g.fill();const w=Math.max(16,bw*b[1]/m);g.fillStyle='#2b59c3';rr(bx0+bw-w,yy+12,w,28,10);g.fill();
+        g.textAlign='left';g.fillStyle='#6b7a99';g.font=F(700,26);g.fillText(String(b[1]),mx+30,yy+36);yy+=RH;});}
+    y+=h+24;});
+  g.textAlign='center';g.fillStyle='#6b7a99';g.font=F(500,26);g.fillText('تصفّح الشجرة كاملة: '+location.host+location.pathname.replace(/index\.html$/,''),W/2,H-50);
+  return cv;}
+let shrBlob=null,shrKind='s';
+async function famShare(){$('#shr').style.display='flex';$('#shrImg').src='';document.querySelectorAll('#shr .shk button').forEach(b=>b.classList.toggle('on',b.dataset.k===shrKind));$('#shr .sh').textContent=shrKind==='f'?'صورة طويلة فيها كل الإحصاءات، مناسبة لواتساب ومجموعات العائلة.':'مقاس مربّع تقريبًا، مناسب لواتساب وإنستغرام وفيسبوك.';const cv=shrKind==='f'?await famImageFull():await famImage();$('#shrImg').src=cv.toDataURL('image/png');shrBlob=await new Promise(r=>cv.toBlob(r,'image/png'));
   const f=new File([shrBlob],'family-stats.png',{type:'image/png'});$('#shrGo').style.display=(navigator.canShare&&navigator.canShare({files:[f]}))?'':'none';}
 $('#shrX').onclick=()=>{$('#shr').style.display='none';};
-$('#shrDl').onclick=()=>{if(!shrBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(shrBlob);a.download=(data.title||'family')+' - إحصاءات.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
-$('#shrGo').onclick=async()=>{if(!shrBlob)return;try{await navigator.share({files:[new File([shrBlob],'family-stats.png',{type:'image/png'})],title:data.title||'',text:(data.title||'')+' بالأرقام 🌳 '+location.href.split('?')[0]});}catch(e){}};
+document.querySelectorAll('#shr .shk button').forEach(b=>b.onclick=()=>{shrKind=b.dataset.k;famShare();});
+$('#shrDl').onclick=()=>{if(!shrBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(shrBlob);a.download=(data.title||'family')+(shrKind==='f'?' - تقرير كامل.png':' - إحصاءات.png');document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
+$('#shrGo').onclick=async()=>{if(!shrBlob)return;try{await navigator.share({files:[new File([shrBlob],shrKind==='f'?'family-report.png':'family-stats.png',{type:'image/png'})],title:data.title||'',text:(data.title||'')+' بالأرقام 🌳 '+location.href.split('?')[0]});}catch(e){}};
 function famRender(){document.querySelectorAll('#fam .tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===famTab));$('#famBody').innerHTML=famTab==='st'?famStats():famMem();$('#famBody').scrollTop=0;const fs=$('#famShare');if(fs)fs.onclick=famShare;}
 $('#bFam').onclick=()=>{$('#fam').style.display='block';famRender();};
 $('#famX').onclick=()=>{$('#fam').style.display='none';};
