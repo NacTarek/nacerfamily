@@ -74,6 +74,7 @@ svg.drag{cursor:grabbing}
 #fam h4{margin:18px 0 8px;font-size:15px;color:#1b2a4a}#fam .br{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px}#fam .br .bl{width:110px;flex:none;color:#3b4a6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#fam .br .bt{display:block;flex:1;background:#eef2fa;border-radius:6px;height:16px;overflow:hidden}#fam .br .bf{display:block;height:100%;background:#2b59c3;border-radius:6px}#fam .br .bv{width:30px;flex:none;color:#6b7a99;text-align:left}
 #fam .pp{display:flex;flex-wrap:wrap;gap:6px}#fam .pc{border:1px solid #d5ddec;border-radius:999px;padding:5px 11px;font-size:13px;background:#fff;cursor:pointer}#fam .pc small{color:#8a97b3}
 #fam .mh{text-align:center;color:#3b4a6b;font-size:15px;line-height:1.9;margin:4px 0 14px}#fam .mr{display:flex;gap:10px;align-items:center;border-bottom:1px solid #eef1f7;padding:9px 4px;cursor:pointer}#fam .mr:hover{background:#f7f9fd}#fam .mr .mn{flex:1}#fam .mr .mn small{display:block;color:#8a97b3;font-size:12px}#fam .mr .md{color:#6b7a99;font-size:13px;text-align:left;white-space:nowrap}
+@media(max-width:700px){#sbar{flex-wrap:wrap}#sbar .search{flex:1 1 100%}#sbar>button{flex:1;padding:10px 6px;font-size:13px}}
 @media(max-width:700px){#fam .lbox{margin:0;height:100%;border-radius:0}#bFam{padding:12px 10px;font-size:13px}}
 #lst{position:fixed;inset:0;z-index:30;background:rgba(15,25,50,.45);display:none}
 #lst .lbox{max-width:680px;margin:16px auto;height:calc(100% - 32px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
@@ -129,6 +130,7 @@ svg.drag{cursor:grabbing}
   <span class="sp"></span>
   <button id="bZo" aria-label="تصغير">−</button><button id="bZi" aria-label="تكبير">+</button>
   <button id="bFit">عرض الكل</button>
+  <button id="bSimple" title="عرض مبسّط: شخص واحد مع أبيه وإخوته وأبنائه">📱 عرض مبسّط</button>
   <button id="bCol"></button>
   <button id="bExp" style="display:none">🖼 تصدير للطباعة</button>
   <button id="bSug" class="sugb">✍ تصحيح أو إكمال</button>
@@ -739,6 +741,7 @@ function syncBtns(){$('#bCol').textContent=collapsedAll?'فتح كل الفرو�
 $('#bZi').onclick=()=>{const{w,h}=sz();zoomAt(w/2,h/2,1.25);};
 $('#bZo').onclick=()=>{const{w,h}=sz();zoomAt(w/2,h/2,.8);};
 $('#bFit').onclick=fitAll;
+$('#bSimple').onclick=()=>{location.href='mobile-preview.html'+(sel?'?p='+encodeURIComponent(sel):'');};
 $('#bCol').onclick=()=>{
   collapsedAll=!collapsedAll;collapsed.clear();sel=null;
   if(collapsedAll)everyone().forEach(({n})=>{if(n.children.length&&n!==data.root&&!(n===data.root.children[0]))collapsed.add(n.id);});
@@ -881,7 +884,7 @@ async function init(){
   collapsedAll=true;everyone().forEach(({n})=>{if(n.children.length&&n!==data.root&&!(n===data.root.children[0]))collapsed.add(n.id);});
   syncBtns();draw();startView();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(data){draw();}});
-  try{const qp=new URLSearchParams(location.search),pid=qp.get('p');if(pid&&find(pid)){setTimeout(()=>goTo(pid),50);if(qp.get('c')==='1')setTimeout(()=>profOpen(find(pid).n),400);}}catch(e){}
+  try{const qp=new URLSearchParams(location.search),pid=qp.get('p');if(pid&&find(pid)){setTimeout(()=>goTo(pid),50);if(qp.get('c')==='1')setTimeout(()=>profOpen(find(pid).n),400);if(qp.get('r')==='1')setTimeout(()=>relOpen(find(pid).n),400);}}catch(e){}
 }
 /* ---- لعبة من أنا ---- */
 let G=null;
