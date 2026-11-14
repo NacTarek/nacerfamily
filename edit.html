@@ -58,6 +58,7 @@ textarea{resize:vertical;min-height:58px}
 select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;border-radius:6px;background:#fff;color:#1b2a4a;max-width:100%}
 #e_sel{width:100%}
 .modal .box.wide{width:min(1040px,100%)}
+.lq{display:flex;gap:6px}.lq>*{flex:1;min-width:0}.lq small{display:block;color:#8a97b3;font-size:11px;margin-bottom:2px}
 .wv{border:1px solid #e3e8f2;border-radius:10px;padding:8px;margin:6px 0;display:flex;flex-direction:column;gap:4px}.wvh{display:flex;justify-content:space-between;align-items:center}.wvh .wdel{padding:2px 8px}
 .cg{display:flex;gap:10px;align-items:flex-start;border:1px solid #e3e8f2;border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer}.cg small{color:#8a97b3}.cg .ch{font-size:13px;margin-top:3px;line-height:1.8}
 .splink{border:1px dashed #d6336c;border-radius:10px;padding:8px 10px;margin:6px 0;background:#fff7fa}.splink a{color:#d6336c;font-weight:600}
@@ -178,23 +179,25 @@ const FAM=(()=>{
   const spLabel=n=>n&&n.female?'الزوج':'الزوجة';
   const dua=n=>n.female?'رحمها الله':'رحمه الله';
   const spDua=n=>n.female?'رحمه الله':'رحمها الله';
-  const spName1=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):(n.spouse||'');};
+  const spName1=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):[n.spouseLaqab,n.spouse].filter(Boolean).join(' ');};
   /* all spouses: the first (spouse/spouseId) + extra ones in n.wives[] */
   const spouses=(C,n)=>{const out=[];const a=spName1(C,n);if(a||(n.wives||[]).length)out.push({i:0,name:a||'—',dead:!!(n.spouseDead||n.spouseDeath),birth:n.spouseBirth||'',death:n.spouseDeath||'',link:C.spouse(n)});
-    (n.wives||[]).forEach((w,k)=>{if(w&&w.name)out.push({i:k+1,name:w.name,dead:!!(w.dead||w.death),birth:w.birth||'',death:w.death||'',link:null});});return out;};
+    (n.wives||[]).forEach((w,k)=>{if(w&&(w.name||w.laqab))out.push({i:k+1,name:[w.laqab,w.name].filter(Boolean).join(' '),dead:!!(w.dead||w.death),birth:w.birth||'',death:w.death||'',link:null});});return out;};
   const spName=(C,n)=>spouses(C,n).map(x=>x.name).filter(x=>x&&x!=='—').join(' · ');
   /* the mother of a child whose father has several wives (null when unknown / single wife) */
   const momOf=(C,c)=>{const p=C.parent(c);if(!p||p.female||!(p.wives||[]).length)return null;const L=spouses(C,p);return L.find(x=>x.i===(c.mom||0))||null;};
   /* nasab after the name, e.g. "بن بكير بن الناصر" — through a mother: "بن زوجها، وأمه فلانة بنت فلان" */
   function nasab(C,n,max,_d){max=max||99;_d=_d||0;const p=C.parent(n);if(!p||_d>=max)return '';
     if(!p.female){const rest=nasab(C,p,max,_d+1);return bn(n)+' '+(p.name||'—')+(rest?' '+rest:'');}
-    const h=C.spouse(p),hn=h?h.name:(p.spouse||'');
+    const h=C.spouse(p),hn=h?h.name:[p.spouse,p.spouseLaqab].filter(Boolean).join(' ');
     const mom=(n.female?'وأمها ':'وأمه ')+(p.name||'—'),mrest=nasab(C,p,Math.min(max,_d+3),_d+1);
     if(h){const hr=nasab(C,h,max,_d+1);return bn(n)+' '+hn+(hr?' '+hr:'')+'، '+mom+(mrest?' '+mrest:'');}
     return (hn?bn(n)+' '+hn+'، ':'')+mom+(mrest?' '+mrest:'');}
   /* children to show for n: own, or (if none) those recorded under the linked spouse */
+  /* family name (لقب) of a child whose mother married outside the family */
+  const laqabOf=(C,n)=>{const p=C.parent(n);return p&&p.female&&!C.spouse(p)&&p.spouseLaqab?p.spouseLaqab:'';};
   function viaSpouse(C,n){if(n.children.length)return null;const s=C.spouse(n);return s&&s.children.length?s:null;}
-  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,nasab,viaSpouse};
+  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,laqabOf,nasab,viaSpouse};
 })();
 /* ===== end FAM ===== */
 let _C=null;const Cx=()=>_C||FAM.ctx(data.root);
@@ -619,18 +622,18 @@ function mergeKids(a,b){
 /* ---- several wives / husbands ---- */
 function wivesHtml(n){const W=n.wives||[],t=n.female?'زوج':'زوجة';
   return W.map((w,k)=>`<div class="wv" data-k="${k}"><div class="wvh"><b>${n.female?'الزوج':'الزوجة'} ${k+2}</b><button class="danger wdel" title="حذف">✕</button></div>
-    <input type="text" class="wn" dir="auto" placeholder="الاسم" value="${esc(w.name||'')}">
+    <div class="lq"><input type="text" class="wl" dir="auto" placeholder="اللقب" value="${esc(w.laqab||'')}"><input type="text" class="wn" dir="auto" placeholder="الاسم" value="${esc(w.name||'')}"></div>
     <input type="text" class="wb" dir="auto" placeholder="تاريخ الميلاد (اختياري)" value="${esc(w.birth||'')}">
     <label class="chk"><input type="checkbox" class="wd" ${w.dead?'checked':''}> ${n.female?'متوفى':'متوفاة'}</label>
     <input type="text" class="wdt" dir="auto" placeholder="تاريخ الوفاة" value="${esc(w.death||'')}" style="${w.dead?'':'display:none'}"></div>`).join('')+
-    `<div class="row" style="margin:4px 0"><button id="wAdd">+ ${t} ${W.length||n.spouse||n.spouseId?'أخرى':''}</button></div>`.replace('+ زوج أخرى','+ زوج آخر');}
+    `<div class="row" style="margin:4px 0"><button id="wAdd">+ ${t} ${W.length||n.spouse||n.spouseLaqab||n.spouseId?'أخرى':''}</button></div>`.replace('+ زوج أخرى','+ زوج آخر');}
 function wireWives(n){const box=$('#wivesBox');if(!box)return;
   box.querySelectorAll('.wv').forEach(d=>{const k=+d.dataset.k,w=n.wives[k],q=c=>d.querySelector(c);
-    q('.wn').oninput=e=>{w.name=e.target.value;draw();save();};q('.wb').oninput=e=>{w.birth=e.target.value;save();};q('.wdt').oninput=e=>{w.death=e.target.value;save();};
+    q('.wn').oninput=e=>{w.name=e.target.value;draw();save();};q('.wl').oninput=e=>{w.laqab=e.target.value;draw();save();};q('.wb').oninput=e=>{w.birth=e.target.value;save();};q('.wdt').oninput=e=>{w.death=e.target.value;save();};
     q('.wd').onchange=e=>{w.dead=e.target.checked;if(!w.dead)w.death='';q('.wdt').style.display=w.dead?'':'none';save();};
     q('.wdel').onclick=()=>{if(!confirm('حذف «'+(w.name||'—')+'»؟ أبناؤها يُنسبون إلى الأولى.'))return;n.wives.splice(k,1);
       n.children.forEach(c=>{if(c.mom===k+1)delete c.mom;else if(c.mom>k+1)c.mom--;});if(!n.wives.length)delete n.wives;draw();renderPanel();save();};});
-  $('#wAdd').onclick=()=>{if(!n.spouse&&!n.spouseId){$('#f_spouse').focus();toast('اكتب '+(n.female?'الزوج':'الزوجة')+' الأول(ى) في الخانة أعلاه أولًا');return;}
+  $('#wAdd').onclick=()=>{if(!n.spouse&&!n.spouseLaqab&&!n.spouseId){$('#f_spouse').focus();toast('اكتب '+(n.female?'الزوج':'الزوجة')+' الأول(ى) في الخانة أعلاه أولًا');return;}
     (n.wives=n.wives||[]).push({name:'',birth:'',death:'',dead:false});renderPanel();const a=document.querySelectorAll('#wivesBox .wn');a[a.length-1].focus();};}
 function momHtml(n,parent){if(!parent||parent.female||!(parent.wives||[]).length)return '';const L=FAM.spouses(Cx(),parent);
   return `<label>الأم</label><select id="f_mom">${L.map(x=>`<option value="${x.i}" ${(n.mom||0)===x.i?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`;}
@@ -638,14 +641,15 @@ function wireMom(n,parent){const m=$('#f_mom');if(m)m.onchange=()=>{const v=+m.v
 /* ---- clean daughters' children names: «حمدي عيسى سليمان» → «سليمان» + husband «حمدي عيسى» ---- */
 function prefixOf(names){const W=names.map(x=>String(x||'').trim().split(/\s+/));if(W.length<2||W.some(w=>w.length<2))return '';
   let k=0;while(W.every(w=>w[k]!==undefined&&w[k]===W[0][k])&&W.every(w=>w.length>k+1))k++;return W[0].slice(0,k).join(' ');}
+function splitPre(pre){const w=pre.split(' ');if(w.length===1||/^(أبو|ابو|بو|بن|ابن|آل|أولاد|اولاد)$/.test(w[0]))return {laqab:pre,name:''};return {laqab:w[0],name:w.slice(1).join(' ')};}
 function cleanFind(){const out=[];(function w(n){const kids=n.children;if(kids.length>=2){const pre=prefixOf(kids.map(c=>c.name));if(pre&&!['عبد','نور','أبو','ابو','بن','بو'].includes(pre))out.push({n,pre,kids});}n.children.forEach(w);})(data.root);return out;}
 function cleanOpen(){const C=Cx(),L=cleanFind(),B=$('#cleanList');
   B.innerHTML=L.length?L.map((g,i)=>`<label class="cg"><input type="checkbox" data-i="${i}" checked> <div><b>${esc(g.n.name)}</b> <small>${esc(FAM.nasab(C,g.n,2))}</small>
-    <div class="ch">• ${g.n.female?'':'تُعلَّم أنثى، و'}${g.n.spouse||g.n.spouseId?'زوجها الحالي: «'+esc(FAM.spName(C,g.n))+'»':'يُكتب زوجها: «'+esc(g.pre)+'»'}</div>
+    <div class="ch">• ${g.n.female?'':'تُعلَّم أنثى، و'}${g.n.spouse||g.n.spouseLaqab||g.n.spouseId?'زوجها الحالي: «'+esc(FAM.spName(C,g.n))+'»':(()=>{const s=splitPre(g.pre);return 'زوجها: اللقب «'+esc(s.laqab)+'»'+(s.name?' · الاسم «'+esc(s.name)+'»':'');})()}</div>
     <div class="ch">• ${g.kids.map(c=>esc(c.name)+' ← <b>'+esc(c.name.trim().slice(g.pre.length).trim())+'</b>').join('، ')}</div></div></label>`).join(''):'<div class="hint">لا توجد أسماء تحتاج تنظيفًا.</div>';
   B._L=L;$('#cleanM').classList.add('on');}
 function cleanApply(){const B=$('#cleanList'),L=B._L||[];let g=0,k=0;
-  B.querySelectorAll('input:checked').forEach(i=>{const x=L[+i.dataset.i];if(!x)return;x.n.female=true;if(!x.n.spouse&&!x.n.spouseId)x.n.spouse=x.pre;
+  B.querySelectorAll('input:checked').forEach(i=>{const x=L[+i.dataset.i];if(!x)return;x.n.female=true;if(!x.n.spouse&&!x.n.spouseLaqab&&!x.n.spouseId){const sp=splitPre(x.pre);x.n.spouseLaqab=sp.laqab;x.n.spouse=sp.name;}
     x.kids.forEach(c=>{const t=c.name.trim();if(t.startsWith(x.pre+' ')){c.name=t.slice(x.pre.length).trim();k++;}});g++;});
   $('#cleanM').classList.remove('on');draw();renderPanel();save();toast(`✓ نُظّف ${k} اسمًا في ${g} عائلة — يمكنك التراجع بـ ↶`,'ok');}
 /* ---- auto-detect females ---- */
@@ -675,7 +679,8 @@ function renderPanel(){
   <div class="hint" id="f_age" style="margin:4px 0 8px"></div>
   <hr class="sep">
   ${spouseSection(n)}
-  <div style="${Cx().spouse(n)?'display:none':''}"><label id="l_spouse">${FAM.spLabel(n)} (من خارج العائلة)</label><input type="text" id="f_spouse" dir="auto"></div>
+  <div style="${Cx().spouse(n)?'display:none':''}"><label id="l_spouse">${FAM.spLabel(n)} (من خارج العائلة)</label>
+  <div class="lq"><div><small>اللقب (اسم العائلة)</small><input type="text" id="f_spouseLaqab" dir="auto" placeholder="مثال: حمدي"></div><div><small>الاسم</small><input type="text" id="f_spouse" dir="auto" placeholder="مثال: عيسى"></div></div></div>
   <div id="spBox"><label>تاريخ ميلاد ${n.female?'الزوج':'الزوجة'}</label><input type="text" id="f_spouseBirth" dir="auto" placeholder="مثال: 1955 أو 1955-02-10">
   <label class="chk"><input type="checkbox" id="f_spouseDead"> ${n.female?'الزوج متوفى':'الزوجة متوفاة'}</label>
   <div id="spDeathBox"><label>تاريخ الوفاة</label><input type="text" id="f_spouseDeath" dir="auto" placeholder="مثال: 2018"></div>
@@ -700,11 +705,11 @@ function renderPanel(){
   <div class="row"><button class="danger" id="aDel" ${parent?'':'disabled'}>حذف</button><button id="aDesel">إلغاء التحديد</button></div>`;
   const ageTxt=()=>{const r=ageOf(n);$('#f_age').textContent=!r?(n.birth?'تعذّر قراءة تاريخ الميلاد — اكتب سنة من 4 أرقام.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
   const deathVis=()=>{$('#deathBox').style.display=n.dead?'':'none';};
-  ['name','spouse','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;if(k==='birth'){const ff=find(n.id);if(ff&&ff.parent)sortKids(ff.parent);}draw();save();ageTxt();});});
+  ['name','spouse','spouseLaqab','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;if(k==='birth'){const ff=find(n.id);if(ff&&ff.parent)sortKids(ff.parent);}draw();save();ageTxt();});});
   const spTxt=()=>{const r=spAgeOf(n);$('#f_spAge').textContent=!r?(n.spouseBirth?'تعذّر قراءة تاريخ الميلاد.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
-  const spVis=()=>{$('#spBox').style.display=(n.spouse&&!Cx().spouse(n))?'':'none';$('#spDeathBox').style.display=n.spouseDead?'':'none';};
+  const spVis=()=>{$('#spBox').style.display=((n.spouse||n.spouseLaqab)&&!Cx().spouse(n))?'':'none';$('#spDeathBox').style.display=n.spouseDead?'':'none';};
   ['spouseBirth','spouseDeath'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();spTxt();});});
-  $('#f_spouse').addEventListener('input',spVis);
+  $('#f_spouse').addEventListener('input',spVis);$('#f_spouseLaqab').addEventListener('input',spVis);
   $('#f_spouseDead').checked=!!n.spouseDead;spVis();spTxt();
   $('#f_spouseDead').addEventListener('change',e=>{n.spouseDead=e.target.checked;if(!n.spouseDead){n.spouseDeath='';$('#f_spouseDeath').value='';}spVis();draw();save();spTxt();});
   $('#f_dead').checked=!!n.dead;deathVis();ageTxt();
@@ -873,7 +878,7 @@ function publicData(){
     if(st.kind==='none')return {};
     if(st.kind==='study')return Object.assign({es:'study',ec:chainKey(st.chain),ei:st.idx,ey:Y0},((n.edu&&n.edu.major)||'').trim()?{em:n.edu.major.trim().slice(0,80)}:{},((n.edu&&n.edu.uni)||'').trim()?{eu:n.edu.uni.trim().slice(0,80)}:{});
     return {es:st.kind};};
-  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',spouseId:n.spouseId||undefined,birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,wives:(n.wives||[]).length?n.wives.map(w=>({name:w.name,birth:w.birth||'',death:w.death||'',dead:w.dead?true:undefined})):undefined,mom:n.mom||undefined,children:n.children.map(strip)},pe(n));
+  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',spouseLaqab:n.spouseLaqab||undefined,spouseId:n.spouseId||undefined,birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,wives:(n.wives||[]).length?n.wives.map(w=>({name:w.name||'',laqab:w.laqab||undefined,birth:w.birth||'',death:w.death||'',dead:w.dead?true:undefined})):undefined,mom:n.mom||undefined,children:n.children.map(strip)},pe(n));
   return {lab:{m:CH_MAIN.map(k=>LBL[k]),d:CH_DOC.map(k=>LBL[k]),e:CH_MED.map(k=>LBL[k]),p:CH_PH.map(k=>LBL[k]),s:CH_SP.map(k=>LBL[k]),q:CH_PM.map(k=>LBL[k])},title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
@@ -1043,7 +1048,7 @@ function applySug(r,doApply){
   if(doApply&&p.t==='add'){const c=P((p.name||'شخص جديد').trim(),0,{birth:p.birth||'',note:p.mother?('الأم: '+p.mother):''});f.n.children.push(c);sortKids(f.n);m=c;done=true;}
   else if(doApply&&p.t==='edit'&&SUG_FIELDS[p.f]){f.n[p.f]=String(p.v||'').trim();if(p.f==='death'&&f.n.death)f.n.dead=true;if(p.f==='birth'&&f.parent)sortKids(f.parent);done=true;}
   if(doApply&&p.t==='profile'){const me=p.me||{},nn=f.n,key=x=>String(x||'').replace(/\s+/g,' ').trim();
-    ['birth','death','spouse','spouseBirth','place'].forEach(k=>{if(me[k])nn[k]=String(me[k]).trim();});
+    ['birth','death','spouse','spouseLaqab','spouseBirth','place'].forEach(k=>{if(me[k])nn[k]=String(me[k]).trim();});
     if(me.dead||me.death)nn.dead=true;
     let eduSet=false;
     if(me.es&&!nn.dead){const CH={m:CH_MAIN,d:CH_DOC,e:CH_MED,p:CH_PH,s:CH_SP,q:CH_PM},mm=/^([mdepsq]):(\d+)$/.exec(me.es);

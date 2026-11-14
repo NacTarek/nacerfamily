@@ -110,6 +110,7 @@ svg.drag{cursor:grabbing}
 #prof .phint{font-size:12px;color:#6b7a99;line-height:1.7}
 #prof .prow{display:flex;gap:6px;margin:6px 0}#prof .prow input:first-child{flex:2}#prof .prow input:nth-child(2){flex:1}#prof .prow button{padding:4px 9px}
 #prof .dw{display:flex;gap:6px}#prof .dw select,#prof select{font:inherit;font-size:15px;padding:8px;border:1px solid #d5ddec;border-radius:10px;background:#fff;min-width:0}#prof .dw .dd{flex:1}#prof .dw .dm{flex:1.6}#prof .dw .dy{flex:1.2}#prof select{width:100%}
+#prof .lq{display:flex;gap:6px}#prof .lq>div{flex:1;min-width:0}#prof .lq small{display:block;color:#8a97b3;font-size:11px;margin-bottom:2px}
 #prof .dhint{font-size:11.5px;color:#8a97b3;margin-top:3px}#prof .pchk{display:flex;align-items:center;gap:8px;color:#1b2a4a;font-size:14px;margin:12px 0 2px;cursor:pointer}#prof .pchk input{width:auto}
 #prof .seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}#prof .seg button{flex:1;min-width:110px;padding:9px 6px;border:1px solid #d5ddec;border-radius:10px;background:#fff;font:inherit;font-size:14px;cursor:pointer}#prof .seg button.on{background:#2b59c3;border-color:#2b59c3;color:#fff}#prof #pStudyTxt,#prof #pLvl{margin-top:6px}
 #prof .err{color:#c0392b;font-size:13px;margin-top:10px;min-height:18px}#prof .row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
@@ -153,7 +154,7 @@ svg.drag{cursor:grabbing}
     <label>تاريخ الميلاد</label><div class="dw" id="dBirth"></div>
     <label class="pchk"><input type="checkbox" id="pDead"> <span id="pDeadL">متوفى (رحمه الله)</span></label>
     <div id="pDeathBox" style="display:none"><label>تاريخ الوفاة</label><div class="dw" id="dDeath"></div></div>
-    <label for="pSpouse" id="pSpouseL">اسم الزوجة</label><input id="pSpouse" dir="auto">
+    <div id="pSpBox"><label id="pSpouseL">الزوجة</label><div class="lq"><div><small>اللقب (اسم العائلة)</small><input id="pSpouseLaqab" dir="auto"></div><div><small>الاسم</small><input id="pSpouse" dir="auto"></div></div></div>
     <label id="pSpouseBL">تاريخ ميلاد الزوجة</label><div class="dw" id="dSpouseBirth"></div>
     <div id="pStudyBox"><label>الدراسة أو العمل</label>
       <div class="seg" id="pSeg"><button type="button" data-k="working">💼 يعمل</button><button type="button" data-k="study">📚 يدرس</button><button type="button" data-k="done">🎓 أنهى دراسته</button><button type="button" data-k="other">✏️ أخرى</button></div>
@@ -215,23 +216,25 @@ const FAM=(()=>{
   const spLabel=n=>n&&n.female?'الزوج':'الزوجة';
   const dua=n=>n.female?'رحمها الله':'رحمه الله';
   const spDua=n=>n.female?'رحمه الله':'رحمها الله';
-  const spName1=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):(n.spouse||'');};
+  const spName1=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):[n.spouseLaqab,n.spouse].filter(Boolean).join(' ');};
   /* all spouses: the first (spouse/spouseId) + extra ones in n.wives[] */
   const spouses=(C,n)=>{const out=[];const a=spName1(C,n);if(a||(n.wives||[]).length)out.push({i:0,name:a||'—',dead:!!(n.spouseDead||n.spouseDeath),birth:n.spouseBirth||'',death:n.spouseDeath||'',link:C.spouse(n)});
-    (n.wives||[]).forEach((w,k)=>{if(w&&w.name)out.push({i:k+1,name:w.name,dead:!!(w.dead||w.death),birth:w.birth||'',death:w.death||'',link:null});});return out;};
+    (n.wives||[]).forEach((w,k)=>{if(w&&(w.name||w.laqab))out.push({i:k+1,name:[w.laqab,w.name].filter(Boolean).join(' '),dead:!!(w.dead||w.death),birth:w.birth||'',death:w.death||'',link:null});});return out;};
   const spName=(C,n)=>spouses(C,n).map(x=>x.name).filter(x=>x&&x!=='—').join(' · ');
   /* the mother of a child whose father has several wives (null when unknown / single wife) */
   const momOf=(C,c)=>{const p=C.parent(c);if(!p||p.female||!(p.wives||[]).length)return null;const L=spouses(C,p);return L.find(x=>x.i===(c.mom||0))||null;};
   /* nasab after the name, e.g. "بن بكير بن الناصر" — through a mother: "بن زوجها، وأمه فلانة بنت فلان" */
   function nasab(C,n,max,_d){max=max||99;_d=_d||0;const p=C.parent(n);if(!p||_d>=max)return '';
     if(!p.female){const rest=nasab(C,p,max,_d+1);return bn(n)+' '+(p.name||'—')+(rest?' '+rest:'');}
-    const h=C.spouse(p),hn=h?h.name:(p.spouse||'');
+    const h=C.spouse(p),hn=h?h.name:[p.spouse,p.spouseLaqab].filter(Boolean).join(' ');
     const mom=(n.female?'وأمها ':'وأمه ')+(p.name||'—'),mrest=nasab(C,p,Math.min(max,_d+3),_d+1);
     if(h){const hr=nasab(C,h,max,_d+1);return bn(n)+' '+hn+(hr?' '+hr:'')+'، '+mom+(mrest?' '+mrest:'');}
     return (hn?bn(n)+' '+hn+'، ':'')+mom+(mrest?' '+mrest:'');}
   /* children to show for n: own, or (if none) those recorded under the linked spouse */
+  /* family name (لقب) of a child whose mother married outside the family */
+  const laqabOf=(C,n)=>{const p=C.parent(n);return p&&p.female&&!C.spouse(p)&&p.spouseLaqab?p.spouseLaqab:'';};
   function viaSpouse(C,n){if(n.children.length)return null;const s=C.spouse(n);return s&&s.children.length?s:null;}
-  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,nasab,viaSpouse};
+  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,laqabOf,nasab,viaSpouse};
 })();
 /* ===== end FAM ===== */
 let _C=null;const Cx=()=>_C||(_C=FAM.ctx(data.root));
@@ -450,7 +453,7 @@ function cardSpouses(n){const C=Cx(),L=FAM.spouses(C,n),many=L.length>1;
     const rows=[];if(!x.link){if(x.birth)rows.push('الميلاد: '+esc(x.birth));if(x.death)rows.push('الوفاة: '+esc(x.death));const r=calcAge(x.birth,x.death,x.dead);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');}
     return `<div class="sp2">${lbl}: ${nm}${x.dead&&!x.link?' <small style="color:#8a97b3">('+FAM.spDua(n)+')</small>':''}</div>`+rows.map(r=>`<div class="row">${r}</div>`).join('');}).join('');}
 function cardParents(n,p){if(!p)return '';const C=Cx(),ch=(id,t)=>id?`<span class="chip" data-go="${id}">${esc(t)}</span>`:`<span class="chip" style="cursor:default">${esc(t)}</span>`;
-  if(p.female){const h=C.spouse(p),hn=h?h.name:p.spouse;return `<h3>${hn?'الأب والأم':'الأم'}</h3>${hn?ch(h&&h.id,hn):''}${ch(p.id,p.name)}`;}
+  if(p.female){const h=C.spouse(p),hn=h?h.name:FAM.spName(C,p),lq=FAM.laqabOf(C,n);return `${lq?`<div class="row"><b>اللقب:</b> ${esc(lq)}</div>`:''}<h3>${hn?'الأب والأم':'الأم'}</h3>${hn?ch(h&&h.id,hn):''}${ch(p.id,p.name)}`;}
   const m=FAM.momOf(C,n)||(()=>{const L=FAM.spouses(C,p);return L.length===1?L[0]:null;})();
   return `<h3>${m&&m.name!=='—'?'الأب والأم':'الأب'}</h3>${ch(p.id,p.name)}${m&&m.name!=='—'?ch(m.link&&m.link.id,m.name):''}`;}
 function cardKids(n){const C=Cx(),chips=a=>a.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('');
@@ -567,8 +570,8 @@ function profOpen(n){profPerson=n;const f=find(n.id),sibs=f&&f.p?f.p.children.fi
   $('#pName').value='';$('#pSec').textContent='معلومات '+(n.name||'الشخص');
   dateSet('dBirth',n.birth);dateSet('dDeath',n.death);dateSet('dSpouseBirth',n.spouseBirth);
   $('#pDead').checked=!!(n.dead||n.death);$('#pDeadL').textContent=n.female?'متوفاة (رحمها الله)':'متوفى (رحمه الله)';deadVis();
-  const lk=Cx().spouse(n);$('#pSpouse').value=FAM.spName(Cx(),n);$('#pSpouse').disabled=!!lk;
-  $('#pSpouseL').textContent=n.female?'اسم الزوج':'اسم الزوجة';$('#pSpouseBL').textContent=n.female?'تاريخ ميلاد الزوج':'تاريخ ميلاد الزوجة';
+  const lk=Cx().spouse(n);$('#pSpouse').value=lk?lk.name:(n.spouse||'');$('#pSpouseLaqab').value=lk?'':(n.spouseLaqab||'');$('#pSpouse').disabled=$('#pSpouseLaqab').disabled=!!lk;$('#pSpouseLaqab').parentNode.style.display=lk?'none':'';
+  $('#pSpouseL').textContent=(n.female?'الزوج':'الزوجة')+(lk?' (من العائلة)':'');$('#pSpouseBL').textContent=n.female?'تاريخ ميلاد الزوج':'تاريخ ميلاد الزوجة';
   $('#pLvl').innerHTML=lvlOptions();$('#pStudyTxt').value='';segK='';segSet('');
   $('#pSibs').innerHTML='';$('#pKids').innerHTML='';
   $('#pSibKnown').textContent=sibs.length?'المسجّلون حاليًا: '+sibs.map(c=>c.name).join('، ')+' — أضف الناقصين فقط.':'لا يوجد إخوة مسجّلون بعد.';
@@ -584,7 +587,7 @@ $('#pSend').onclick=async()=>{const n=profPerson;if(!n)return;const E=$('#pErr')
   const dates={dBirth:'birth',dSpouseBirth:'spouseBirth'};const dead=$('#pDead').checked;if(dead)dates.dDeath='death';
   for(const id in dates){const r=dateGet(id);if(r.err){E.textContent=({birth:'تاريخ الميلاد',death:'تاريخ الوفاة',spouseBirth:'ميلاد الزوج/الزوجة'})[dates[id]]+': '+r.err;return;}ch(dates[id],r.v,n[dates[id]]);}
   if(dead&&!(n.dead||n.death))me.dead=true;
-  if(!$('#pSpouse').disabled)ch('spouse',v('pSpouse'),n.spouse);
+  if(!$('#pSpouse').disabled){ch('spouse',v('pSpouse'),n.spouse);ch('spouseLaqab',v('pSpouseLaqab'),n.spouseLaqab);}
   if(!dead&&segK){const lv=$('#pLvl').value,t=v('pStudyTxt').slice(0,100);
     if(segK==='study'){if(!lv){E.textContent='اختر السنة الدراسية من القائمة، أو اختر «سنتي غير موجودة».';return;}
       if(lv==='x'){if(!t){E.textContent='اكتب سنتك وتخصصك.';return;}me.study='يدرس: '+t;}
@@ -593,7 +596,7 @@ $('#pSend').onclick=async()=>{const n=profPerson;if(!n)return;const E=$('#pErr')
     else{me.es=segK;me.study=(segK==='working'?'يعمل':'أنهى دراسته')+(t?': '+t:'');if(t)me.ed=t;}}
   const sib=profRows($('#pSibs')),kids=profRows($('#pKids'));
   if(!Object.keys(me).length&&!sib.length&&!kids.length){E.textContent='لم تُضف أي معلومة جديدة.';return;}
-  const L=[];const nm={birth:'الميلاد',death:'الوفاة',spouse:FAM.spLabel(n),spouseBirth:'ميلاد '+FAM.spLabel(n),study:'الدراسة/العمل'};
+  const L=[];const nm={birth:'الميلاد',death:'الوفاة',spouse:FAM.spLabel(n),spouseLaqab:'لقب '+FAM.spLabel(n),spouseBirth:'ميلاد '+FAM.spLabel(n),study:'الدراسة/العمل'};
   if(me.dead)L.push(n.female?'متوفاة رحمها الله':'متوفى رحمه الله');Object.keys(me).forEach(k=>{if(nm[k])L.push(nm[k]+': '+me[k]);});
   if(sib.length)L.push('إخوة: '+sib.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
   if(kids.length)L.push('أبناء: '+kids.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));

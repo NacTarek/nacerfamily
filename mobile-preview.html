@@ -61,23 +61,25 @@ const FAM=(()=>{
   const spLabel=n=>n&&n.female?'الزوج':'الزوجة';
   const dua=n=>n.female?'رحمها الله':'رحمه الله';
   const spDua=n=>n.female?'رحمه الله':'رحمها الله';
-  const spName1=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):(n.spouse||'');};
+  const spName1=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):[n.spouseLaqab,n.spouse].filter(Boolean).join(' ');};
   /* all spouses: the first (spouse/spouseId) + extra ones in n.wives[] */
   const spouses=(C,n)=>{const out=[];const a=spName1(C,n);if(a||(n.wives||[]).length)out.push({i:0,name:a||'—',dead:!!(n.spouseDead||n.spouseDeath),birth:n.spouseBirth||'',death:n.spouseDeath||'',link:C.spouse(n)});
-    (n.wives||[]).forEach((w,k)=>{if(w&&w.name)out.push({i:k+1,name:w.name,dead:!!(w.dead||w.death),birth:w.birth||'',death:w.death||'',link:null});});return out;};
+    (n.wives||[]).forEach((w,k)=>{if(w&&(w.name||w.laqab))out.push({i:k+1,name:[w.laqab,w.name].filter(Boolean).join(' '),dead:!!(w.dead||w.death),birth:w.birth||'',death:w.death||'',link:null});});return out;};
   const spName=(C,n)=>spouses(C,n).map(x=>x.name).filter(x=>x&&x!=='—').join(' · ');
   /* the mother of a child whose father has several wives (null when unknown / single wife) */
   const momOf=(C,c)=>{const p=C.parent(c);if(!p||p.female||!(p.wives||[]).length)return null;const L=spouses(C,p);return L.find(x=>x.i===(c.mom||0))||null;};
   /* nasab after the name, e.g. "بن بكير بن الناصر" — through a mother: "بن زوجها، وأمه فلانة بنت فلان" */
   function nasab(C,n,max,_d){max=max||99;_d=_d||0;const p=C.parent(n);if(!p||_d>=max)return '';
     if(!p.female){const rest=nasab(C,p,max,_d+1);return bn(n)+' '+(p.name||'—')+(rest?' '+rest:'');}
-    const h=C.spouse(p),hn=h?h.name:(p.spouse||'');
+    const h=C.spouse(p),hn=h?h.name:[p.spouse,p.spouseLaqab].filter(Boolean).join(' ');
     const mom=(n.female?'وأمها ':'وأمه ')+(p.name||'—'),mrest=nasab(C,p,Math.min(max,_d+3),_d+1);
     if(h){const hr=nasab(C,h,max,_d+1);return bn(n)+' '+hn+(hr?' '+hr:'')+'، '+mom+(mrest?' '+mrest:'');}
     return (hn?bn(n)+' '+hn+'، ':'')+mom+(mrest?' '+mrest:'');}
   /* children to show for n: own, or (if none) those recorded under the linked spouse */
+  /* family name (لقب) of a child whose mother married outside the family */
+  const laqabOf=(C,n)=>{const p=C.parent(n);return p&&p.female&&!C.spouse(p)&&p.spouseLaqab?p.spouseLaqab:'';};
   function viaSpouse(C,n){if(n.children.length)return null;const s=C.spouse(n);return s&&s.children.length?s:null;}
-  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,nasab,viaSpouse};
+  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,laqabOf,nasab,viaSpouse};
 })();
 /* ===== end FAM ===== */
 
