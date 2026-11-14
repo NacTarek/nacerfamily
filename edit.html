@@ -1050,6 +1050,8 @@ function applySug(r,doApply){
   if(doApply&&p.t==='profile'){const me=p.me||{},nn=f.n,key=x=>String(x||'').replace(/\s+/g,' ').trim();
     ['birth','death','spouse','spouseLaqab','spouseBirth','place'].forEach(k=>{if(me[k])nn[k]=String(me[k]).trim();});
     if(me.dead||me.death)nn.dead=true;
+    if(me.name)nn.name=String(me.name).trim();
+    if(me.note||me.rep)nn.note=(nn.note?nn.note+'\n':'')+'من اقتراح '+(r.sender||'')+': '+[me.rep?'⚠ '+me.rep:'',me.note||''].filter(Boolean).join(' — ');
     let eduSet=false;
     if(me.es&&!nn.dead){const CH={m:CH_MAIN,d:CH_DOC,e:CH_MED,p:CH_PH,s:CH_SP,q:CH_PM},mm=/^([mdepsq]):(\d+)$/.exec(me.es);
       if(mm&&CH[mm[1]]&&CH[mm[1]][+mm[2]]){setEdu(nn,CH[mm[1]][+mm[2]],curYear());if(me.ed){const e=ensureEdu(nn);if(!e.major)e.major=String(me.ed).slice(0,80);}eduSet=true;}
@@ -1058,7 +1060,7 @@ function applySug(r,doApply){
     const add=(par,list)=>{let c=0;(list||[]).forEach(x=>{if(!x.n||par.children.some(k=>key(k.name)===key(x.n)))return;par.children.push(P(key(x.n),0,{birth:x.b||''}));c++;});sortKids(par);return c;};
     let a1=add(nn,p.kids),a2=0;if(f.parent)a2=add(f.parent,p.sib);else if((p.sib||[]).length)alert('هذا الشخص هو الجذر، فلا يمكن إضافة إخوة له.');
     if(me.birth&&f.parent)sortKids(f.parent);
-    done=true;toast('طُبّق: '+a1+' أبناء و '+a2+' إخوة أُضيفوا','ok');}
+    done=true;toast('طُبّق: '+a1+' أبناء و '+a2+' إخوة أُضيفوا'+(me.rep?' — ⚠ فيه بلاغ «'+me.rep+'» راجعه يدويًا':''),'ok');}
   sel=m.id;draw();renderPanel();if(done)save();setTimeout(()=>centerNode(m.id),60);return done?'applied':'opened';}
 /* login gate */
 async function ownerCheck(){

@@ -100,6 +100,7 @@ svg.drag{cursor:grabbing}
 #rRes .me{margin-top:12px;font-size:13px}#rRes .me button{margin-inline-start:6px}
 #rPick input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:1.5px solid #c9d6ef;border-radius:12px;margin-top:6px}
 #rList div{padding:9px 10px;border-bottom:1px solid #e3e8f2;cursor:pointer}#rList div:hover{background:#eaf1ff}#rList small{display:block;color:#6b7a99;font-size:12px}
+#pick{position:fixed;inset:0;z-index:31;background:rgba(15,25,50,.45);display:none;align-items:flex-start;justify-content:center;padding:16px}#pick .box{background:#fff;border-radius:16px;padding:16px;width:min(520px,100%);max-height:calc(100% - 32px);overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.35)}#pick h2{margin:0 0 4px;font-size:18px}#pick p{margin:0 0 10px;color:#6b7a99;font-size:13px}#pick input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:1px solid #d5ddec;border-radius:10px}#pkRes div{padding:9px 10px;border-bottom:1px solid #eef1f7;cursor:pointer}#pkRes div:hover{background:#eaf1ff}#pkRes small{display:block;color:#8a97b3;font-size:12px}#pick .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 #prof{position:fixed;inset:0;z-index:32;background:rgba(15,25,50,.45);display:none}
 #prof .pbox{max-width:540px;margin:16px auto;max-height:calc(100% - 32px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #prof .lh{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #e3e8f2;flex-wrap:wrap}#prof .lh b{font-size:17px}#prof .lsub{flex:1;font-size:12px;color:#6b7a99}
@@ -111,6 +112,7 @@ svg.drag{cursor:grabbing}
 #prof .prow{display:flex;gap:6px;margin:6px 0}#prof .prow input:first-child{flex:2}#prof .prow input:nth-child(2){flex:1}#prof .prow button{padding:4px 9px}
 #prof .dw{display:flex;gap:6px}#prof .dw select,#prof select{font:inherit;font-size:15px;padding:8px;border:1px solid #d5ddec;border-radius:10px;background:#fff;min-width:0}#prof .dw .dd{flex:1}#prof .dw .dm{flex:1.6}#prof .dw .dy{flex:1.2}#prof select{width:100%}
 #prof .lq{display:flex;gap:6px}#prof .lq>div{flex:1;min-width:0}#prof .lq small{display:block;color:#8a97b3;font-size:11px;margin-bottom:2px}
+#prof textarea{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:9px 11px;border:1px solid #d5ddec;border-radius:10px;resize:vertical}
 #prof .dhint{font-size:11.5px;color:#8a97b3;margin-top:3px}#prof .pchk{display:flex;align-items:center;gap:8px;color:#1b2a4a;font-size:14px;margin:12px 0 2px;cursor:pointer}#prof .pchk input{width:auto}
 #prof .seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}#prof .seg button{flex:1;min-width:110px;padding:9px 6px;border:1px solid #d5ddec;border-radius:10px;background:#fff;font:inherit;font-size:14px;cursor:pointer}#prof .seg button.on{background:#2b59c3;border-color:#2b59c3;color:#fff}#prof #pStudyTxt,#prof #pLvl{margin-top:6px}
 #prof .err{color:#c0392b;font-size:13px;margin-top:10px;min-height:18px}#prof .row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
@@ -127,7 +129,7 @@ svg.drag{cursor:grabbing}
   <button id="bFit">عرض الكل</button>
   <button id="bCol"></button>
   <button id="bExp" style="display:none">🖼 تصدير للطباعة</button>
-  <button id="bSug" class="sugb">✉ اقتراح تعديل</button>
+  <button id="bSug" class="sugb">✍ تصحيح أو إكمال</button>
 </header>
 <div id="sbar"><div class="search"><span class="si">🔍</span><input id="q" type="text" placeholder="ابحث عن اسم… (مثال: ناصر بن يوسف)" autocomplete="off"><div id="res"></div></div><button id="bList">☰ قائمة العائلة</button><button id="bGame">🎮 من أنا؟</button><button id="bFam">📊 العائلة</button></div>
 <div id="hint"><button id="hintX" aria-label="إخفاء" title="إخفاء">✕</button>
@@ -147,10 +149,11 @@ svg.drag{cursor:grabbing}
 <div id="rel"><div class="rbox"><div class="lh"><b>صلة القرابة</b><span class="lsub" id="rSub"></span><button id="rX" aria-label="إغلاق">✕</button></div>
   <div class="rb"><div id="rRes"></div>
   <div id="rPick"><label for="rQ">من أنت؟ ابحث عن اسمك في الشجرة</label><input id="rQ" autocomplete="off" placeholder="اكتب اسمك أو اسم أبيك…"><div id="rList"></div></div></div></div></div>
-<div id="prof"><div class="pbox"><div class="lh"><b id="pTitle">إكمال المعلومات</b><span class="lsub">املأ ما تعرفه فقط، ويصل إلى مسؤول الشجرة للمراجعة</span><button id="pX" aria-label="إغلاق">✕</button></div>
+<div id="prof"><div class="pbox"><div class="lh"><b id="pTitle">تصحيح أو إكمال المعلومات</b><span class="lsub">املأ ما تعرفه فقط، ويصل إلى مسؤول الشجرة للمراجعة</span><button id="pX" aria-label="إغلاق">✕</button></div>
   <div class="pb">
     <label for="pName">اسمك *</label><input id="pName" autocomplete="name">
     <div class="psec" id="pSec">معلومات الشخص</div>
+    <label for="pFix">الاسم كما يجب أن يُكتب</label><input id="pFix" dir="auto">
     <label>تاريخ الميلاد</label><div class="dw" id="dBirth"></div>
     <label class="pchk"><input type="checkbox" id="pDead"> <span id="pDeadL">متوفى (رحمه الله)</span></label>
     <div id="pDeathBox" style="display:none"><label>تاريخ الوفاة</label><div class="dw" id="dDeath"></div></div>
@@ -163,6 +166,10 @@ svg.drag{cursor:grabbing}
     </div>
     <div class="psec">الإخوة والأخوات</div><div class="phint" id="pSibKnown"></div><div id="pSibs"></div><button type="button" id="pAddSib">+ إضافة أخ أو أخت</button>
     <div class="psec">الأبناء</div><div class="phint" id="pKidKnown"></div><div id="pKids"></div><button type="button" id="pAddKid">+ إضافة ابن أو بنت</button>
+    <div class="psec">تصحيح أو ملاحظة أخرى</div>
+    <label for="pRep">هل في الشجرة خطأ يخصّ هذا الشخص؟</label>
+    <select id="pRep"><option value="">لا</option><option>مكرّر في الشجرة</option><option>ليس في مكانه الصحيح (الأب أو الأم خطأ)</option><option>ترتيبه بين إخوته خطأ</option><option>لا وجود له / يجب حذفه</option></select>
+    <label for="pNote">ملاحظة (اختياري)</label><textarea id="pNote" dir="auto" rows="3" placeholder="أي معلومة أو تصحيح لم تجد له خانة…"></textarea>
     <div class="err" id="pErr"></div>
     <div class="row"><button id="pSend" class="sugb">إرسال المعلومات</button><button id="pLink" type="button">🔗 نسخ رابط لإرساله له</button></div>
   </div></div></div>
@@ -177,6 +184,9 @@ svg.drag{cursor:grabbing}
   <div class="err" id="xErr" style="color:#6b7a99"></div>
   <div class="row"><button id="xGo" class="sugb">تنزيل الصورة</button><button id="xX">إغلاق</button></div>
 </div></div>
+<div id="pick"><div class="box"><h2>✍ تصحيح أو إكمال المعلومات</h2><p>ابحث عن الشخص الذي تريد تصحيح معلوماته أو إكمالها (أو عن الأب لإضافة أبناء له).</p>
+  <input id="pkQ" dir="auto" placeholder="اكتب الاسم… (مثال: ناصر بن يوسف)" autocomplete="off"><div id="pkRes"></div>
+  <div class="row"><button id="pkNone" type="button">الشخص غير موجود في الشجرة؟</button><button id="pkX" type="button">إغلاق</button></div></div></div>
 <div id="sug"><div class="box">
   <h2>اقتراح تعديل أو إضافة</h2>
   <p>ساعدنا في تحسين الشجرة: أرسل معلومة جديدة أو تصحيحًا. اكتب اسمك لنعرف من أرسل الاقتراح.</p>
@@ -435,13 +445,12 @@ function showCard(){
   ${cardSpouses(n)}
   ${cardParents(n,p)}
   ${cardKids(n)}
-  <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button></div>
+  ${n.children.length?`<div class="acts"><button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button></div>`:''}
   <div class="acts"><button id="cLink">🔗 نسخ رابط هذا الشخص</button><button id="cRel">🧬 ما صلتي به؟</button></div>
-  <div class="acts"><button id="cProf">✍ إكمال معلومات هذا الشخص</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
+  <div class="acts"><button id="cProf" class="sugb">✍ تصحيح أو إكمال المعلومات</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
   c.style.display='block';
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
   const t=$('#cTog');if(t)t.onclick=()=>{const opening=collapsed.has(n.id);toggle(n.id);sel=null;draw();showCard();if(opening)fitBranch(n);};
-  $('#cSug').onclick=()=>sugOpen(fullName(n),n);
   $('#cLink').onclick=e=>copyLink(n.id,e.currentTarget);
   $('#cRel').onclick=()=>relOpen(n);
   $('#cProf').onclick=()=>profOpen(n);
@@ -566,7 +575,7 @@ $('#pLvl').onchange=()=>{const k=segK;segK='';segSet(k);};
 function deadVis(){const d=$('#pDead').checked;$('#pDeathBox').style.display=d?'':'none';$('#pStudyBox').style.display=d?'none':'';}
 $('#pDead').onchange=deadVis;
 function profOpen(n){profPerson=n;const f=find(n.id),sibs=f&&f.p?f.p.children.filter(c=>c!==n):[];
-  $('#pTitle').textContent='إكمال معلومات: '+(n.name||'');
+  $('#pTitle').textContent='تصحيح أو إكمال: '+(n.name||'');$('#pFix').value=n.name||'';$('#pRep').value='';$('#pNote').value='';
   $('#pName').value='';$('#pSec').textContent='معلومات '+(n.name||'الشخص');
   dateSet('dBirth',n.birth);dateSet('dDeath',n.death);dateSet('dSpouseBirth',n.spouseBirth);
   $('#pDead').checked=!!(n.dead||n.death);$('#pDeadL').textContent=n.female?'متوفاة (رحمها الله)':'متوفى (رحمه الله)';deadVis();
@@ -595,8 +604,9 @@ $('#pSend').onclick=async()=>{const n=profPerson;if(!n)return;const E=$('#pErr')
     else if(segK==='other'){if(!t){E.textContent='اكتب الحالة في الخانة.';return;}me.study=t;}
     else{me.es=segK;me.study=(segK==='working'?'يعمل':'أنهى دراسته')+(t?': '+t:'');if(t)me.ed=t;}}
   const sib=profRows($('#pSibs')),kids=profRows($('#pKids'));
+  {const fx=v('pFix');if(fx&&fx!==(n.name||''))me.name=fx.slice(0,100);if(v('pRep'))me.rep=v('pRep');if(v('pNote'))me.note=v('pNote').slice(0,1500);}
   if(!Object.keys(me).length&&!sib.length&&!kids.length){E.textContent='لم تُضف أي معلومة جديدة.';return;}
-  const L=[];const nm={birth:'الميلاد',death:'الوفاة',spouse:FAM.spLabel(n),spouseLaqab:'لقب '+FAM.spLabel(n),spouseBirth:'ميلاد '+FAM.spLabel(n),study:'الدراسة/العمل'};
+  const L=[];const nm={name:'تصحيح الاسم',rep:'⚠ بلاغ',note:'ملاحظة',birth:'الميلاد',death:'الوفاة',spouse:FAM.spLabel(n),spouseLaqab:'لقب '+FAM.spLabel(n),spouseBirth:'ميلاد '+FAM.spLabel(n),study:'الدراسة/العمل'};
   if(me.dead)L.push(n.female?'متوفاة رحمها الله':'متوفى رحمه الله');Object.keys(me).forEach(k=>{if(nm[k])L.push(nm[k]+': '+me[k]);});
   if(sib.length)L.push('إخوة: '+sib.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
   if(kids.length)L.push('أبناء: '+kids.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
@@ -705,7 +715,14 @@ function sugBuild(){const t=$('#sType').value,v=id=>$('#'+id).value.trim(),note=
   else body='';
   if(note)body+=(body?'\n\nملاحظات: ':'')+note;
   return {body:body.slice(0,2000),payload};}
-$('#bSug').onclick=()=>sugOpen(sel&&find(sel)?fullName(find(sel).n):'',sel&&find(sel)?find(sel).n:null);
+$('#bSug').onclick=()=>{if(sel&&find(sel)){profOpen(find(sel).n);return;}$('#pick').style.display='flex';$('#pkQ').value='';$('#pkRes').innerHTML='';setTimeout(()=>$('#pkQ').focus(),50);};
+$('#pkX').onclick=()=>{$('#pick').style.display='none';};
+$('#pick').addEventListener('click',e=>{if(e.target.id==='pick')$('#pick').style.display='none';});
+$('#pkNone').onclick=()=>{$('#pick').style.display='none';sugOpen('',null);};
+$('#pkQ').addEventListener('input',e=>{const w=norm(e.target.value).split(/\s+/).filter(x=>x&&!['بن','بنت','وامه','وامها'].includes(x)),R=$('#pkRes');if(!w.length){R.innerHTML='';return;}
+  const hits=everyone().filter(({n})=>{const h=norm(n.name+' '+lineage(n));return w.every(x=>h.includes(x));}).slice(0,15);
+  R.innerHTML=hits.length?hits.map(({n})=>`<div data-id="${n.id}"><b>${esc(n.name)}</b><small>${esc(lineage(n))}</small></div>`).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج — جرّب كلمة أقصر</div>';
+  R.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{$('#pick').style.display='none';profOpen(find(d.dataset.id).n);});});
 $('#sX').onclick=()=>{$('#sug').style.display='none';};
 $('#sug').addEventListener('click',e=>{if(e.target.id==='sug')$('#sug').style.display='none';});
 $('#sSend').onclick=async()=>{if(!sugOk())return;const b=$('#sSend'),e=$('#sErr'),g=id=>document.getElementById(id).value.trim();b.disabled=true;e.style.color='#6b7a99';e.textContent='جارٍ الإرسال…';
