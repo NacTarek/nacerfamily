@@ -896,9 +896,9 @@ function famOcc(){const C=Cx(),now=new Date(),t0=new Date(now.getFullYear(),now.
 let tlF='all';
 function famTimeline(){const C=Cx(),ev=[];
   everyone().forEach(({n})=>{const b=parseDate(n.birth),d=parseDate(n.death);
-    if(b)ev.push({y:b.y,k:b.m*31+b.d,t:'b',ic:'👶',h:`وُلد${n.female?'ت':''} <b>${esc(n.name)}</b> <small>${esc(FAM.nasab(C,n,1))}</small>`,id:n.id});
-    if(d)ev.push({y:d.y,k:d.m*31+d.d,t:'d',ic:'🤲',h:`توفي${n.female?'ت':''} <b>${esc(n.name)}</b> <small>${esc(FAM.nasab(C,n,1))}</small> ${FAM.dua(n)}`,id:n.id});
-    const sp=C.spouse(n);if(!(sp&&n.id>sp.id)){const m=parseDate(FAM.marDateOf(C,n));if(m)ev.push({y:m.y,k:m.m*31+m.d,t:'m',ic:'💍',h:`زواج <b>${esc(n.name)}</b> و<b>${esc(FAM.spName(C,n))}</b>`,id:n.id});}});
+    if(b)ev.push({y:b.y,k:b.m*31+b.d,t:'b',ic:'👶',h:`وُلد${n.female?'ت':''} <b>${esc(n.name)}</b> <small>${esc(FAM.nasab(C,n))}</small>`,id:n.id});
+    if(d)ev.push({y:d.y,k:d.m*31+d.d,t:'d',ic:'🤲',h:`توفي${n.female?'ت':''} <b>${esc(n.name)}</b> <small>${esc(FAM.nasab(C,n))}</small> ${FAM.dua(n)}`,id:n.id});
+    const sp=C.spouse(n);if(!(sp&&n.id>sp.id)){const m=parseDate(FAM.marDateOf(C,n));if(m)ev.push({y:m.y,k:m.m*31+m.d,t:'m',ic:'💍',h:`زواج <b>${esc(n.name)}</b> <small>${esc(FAM.nasab(C,n))}</small> و<b>${esc(FAM.spName(C,n))}</b>`,id:n.id});}});
   if(!ev.length)return '<div class="mh">لا توجد تواريخ مسجّلة بعد.</div>';
   ev.sort((a,b)=>a.y-b.y||a.k-b.k);
   const cnt={all:ev.length,b:ev.filter(e=>e.t==='b').length,m:ev.filter(e=>e.t==='m').length,d:ev.filter(e=>e.t==='d').length};
