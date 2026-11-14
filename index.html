@@ -124,6 +124,7 @@ svg.drag{cursor:grabbing}
 #duaW{position:fixed;inset:0;z-index:36;background:rgba(15,25,50,.5);display:none;align-items:center;justify-content:center;padding:16px}#duaW .box{background:#fff;border-radius:18px;padding:18px;width:min(460px,100%);max-height:calc(100% - 32px);overflow:auto}
 #duaW h2{margin:0 0 4px;font-size:19px}#duaW p{margin:0 0 8px;color:#6b7a99;font-size:13px}#duaW label{display:block;font-size:13px;color:#6b7a99;margin:10px 0 4px}#duaW input,#duaW textarea{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:9px 11px;border:1px solid #d5ddec;border-radius:10px}
 #duaW .dsug{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}#duaW .dsug button{border-radius:999px;font-size:12.5px;padding:5px 10px;background:#f5f7fc}#duaW .err{min-height:18px;font-size:13px;margin-top:8px;color:#c0392b}#duaW .row{display:flex;gap:8px;margin-top:8px}#duaW .row button{flex:1;padding:10px}
+.dcnt{display:inline-block;background:#f3f0e6;color:#7a5a12;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:600}.dw3{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}.dw3 .dbtn{margin:0}
 .duas{margin-top:6px}.duas .du{background:#f7f8fb;border-radius:10px;padding:7px 10px;margin:5px 0;font-size:13.5px;line-height:1.8}.duas .du small{display:block;color:#8a97b3;font-size:11.5px}.dbtn{margin-top:6px}
 #fam .mr .mn .duas .du{font-size:13px}#fam .mr .dw2{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}#fam .mr .dw2 button{padding:4px 10px;border-radius:999px;font-size:12.5px}
 #fam .hy{font-weight:800;font-size:18px;color:#8a5a00;margin:14px 0 6px;display:flex;align-items:center;gap:8px}#fam .hg{border:1px solid #f1e2b8;background:#fffaf0;border-radius:14px;padding:10px 12px;margin:8px 0}#fam .hg h5{margin:0 0 6px;font-size:14px;color:#8a5a00}
@@ -232,7 +233,7 @@ svg.drag{cursor:grabbing}
 <div id="wel"><div class="box"><div style="font-size:40px">👋</div><h2 id="welT">أهلًا بك</h2><p>اختر اسمك لنفتح لك فرعك مباشرة، ونعرّفك بصلتك بكل فرد في العائلة.</p>
   <input id="welQ" dir="auto" placeholder="اكتب اسمك… (مثال: طارق بن عمار)" autocomplete="off"><div id="welRes"></div>
   <button id="welSkip" type="button">أتصفّح فقط</button></div></div>
-<div id="duaW"><div class="box"><h2>🤲 دعاء لـ <span id="duaWho"></span></h2><p>يظهر دعاؤك تحت اسمه بعد مراجعته.</p>
+<div id="duaW"><div class="box"><h2>🤲 دعاء لـ <span id="duaWho"></span></h2><p>يُحفظ دعاؤك في أرشيف العائلة، ويظهر للجميع عدد من دعوا له.</p>
   <label for="duaName">اسمك *</label><input id="duaName" autocomplete="name">
   <label for="duaTxt">الدعاء *</label><div class="dsug" id="duaSug"></div><textarea id="duaTxt" dir="auto" rows="3" maxlength="600"></textarea>
   <div class="err" id="duaErr"></div>
@@ -507,7 +508,7 @@ function showCard(){crumbRender();
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
   ${n.burial?`<div class="row">🕌 مكان الدفن: ${esc(n.burial)}</div>`:''}
   ${n.hon?`<div class="row">🏆 ${HON_ORDER.filter(m=>n.hon[m]!=null).map(m=>esc(HON_FULL[m])+' '+(n.hon[m]+1)).join(' · ')}</div>`:''}
-  ${n.dead||n.death?`<h3>🤲 دعاء العائلة</h3><div id="cDuas">${duasHtml(n.id,5)}</div><button class="dbtn" data-dua="${n.id}">🤲 اكتب دعاءً ${n.female?'لها':'له'}</button>`:''}
+  ${n.dead||n.death?`<div class="dw3"><button class="dbtn" data-dua="${n.id}">🤲 اكتب دعاءً ${n.female?'لها':'له'}</button><span id="cDuas">${duasHtml(n.id)}</span></div>`:''}
   ${(()=>{const i=studyInfo(n);if(!i)return '';if(i.kind==='study')return `<div class="row">📚 <b>يدرس:</b> ${esc(i.label)}</div>`+(i.uni?`<div class="row">🏛 <b>الجامعة:</b> ${esc(i.uni)}</div>`:'');if(i.kind==='unknown')return `<div class="row" style="color:#8a97b3">📚 السنة الدراسية / العمل: <i>فارغة، بانتظار المعلومة</i></div>`;return '';})()}
   ${cardSpouses(n)}
   ${cardParents(n,p)}
@@ -517,7 +518,7 @@ function showCard(){crumbRender();
   <div class="acts"><button id="cProf" class="sugb">✍ تصحيح أو إكمال المعلومات</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
   c.style.display='block';placeCard();
   c.querySelectorAll('[data-dua]').forEach(b=>b.onclick=()=>duaOpen(n));
-  if((n.dead||n.death)&&!DUAS)duasLoad().then(()=>{const d=$('#cDuas');if(d&&sel===n.id)d.innerHTML=duasHtml(n.id,5);});
+  if((n.dead||n.death)&&!DUAS)duasLoad().then(()=>{const d=$('#cDuas');if(d&&sel===n.id)d.innerHTML=duasHtml(n.id);});
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
   const t=$('#cTog');if(t)t.onclick=()=>{const opening=collapsed.has(n.id);toggle(n.id);sel=null;draw();showCard();if(opening)fitBranch(n);};
   $('#cLink').onclick=e=>copyLink(n.id,e.currentTarget);
@@ -709,9 +710,10 @@ $('#lst').addEventListener('click',e=>{if(e.target.id==='lst'){$('#lst').style.d
 
 /* ---- duas for the deceased ---- */
 let DUAS=null;
-async function duasLoad(force){if(DUAS&&!force)return DUAS;try{const r=await fetch(SB.url+'/rest/v1/duas?select=person_id,sender,body,created_at&status=eq.ok&order=created_at.desc&limit=1000',{headers:{apikey:SB.key},cache:'no-store'});DUAS=r.ok?await r.json():[];}catch(e){DUAS=[];}return DUAS;}
-const duasOf=id=>(DUAS||[]).filter(d=>d.person_id===id);
-function duasHtml(id,max){const L=duasOf(id);if(!L.length)return '';const s=L.slice(0,max||99);return `<div class="duas">${s.map(d=>`<div class="du">${esc(d.body)}<small>— ${esc(d.sender)}</small></div>`).join('')}${L.length>s.length?`<small style="color:#8a97b3">و${L.length-s.length} أدعية أخرى</small>`:''}</div>`;}
+async function duasLoad(force){if(DUAS&&!force)return DUAS;DUAS={};try{const r=await fetch(SB.url+'/rest/v1/rpc/dua_counts',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:'{}',cache:'no-store'});if(r.ok)(await r.json()).forEach(x=>{DUAS[x.person_id]=+x.c;});}catch(e){}return DUAS;}
+const duaN=id=>(DUAS&&DUAS[id])||0;
+const duaWord=c=>c===1?'دعاء واحد':c===2?'دعاءان':c<=10?c+' أدعية':c+' دعاءً';
+function duasHtml(id){const c=duaN(id);return c?`<span class="dcnt">🤲 ${duaWord(c)}</span>`:'';}
 let duaPerson=null;
 function duaOpen(n){duaPerson=n;$('#duaWho').textContent=n.name+' '+FAM.nasab(Cx(),n,1);try{$('#duaName').value=localStorage.getItem('famSender')||'';}catch(e){}
   const h=n.female?'ها':'ه',S=[`اللهم اغفر ل${h} وارحم${h}`,`اللهم أسكن${h} فسيح جناتك`,`اللهم اجعل قبر${h} روضة من رياض الجنة`,`رحم${n.female?'ها':'ه'} الله وجعل مثوا${h} الجنة`];
@@ -723,7 +725,8 @@ $('#duaSend').onclick=async()=>{const nm=$('#duaName').value.trim(),tx=$('#duaTx
   if(!nm){E.textContent='اكتب اسمك.';return;}if(!tx){E.textContent='اكتب الدعاء أو اختر واحدًا.';return;}
   try{localStorage.setItem('famSender',nm);}catch(e){}$('#duaSend').disabled=true;E.style.color='#6b7a99';E.textContent='جارٍ الإرسال…';
   try{const r=await fetch(SB.url+'/rest/v1/duas',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({person_id:duaPerson.id,sender:nm.slice(0,80),body:tx.slice(0,600)})});if(!r.ok)throw 0;
-    E.style.color='#2a7a3b';E.textContent='تقبّل الله دعاءك 🤲 سيظهر بعد مراجعته.';setTimeout(()=>{$('#duaW').style.display='none';},1800);}catch(x){E.style.color='#c0392b';E.textContent='تعذّر الإرسال، حاول لاحقًا.';$('#duaSend').disabled=false;}};
+    E.style.color='#2a7a3b';E.textContent='تقبّل الله دعاءك 🤲';DUAS=DUAS||{};DUAS[duaPerson.id]=duaN(duaPerson.id)+1;
+    setTimeout(()=>{$('#duaW').style.display='none';if($('#fam').style.display==='block'&&famTab==='mem')famRender();const d=$('#cDuas');if(d&&sel===duaPerson.id)d.innerHTML=duasHtml(duaPerson.id);},1500);}catch(x){E.style.color='#c0392b';E.textContent='تعذّر الإرسال، حاول لاحقًا.';$('#duaSend').disabled=false;}};
 /* ---- honour board ---- */
 const HON_FULL={BEM:'شهادة التعليم المتوسط (BEM)',BAC:'البكالوريا (BAC)',LIC:'الليسانس',MAS:'الماستر',DOC:'الدكتوراه',MD:'دكتور في الطب',PD:'دكتور في الصيدلة',SP:'التخصص الطبي',PM:'شهادة شبه طبي'};
 const HON_ORDER=['DOC','MD','PD','SP','MAS','LIC','PM','BAC','BEM'];
@@ -781,7 +784,7 @@ function famMem(){const C=Cx(),rows=[];
   if(!rows.length)return '<div class="mh">لا يوجد متوفون مسجّلون.</div>';
   return `<div class="mh">اللهم اغفر لهم وارحمهم، وعافهم واعفُ عنهم، وأكرم نزلهم، ووسّع مدخلهم<br><small style="color:#8a97b3">${rows.length} من أفراد العائلة رحمهم الله</small></div>`+
    rows.map(r=>{const a=calcAge(r.birth,r.death,true),y=[r.birth&&parseDate(r.birth)?parseDate(r.birth).y:'',r.death&&parseDate(r.death)?parseDate(r.death).y:''];
-     return `<div class="mr" data-go="${r.id}"><span>🤲</span><div class="mn"><b>${esc(r.name)}</b> <small>${esc(r.sub)}</small>${r.self?duasHtml(r.id,2)+`<div class="dw2"><button data-dua="${r.id}">🤲 اكتب دعاءً</button>${duasOf(r.id).length?`<small style="display:inline;color:#8a97b3">${duasOf(r.id).length} دعاء</small>`:''}</div>`:''}</div><div class="md">${y[0]||y[1]?(y[0]||'؟')+' – '+(y[1]||'؟'):''}${a&&a.age!=null?'<br>'+a.age+' سنة':''}</div></div>`;}).join('');}
+     return `<div class="mr" data-go="${r.id}"><span>🤲</span><div class="mn"><b>${esc(r.name)}</b> <small>${esc(r.sub)}</small>${r.self?`<div class="dw2"><button data-dua="${r.id}">🤲 اكتب دعاءً</button>${duasHtml(r.id)}</div>`:''}</div><div class="md">${y[0]||y[1]?(y[0]||'؟')+' – '+(y[1]||'؟'):''}${a&&a.age!=null?'<br>'+a.age+' سنة':''}</div></div>`;}).join('');}
 /* ---- shareable stats image ---- */
 function famData(){const C=Cx(),ppl=everyone().map(x=>x.n),dead=n=>!!(n.dead||n.death),alive=ppl.filter(n=>!dead(n));let maxD=0;(function w(n,d){maxD=Math.max(maxD,d);n.children.forEach(c=>w(c,d+1));})(data.root,0);
   const fem=ppl.filter(n=>n.female).length,cnt={};ppl.forEach(n=>{const k=(n.name||'').trim();if(k&&k!=='شخص جديد')cnt[k]=(cnt[k]||0)+1;});
