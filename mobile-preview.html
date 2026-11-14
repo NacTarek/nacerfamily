@@ -76,10 +76,12 @@ const FAM=(()=>{
     if(h){const hr=nasab(C,h,max,_d+1);return bn(n)+' '+hn+(hr?' '+hr:'')+'، '+mom+(mrest?' '+mrest:'');}
     return (hn?bn(n)+' '+hn+'، ':'')+mom+(mrest?' '+mrest:'');}
   /* children to show for n: own, or (if none) those recorded under the linked spouse */
+  const isMarried=n=>!!(n.spouse||n.spouseLaqab||n.spouseId||(n.wives||[]).length||n.married==='yes');
+  const marLabel=n=>n.female?(n.married==='no'?'عزباء':'متزوجة'):(n.married==='no'?'أعزب':'متزوج');
   /* family name (لقب) of a child whose mother married outside the family */
   const laqabOf=(C,n)=>{const p=C.parent(n);return p&&p.female&&!C.spouse(p)&&p.spouseLaqab?p.spouseLaqab:'';};
   function viaSpouse(C,n){if(n.children.length)return null;const s=C.spouse(n);return s&&s.children.length?s:null;}
-  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,laqabOf,nasab,viaSpouse};
+  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,laqabOf,isMarried,marLabel,nasab,viaSpouse};
 })();
 /* ===== end FAM ===== */
 

@@ -194,10 +194,12 @@ const FAM=(()=>{
     if(h){const hr=nasab(C,h,max,_d+1);return bn(n)+' '+hn+(hr?' '+hr:'')+'، '+mom+(mrest?' '+mrest:'');}
     return (hn?bn(n)+' '+hn+'، ':'')+mom+(mrest?' '+mrest:'');}
   /* children to show for n: own, or (if none) those recorded under the linked spouse */
+  const isMarried=n=>!!(n.spouse||n.spouseLaqab||n.spouseId||(n.wives||[]).length||n.married==='yes');
+  const marLabel=n=>n.female?(n.married==='no'?'عزباء':'متزوجة'):(n.married==='no'?'أعزب':'متزوج');
   /* family name (لقب) of a child whose mother married outside the family */
   const laqabOf=(C,n)=>{const p=C.parent(n);return p&&p.female&&!C.spouse(p)&&p.spouseLaqab?p.spouseLaqab:'';};
   function viaSpouse(C,n){if(n.children.length)return null;const s=C.spouse(n);return s&&s.children.length?s:null;}
-  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,laqabOf,nasab,viaSpouse};
+  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,spouses,momOf,laqabOf,isMarried,marLabel,nasab,viaSpouse};
 })();
 /* ===== end FAM ===== */
 let _C=null;const Cx=()=>_C||FAM.ctx(data.root);
@@ -678,6 +680,8 @@ function renderPanel(){
   <div id="deathBox"><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
   <div class="hint" id="f_age" style="margin:4px 0 8px"></div>
   <hr class="sep">
+  <label>الحالة الاجتماعية</label><select id="f_married"><option value="">غير محدد</option><option value="yes">${n.female?'متزوجة':'متزوج'}</option><option value="no">${n.female?'عزباء':'أعزب'}</option></select>
+  <div id="spAll">
   ${spouseSection(n)}
   <div style="${Cx().spouse(n)?'display:none':''}"><label id="l_spouse">${FAM.spLabel(n)} (من خارج العائلة)</label>
   <div class="lq"><div><small>اللقب (اسم العائلة)</small><input type="text" id="f_spouseLaqab" dir="auto" placeholder="مثال: حمدي"></div><div><small>الاسم</small><input type="text" id="f_spouse" dir="auto" placeholder="مثال: عيسى"></div></div></div>
@@ -686,6 +690,7 @@ function renderPanel(){
   <div id="spDeathBox"><label>تاريخ الوفاة</label><input type="text" id="f_spouseDeath" dir="auto" placeholder="مثال: 2018"></div>
   <div class="hint" id="f_spAge" style="margin:4px 0 8px"></div></div>
   <div id="wivesBox">${wivesHtml(n)}</div>
+  </div>
   ${momHtml(n,parent)}
   <hr class="sep">
   <label>مكان الإقامة (اختياري، مثل: سكيكدة)</label><input type="text" id="f_place" dir="auto">
@@ -715,6 +720,9 @@ function renderPanel(){
   $('#f_dead').checked=!!n.dead;deathVis();ageTxt();
   $('#f_female').checked=!!n.female;$('#f_female').addEventListener('change',e=>{n.female=e.target.checked;draw();renderPanel();save();});
   wireSpouse(n);wireWives(n);wireMom(n,parent);
+  {const m=$('#f_married'),vis=()=>{$('#spAll').style.display=m.value==='no'?'none':'';};m.value=n.married||(FAM.isMarried(n)?'yes':'');vis();
+    m.onchange=()=>{if(m.value==='no'&&FAM.isMarried(n)&&n.married!=='no'&&(n.spouse||n.spouseLaqab||n.spouseId)){if(!confirm('لهذا الشخص زوج/زوجة مسجّل. هل تريد تسجيله أعزب مع ذلك؟ (لن تُحذف بيانات الزوج، ستُخفى فقط)')){m.value='yes';return;}}
+      if(m.value)n.married=m.value;else delete n.married;vis();draw();save();};}
   $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();renderPanel();renderNotice&&renderNotice();});
   $('#f_unsure').checked=n.unsure;$('#f_unsure').addEventListener('change',e=>{n.unsure=e.target.checked;draw();save();});
   wireEdu(n);
@@ -878,7 +886,7 @@ function publicData(){
     if(st.kind==='none')return {};
     if(st.kind==='study')return Object.assign({es:'study',ec:chainKey(st.chain),ei:st.idx,ey:Y0},((n.edu&&n.edu.major)||'').trim()?{em:n.edu.major.trim().slice(0,80)}:{},((n.edu&&n.edu.uni)||'').trim()?{eu:n.edu.uni.trim().slice(0,80)}:{});
     return {es:st.kind};};
-  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',spouseLaqab:n.spouseLaqab||undefined,spouseId:n.spouseId||undefined,birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,wives:(n.wives||[]).length?n.wives.map(w=>({name:w.name||'',laqab:w.laqab||undefined,birth:w.birth||'',death:w.death||'',dead:w.dead?true:undefined})):undefined,mom:n.mom||undefined,children:n.children.map(strip)},pe(n));
+  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',spouseLaqab:n.spouseLaqab||undefined,married:n.married||undefined,spouseId:n.spouseId||undefined,birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,wives:(n.wives||[]).length?n.wives.map(w=>({name:w.name||'',laqab:w.laqab||undefined,birth:w.birth||'',death:w.death||'',dead:w.dead?true:undefined})):undefined,mom:n.mom||undefined,children:n.children.map(strip)},pe(n));
   return {lab:{m:CH_MAIN.map(k=>LBL[k]),d:CH_DOC.map(k=>LBL[k]),e:CH_MED.map(k=>LBL[k]),p:CH_PH.map(k=>LBL[k]),s:CH_SP.map(k=>LBL[k]),q:CH_PM.map(k=>LBL[k])},title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
@@ -1051,6 +1059,7 @@ function applySug(r,doApply){
     ['birth','death','spouse','spouseLaqab','spouseBirth','place'].forEach(k=>{if(me[k])nn[k]=String(me[k]).trim();});
     if(me.dead||me.death)nn.dead=true;
     if(me.name)nn.name=String(me.name).trim();
+    if(me.married==='yes'||me.married==='no')nn.married=me.married;
     if(me.note||me.rep)nn.note=(nn.note?nn.note+'\n':'')+'من اقتراح '+(r.sender||'')+': '+[me.rep?'⚠ '+me.rep:'',me.note||''].filter(Boolean).join(' — ');
     let eduSet=false;
     if(me.es&&!nn.dead){const CH={m:CH_MAIN,d:CH_DOC,e:CH_MED,p:CH_PH,s:CH_SP,q:CH_PM},mm=/^([mdepsq]):(\d+)$/.exec(me.es);
