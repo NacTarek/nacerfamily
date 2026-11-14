@@ -180,6 +180,39 @@ svg.drag{cursor:grabbing}
 </div></div>
 
 <script>
+/* ===== FAM: gender, spouse links & nasab — shared block, keep identical in index.html and edit.html ===== */
+const FAM=(()=>{
+  const nm=s=>String(s||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/يي$/,'ي').replace(/\s+/g,' ').trim();
+  const F_NAMES='فاطمة عائشة حواء مريم زينب سارة هاجر سلمى إلهام آسيا نعيمة رحيمة رقية حفصة زبيدة مسعودة فوزية سندس ليان غفران لويزة بتول رميساء إكرام هبة كوثر فريال رتاج حسناء ضحى سهام سميرة فتيحة يمينة صبرينة كريمة لالة مامة هدى خولة نور أمينة خديجة صفية جميلة نادية سعاد وردة حليمة زهرة زهور نوال ليلى سمية أسماء آمنة شيماء إيمان أمال آمال حياة حنان دنيا ياسمين منى ملاك مروة نسرين وفاء صليحة باية حاية زيلوخة عيشة تونس جوهرة دليلة سهيلة جنات إسراء آية بشرى رانيا لينة لينا جنى تسنيم رحمة فرح نجاة ربيعة حورية جويدة ونيسة مباركة عتيقة يامنة خيرة سكينة بهية';
+  const M_EXC='حمزة أسامة طلحة عبيدة حذيفة عكرمة معاوية عروة قتادة عطية بوعلامة زكرياء زكريا علاء بهاء ضياء الأولياء';
+  const FS=new Set(F_NAMES.split(' ').map(nm)),MS=new Set(M_EXC.split(' ').map(nm));
+  function guess(name){const raw=String(name||'').trim().split(/\s+/),w=raw.map(nm),all=nm(name),last=w[w.length-1]||'',first=w[0]||'',rl=raw[raw.length-1]||'';
+    if(/الدين|عبد/.test(all))return 'm';
+    if(MS.has(last))return 'm';
+    if(FS.has(all)||FS.has(last)||FS.has(first))return 'f';
+    if(/ة$/.test(rl)||/اء$/.test(rl))return 'f';
+    return 'm';}
+  function ctx(root){const by={},par={};(function w(n,p){by[n.id]=n;par[n.id]=p;n.children.forEach(c=>w(c,n));})(root,null);
+    return {by,par,parent:n=>par[n.id]||null,spouse:n=>(n.spouseId&&by[n.spouseId]&&by[n.spouseId]!==n)?by[n.spouseId]:null};}
+  const bn=n=>n&&n.female?'بنت':'بن';
+  const ibn=n=>n&&n.female?'ابنة':'ابن';
+  const spLabel=n=>n&&n.female?'الزوج':'الزوجة';
+  const dua=n=>n.female?'رحمها الله':'رحمه الله';
+  const spDua=n=>n.female?'رحمه الله':'رحمها الله';
+  const spName=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):(n.spouse||'');};
+  /* nasab after the name, e.g. "بن بكير بن الناصر" — through a mother: "بن زوجها، وأمه فلانة بنت فلان" */
+  function nasab(C,n,max,_d){max=max||99;_d=_d||0;const p=C.parent(n);if(!p||_d>=max)return '';
+    if(!p.female){const rest=nasab(C,p,max,_d+1);return bn(n)+' '+(p.name||'—')+(rest?' '+rest:'');}
+    const h=C.spouse(p),hn=h?h.name:(p.spouse||'');
+    const mom=(n.female?'وأمها ':'وأمه ')+(p.name||'—'),mrest=nasab(C,p,Math.min(max,_d+3),_d+1);
+    if(h){const hr=nasab(C,h,max,_d+1);return bn(n)+' '+hn+(hr?' '+hr:'')+'، '+mom+(mrest?' '+mrest:'');}
+    return (hn?bn(n)+' '+hn+'، ':'')+mom+(mrest?' '+mrest:'');}
+  /* children to show for n: own, or (if none) those recorded under the linked spouse */
+  function viaSpouse(C,n){if(n.children.length)return null;const s=C.spouse(n);return s&&s.children.length?s:null;}
+  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,nasab,viaSpouse};
+})();
+/* ===== end FAM ===== */
+let _C=null;const Cx=()=>_C||(_C=FAM.ctx(data.root));
 const NS='http://www.w3.org/2000/svg';
 const $=s=>document.querySelector(s);
 function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs||{})e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
@@ -239,7 +272,7 @@ function ageBadge(g,x,y,n){const NW=168,NH=76,r=ageOf(n);if(!r||r.age==null)retu
   const u=el('text',{x:cx,y:cy+17,'text-anchor':'middle','font-size':9.5,'font-weight':600,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff',opacity:.92},b);u.textContent='سنة';}
 
 function draw(){
-  const svg=$('#svg');svg.innerHTML='';
+  _C=null;const svg=$('#svg');svg.innerHTML='';
   const{leaves,maxD}=layout();
   const W=Math.max(leaves,1)*(NW+GX)+M*2;
   const top=up?90:150,trunk=up?90:0,titleH=up?140:0,bot=up?0:70;
@@ -291,16 +324,22 @@ function draw(){
     el('rect',{class:'main',x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:14,fill:(n.dead||n.death)?'#e9edf4':'url(#scroll)',stroke:'#d5ddec','stroke-width':1.2},g);
     el('rect',{class:'ring',x:x-NW/2-10,y:y-NH/2-4,width:NW+20,height:NH+8,rx:18},g);
     const dua=(n.dead||n.death)?(n.female?'رحمها الله':'رحمه الله'):'';const years=[n.birth,n.death].filter(Boolean).join(' – '),meta=[years,n.place].filter(Boolean).join(' · ');
-    const items=[['name',n.name||'—']];if(dua)items.push(['dua',dua]);if(n.spouse)items.push(['sp',n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'')]);if(meta)items.push(['meta',meta]);
+    const items=[['name',n.name||'—']];if(dua)items.push(['dua',dua]);{const spn=FAM.spName(Cx(),n);if(spn)items.push(['sp',spn+((n.spouseDead||n.spouseDeath)?' '+FAM.spDua(n):'')]);}if(meta)items.push(['meta',meta]);
     const YS={1:[7],2:[-6,18],3:[-14,6,26],4:[-19,-5,12,31]}[items.length];
     const ST={name:[17,700,'#1b2a4a'],dua:[10.5,500,'#8a97b3'],sp:[14.5,600,'#d6336c'],meta:[11,500,'#6b7a99']};
     items.forEach((it,i)=>{const s=ST[it[0]],t=el('text',{x,y:y+YS[i]-(items.length===4&&it[0]==='sp'?0:0),'text-anchor':'middle','font-size':s[0],'font-weight':s[1],'font-family':FF,fill:s[2]},g);t.textContent=it[1];fit.push([t,s[0],NW-22]);});
     ageBadge(g,x,y,n);
+    {const vs=FAM.viaSpouse(Cx(),n);if(vs){const jg=el('g',{class:'sjump','data-go':vs.id,style:'cursor:pointer'},nodesG),lb=(n.female?'أبناؤها عند زوجها ':'أبناؤه عند زوجته ')+'←',w=lb.length*7.2+20,oy=y+NH/2+10;
+      el('rect',{x:x-w/2,y:oy-11,width:w,height:22,rx:11,fill:'#fff',stroke:'#d6336c','stroke-width':1.3,'stroke-dasharray':'4 2.5'},jg);
+      const jt=el('text',{x,y:oy+4.5,direction:'rtl','text-anchor':'middle','font-size':11.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},jg);jt.textContent=lb;}}
     if(collapsed.has(n.id)&&n.children.length){
       const tg=el('g',{class:'tog','data-id':n.id},nodesG),cnt='+'+countDesc(n),w=Math.max(40,cnt.length*9+18),oy=y+NH/2+8;
       el('rect',{x:x-w/2,y:oy-11,width:w,height:22,rx:11,fill:'#2b59c3',stroke:'#fff','stroke-width':1.5},tg);
       const tt=el('text',{x,y:oy+4.5,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':FF,fill:'#fff'},tg);tt.textContent=cnt;}
   });
+  {const sn=sel&&Cx().by[sel],sp=sn&&Cx().spouse(sn);if(sp&&shown.includes(sn)&&shown.includes(sp)){const x1=sn._x,y1=sn._y-NH/2,x2=sp._x,y2=sp._y-NH/2,cy=Math.min(y1,y2)-60-Math.abs(x2-x1)*.08;
+    el('path',{d:`M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}`,stroke:'#d6336c','stroke-width':2.4,'stroke-dasharray':'7 5',fill:'none',opacity:.85},nodesG);
+    const hx=(x1+x2)/2,hy=cy+ (Math.min(y1,y2)-cy)*.25;const ht=el('text',{x:hx,y:hy,'text-anchor':'middle','font-size':18},nodesG);ht.textContent='💍';}}
   const tx=W/2,ty=up?H-78:62;
   const T=el('text',{x:tx,y:ty,'text-anchor':'middle','font-size':40,'font-weight':700,'font-family':FF,fill:'#1b2a4a'},world);T.textContent=data.title||'';fit.push([T,40,W-160]);
   if(data.subtitle){const S=el('text',{x:tx,y:ty+32,'text-anchor':'middle','font-size':20,'font-weight':600,'font-family':FF,fill:'#6b7a99'},world);S.textContent=data.subtitle;fit.push([S,20,W-160]);}
@@ -339,7 +378,8 @@ function endPtr(e,tap){
   ptrs.delete(e.pointerId);svgEl.classList.remove('drag');svgEl._acc=0;
   if(ptrs.size<2)pinch=null;
   if(tap&&!moved&&ptrs.size===0){
-    const t=document.elementFromPoint(e.clientX,e.clientY),tg=t&&t.closest('.tog'),g=t&&t.closest('.node');
+    const t=document.elementFromPoint(e.clientX,e.clientY),tg=t&&t.closest('.tog'),g=t&&t.closest('.node'),sj=t&&t.closest('.sjump');
+    if(sj){goTo(sj.getAttribute('data-go'));return;}
     if(tg){toggle(tg.getAttribute('data-id'));return;}
     if(g){const id=g.getAttribute('data-id'),now=Date.now();
       if(lastTap.id===id&&now-lastTap.t<380){lastTap={id:null,t:0};toggle(id);return;}
@@ -362,14 +402,15 @@ function showCard(){
   const c=$('#card');if(!sel){c.style.display='none';return;}
   const f=find(sel);if(!f){c.style.display='none';return;}
   const n=f.n,p=f.p,years=[n.birth&&('الميلاد: '+esc(n.birth)),n.death&&('الوفاة: '+esc(n.death))].filter(Boolean);
-  c.innerHTML=`<h2>${esc(n.name||'—')}${n.dead||n.death?' <small style="font-size:13px;color:#8a97b3;font-weight:500">('+(n.female?'رحمها الله':'رحمه الله')+')</small>':''}</h2>
+  c.innerHTML=`<h2>${esc(n.name||'—')}${p?` <small style="font-size:13px;color:#6b7a99;font-weight:500">${esc(FAM.nasab(Cx(),n,3))}</small>`:''}${n.dead||n.death?' <small style="font-size:13px;color:#8a97b3;font-weight:500">('+(n.female?'رحمها الله':'رحمه الله')+')</small>':''}</h2>
   ${years.map(y=>`<div class="row">${y}</div>`).join('')}
   ${(()=>{const r=ageOf(n);return r&&r.age!=null?`<div class="row"><b>${r.dead?'العمر عند الوفاة':'العمر'}:</b> ${r.age} سنة</div>`:'';})()}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
   ${(()=>{const i=studyInfo(n);if(!i)return '';if(i.kind==='study')return `<div class="row">📚 <b>يدرس:</b> ${esc(i.label)}</div>`+(i.uni?`<div class="row">🏛 <b>الجامعة:</b> ${esc(i.uni)}</div>`:'');if(i.kind==='unknown')return `<div class="row" style="color:#8a97b3">📚 السنة الدراسية / العمل: <i>فارغة، بانتظار المعلومة</i></div>`;return '';})()}
-  ${n.spouse?`<div class="sp2">الزوجة: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">(رحمها الله)</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
-  ${p?`<h3>الأب / الأم</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:''}
-  ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:''}
+  ${(()=>{const s=Cx().spouse(n);return s?`<div class="sp2">${FAM.spLabel(n)}: <span class="chip" data-go="${s.id}">${esc(s.name)} ${esc(FAM.nasab(Cx(),s,2))}</span> <small style="color:#8a97b3">(من العائلة)</small></div>`:'';})()}
+  ${n.spouse&&!Cx().spouse(n)?`<div class="sp2">${FAM.spLabel(n)}: ${esc(n.spouse)}${n.spouseDead||n.spouseDeath?' <small style="color:#8a97b3">('+FAM.spDua(n)+')</small>':''}</div>`+(()=>{const rows=[];if(n.spouseBirth)rows.push('الميلاد: '+esc(n.spouseBirth));if(n.spouseDeath)rows.push('الوفاة: '+esc(n.spouseDeath));const r=spAgeOf(n);if(r&&r.age!=null)rows.push('<b>'+(r.dead?'العمر عند الوفاة':'العمر')+':</b> '+r.age+' سنة');return rows.map(x=>`<div class="row">${x}</div>`).join('');})():''}
+  ${p?(()=>{const h=p.female?Cx().spouse(p):null;return p.female?`<h3>${h||p.spouse?'الأب والأم':'الأم'}</h3>${h?`<span class="chip" data-go="${h.id}">${esc(h.name)}</span>`:(p.spouse?`<span class="chip" style="cursor:default">${esc(p.spouse)}</span>`:'')}<span class="chip" data-go="${p.id}">${esc(p.name)}</span>`:`<h3>${(()=>{const m=Cx().spouse(p);return m?'الأب والأم':'الأب';})()}</h3><span class="chip" data-go="${p.id}">${esc(p.name)}</span>${(()=>{const m=Cx().spouse(p);return m?`<span class="chip" data-go="${m.id}">${esc(m.name)}</span>`:'';})()}`;})():''}
+  ${n.children.length?`<h3>الأبناء (${n.children.length})</h3>${n.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:(()=>{const v=FAM.viaSpouse(Cx(),n);return v?`<h3>الأبناء (${v.children.length}) <small style="font-weight:500;color:#8a97b3">— مسجّلون عند ${n.female?'زوجها':'زوجته'}</small></h3>${v.children.map(k=>`<span class="chip" data-go="${k.id}">${esc(k.name)}</span>`).join('')}`:'';})()}
   <div class="acts">${n.children.length?`<button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button>`:''}<button id="cSug">اقتراح تعديل</button></div>
   <div class="acts"><button id="cLink">🔗 نسخ رابط هذا الشخص</button><button id="cRel">🧬 ما صلتي به؟</button></div>
   <div class="acts"><button id="cProf">✍ إكمال معلومات هذا الشخص</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
@@ -386,13 +427,13 @@ function goTo(id){pathTo(id).forEach(a=>collapsed.delete(a.id));sel=id;draw();sh
 
 /* ---- search ---- */
 const norm=s=>String(s||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase().trim();
-const lineage=n=>pathTo(n.id).map(a=>a.name).join(' بن ');
+const lineage=n=>FAM.nasab(Cx(),n);
 let __hits=[];
 $('#q').addEventListener('input',e=>{
-  const words=norm(e.target.value).split(/\s+/).filter(w=>w&&w!=='بن'&&w!=='بنت'),box=$('#res');
+  const words=norm(e.target.value).split(/\s+/).filter(w=>w&&!['بن','بنت','وامه','وامها'].includes(w)),box=$('#res');
   if(!words.length){box.style.display='none';__hits=[];return;}
-  __hits=everyone().filter(({n})=>{const hay=norm(n.name+' '+lineage(n)+' '+(n.spouse||''));return words.every(w=>hay.includes(w));}).slice(0,20);
-  box.innerHTML=__hits.length?__hits.map(({n})=>{const l=lineage(n);return `<div data-id="${n.id}"><b>${esc(n.name)}</b>${l?`<small>بن ${esc(l)}</small>`:''}</div>`;}).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج، جرّب كلمة أقصر</div>';
+  __hits=everyone().filter(({n})=>{const hay=norm(n.name+' '+lineage(n)+' '+FAM.spName(Cx(),n));return words.every(w=>hay.includes(w));}).slice(0,20);
+  box.innerHTML=__hits.length?__hits.map(({n})=>{const l=lineage(n);return `<div data-id="${n.id}"><b>${esc(n.name)}</b>${l?`<small>${esc(l)}</small>`:''}</div>`;}).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج، جرّب كلمة أقصر</div>';
   box.style.display='block';
   box.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{box.style.display='none';$('#q').value='';goTo(d.getAttribute('data-id'));});
 });
@@ -404,20 +445,29 @@ const ORD=['','الأول','الثاني','الثالث','الرابع','الخ�
 const ord=k=>ORD[k]||('رقم '+k);
 const ORDF=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'],ordf=k=>ORDF[k]||('رقم '+k);
 const gen=g=>g===1?'بجيل':g===2?'بجيلين':'بـ '+g+' أجيال';
-function kinTerm(da,db){ // B relative to A (the visitor), da/db = steps up from A / from B to the common ancestor
+function kinTerm(da,db,pa,pb,i,B){ // B relative to A (the visitor); pa/pb = paths from the root
+  const f=!!(B&&B.female),fm=(m,w)=>f?w:m,ib=FAM.ibn(B);
+  const aP=pa[i]||null,bP=pb[i]||null,par=pa[pa.length-2]||null; // children of the common ancestor on each side; A's own parent
+  const rk=(side,fem)=>(side&&side.female?'خال':'عمّ')+(fem?'ت':'')+'ك';            // عمّك/عمّتك/خالك/خالتك
+  const rof=(side,fem,who)=>(side&&side.female?'خال':'عمّ')+(fem?'ة':'')+' '+who;    // عمّ أبيك / خالة أمّك
+  const pw=par&&par.female?'أمّك':'أبيك',sib=x=>x&&x.female?'أختك':'أخيك';
   if(da===0&&db===0)return 'هو أنت';
-  if(db===0)return da===1?'أبوك':da===2?'جدّك':'جدّك '+ord(da)+' (الجدّ رقم '+da+')';
-  if(da===0)return db===1?'ابنك':db===2?'حفيدك':'من أحفادك (الجيل '+ord(db)+')';
-  if(da===1&&db===1)return 'أخوك';
-  if(da===1)return db===2?'ابن أخيك':db===3?'ابن ابن أخيك':'من أحفاد أخيك (الجيل '+ord(db-1)+')';
-  if(db===1)return da===2?'عمّك':da===3?'عمّ أبيك':'عمّ أحد أجدادك (الجدّ رقم '+(da-1)+')';
+  if(db===0)return da===1?fm('أبوك','أمّك'):da===2?fm('جدّك','جدّتك'):fm('جدّك ','جدّتك ')+ord(da)+' (رقم '+da+')';
+  if(da===0)return db===1?fm('ابنك','ابنتك'):db===2?fm('حفيدك','حفيدتك'):'من أحفادك (الجيل '+ord(db)+')';
+  if(da===1&&db===1)return fm('أخوك','أختك');
+  if(da===1)return db===2?ib+' '+sib(bP):db===3?ib+' '+FAM.ibn(pb[i+1])+' '+sib(bP):'من أحفاد '+sib(bP)+' (الجيل '+ord(db-1)+')';
+  if(db===1)return da===2?rk(aP,f):da===3?rof(aP,f,pw):fm('عمّ','عمّة')+' أحد أجدادك (الجدّ رقم '+(da-1)+')';
   const k=Math.min(da,db)-1,g=db-da;
-  if(g===0)return k===1?'ابن عمّك':'ابن عمّك من الدرجة '+ordf(k);
-  if(g===1&&k===1)return 'ابن ابن عمّك';
-  if(g===-1&&k===1)return 'ابن عمّ أبيك';
-  return 'من أقاربك: ابن عمّ من الدرجة '+ordf(k)+(g>0?' يصغرك '+gen(g):' يكبرك '+gen(-g));}
-function kinship(a,b){const pa=pathTo(a.id).slice().reverse().concat([a]),pb=pathTo(b.id).slice().reverse().concat([b]);let i=0;while(i<pa.length&&i<pb.length&&pa[i]===pb[i])i++;
-  const c=pa[i-1];return {c,da:pa.length-i,db:pb.length-i,term:kinTerm(pa.length-i,pb.length-i)};}
+  if(g===0&&k===1)return ib+' '+rk(aP,bP&&bP.female);
+  if(g===0)return ib+' عمّ من الدرجة '+ordf(k);
+  if(g===1&&k===1)return ib+' '+FAM.ibn(pb[i+1])+' '+rk(aP,bP&&bP.female);
+  if(g===-1&&k===1)return ib+' '+rof(aP,bP&&bP.female,pw);
+  return 'من أقاربك: '+ib+' عمّ من الدرجة '+ordf(k)+(g>0?fm(' يصغرك ',' تصغرك ')+gen(g):fm(' يكبرك ',' تكبرك ')+gen(-g));}
+function kinship(a,b){const C=Cx(),sb=C.spouse(b),ap=C.parent(a);
+  if(sb&&sb===a)return {c:b,da:0,db:0,term:b.female?'زوجتك':'زوجك'};
+  if(sb&&ap&&sb===ap)return {c:b,da:0,db:0,term:b.female?'أمّك':'أبوك'};
+  const pa=pathTo(a.id).slice().reverse().concat([a]),pb=pathTo(b.id).slice().reverse().concat([b]);let i=0;while(i<pa.length&&i<pb.length&&pa[i]===pb[i])i++;
+  const c=pa[i-1];return {c,da:pa.length-i,db:pb.length-i,term:kinTerm(pa.length-i,pb.length-i,pa,pb,i,b)};}
 function getMe(){try{const id=localStorage.getItem('famMe');return id&&find(id)?id:null;}catch(e){return null;}}
 function setMe(id){try{localStorage.setItem('famMe',id);}catch(e){}}
 let relTarget=null;
@@ -427,17 +477,17 @@ function relRender(){const meId=getMe(),t=relTarget;if(!t)return;
   P.style.display='none';const me=find(meId).n;
   if(me===t){R.innerHTML=`<div class="big">هذا أنت 🙂</div><div class="me"><button id="rChange">تغيير اسمي</button></div>`;}
   else{const k=kinship(me,t),cn=k.c.name||'—';
-    R.innerHTML=`<div class="big">«${esc(t.name)}» ${k.term==='هو أنت'?'':'هو '}${esc(k.term)}</div>
-    ${k.da&&k.db?`<div class="why">يجمعكما الجدّ <b>${esc(cn)}</b>؛ هو جدّك رقم ${k.da} وجدّ «${esc(t.name)}» رقم ${k.db}.</div>`:''}
+    R.innerHTML=`<div class="big">«${esc(t.name)}» ${k.term==='هو أنت'?'':(t.female?'هي ':'هو ')}${esc(k.term)}</div>
+    ${k.da&&k.db?`<div class="why">${k.c.female?'تجمعكما الجدّة':'يجمعكما الجدّ'} <b>${esc(cn)}</b>؛ رقم ${k.da} في أجدادك ورقم ${k.db} في أجداد «${esc(t.name)}».</div>`:''}
     <div class="me">أنت: <b>${esc(me.name)}</b> <button id="rChange">ليس أنا</button></div>`;}
   const ch=$('#rChange');if(ch)ch.onclick=()=>{try{localStorage.removeItem('famMe');}catch(e){}relRender();};}
 function relOpen(t){relTarget=t;$('#rel').style.display='block';relRender();}
 $('#rX').onclick=()=>{$('#rel').style.display='none';};
 $('#rel').addEventListener('click',e=>{if(e.target.id==='rel')$('#rel').style.display='none';});
-$('#rQ').addEventListener('input',e=>{const w=norm(e.target.value).split(/\s+/).filter(x=>x&&x!=='بن');const L=$('#rList');
+$('#rQ').addEventListener('input',e=>{const w=norm(e.target.value).split(/\s+/).filter(x=>x&&!['بن','بنت','وامه','وامها'].includes(x));const L=$('#rList');
   if(!w.length){L.innerHTML='';return;}
   const hits=everyone().filter(({n})=>{const h=norm(n.name+' '+lineage(n));return w.every(x=>h.includes(x));}).slice(0,15);
-  L.innerHTML=hits.length?hits.map(({n})=>`<div data-id="${n.id}"><b>${esc(n.name)}</b><small>بن ${esc(lineage(n))}</small></div>`).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج</div>';
+  L.innerHTML=hits.length?hits.map(({n})=>`<div data-id="${n.id}"><b>${esc(n.name)}</b><small>${esc(lineage(n))}</small></div>`).join(''):'<div style="cursor:default;color:#6b7a99">لا نتائج</div>';
   L.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{setMe(d.getAttribute('data-id'));relRender();});});
 function copyLink(id,btn,prof){const url=location.origin+location.pathname+'?p='+encodeURIComponent(id)+(prof?'&c=1':'');
   const done=()=>{const t=btn.textContent;btn.textContent='✓ نُسخ الرابط';setTimeout(()=>{btn.textContent=t;},1800);};
@@ -467,7 +517,7 @@ $('#pSend').onclick=async()=>{const n=profPerson;if(!n)return;const E=$('#pErr')
   ch('birth',v('pBirth'),n.birth);ch('spouse',v('pSpouse'),n.spouse);ch('spouseBirth',v('pSpouseBirth'),n.spouseBirth);ch('place',v('pPlace'),n.place);if(v('pStudy'))me.study=v('pStudy').slice(0,100);
   const sib=profRows($('#pSibs')),kids=profRows($('#pKids'));
   if(!Object.keys(me).length&&!sib.length&&!kids.length){E.textContent='لم تُضف أي معلومة جديدة.';return;}
-  const L=[];const nm={birth:'الميلاد',spouse:'الزوجة',spouseBirth:'ميلاد الزوجة',place:'الإقامة',study:'الدراسة/العمل'};
+  const L=[];const nm={birth:'الميلاد',spouse:FAM.spLabel(n),spouseBirth:'ميلاد '+FAM.spLabel(n),place:'الإقامة',study:'الدراسة/العمل'};
   Object.keys(me).forEach(k=>L.push(nm[k]+': '+me[k]));
   if(sib.length)L.push('إخوة: '+sib.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
   if(kids.length)L.push('أبناء: '+kids.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
@@ -481,7 +531,7 @@ $('#pSend').onclick=async()=>{const n=profPerson;if(!n)return;const E=$('#pErr')
 function listHtml(n,top){
   const dead=n.dead||n.death,ai=(()=>{try{const r=ageOf(n);return r&&r.age!=null?r.age+' سنة':'';}catch(e){return '';}})();
   const si=studyInfo(n),st=si&&si.kind==='study'?' · 📚 '+esc(si.label):'';
-  const head=`<span class="ln">${esc(n.name||'—')}</span>${n.spouse?`<span class="ls">${esc(n.spouse)}</span>`:''}<span class="lm">${dead?(n.female?'رحمها الله':'رحمه الله')+' · ':''}${ai}${st}</span><button class="lgo" data-go="${n.id}">عرض</button>`;
+  const head=`<span class="ln">${esc(n.name||'—')}</span>${FAM.spName(Cx(),n)?`<span class="ls">${esc(FAM.spName(Cx(),n))}</span>`:''}<span class="lm">${dead?(n.female?'رحمها الله':'رحمه الله')+' · ':''}${ai}${st}</span><button class="lgo" data-go="${n.id}">عرض</button>`;
   if(!n.children.length)return `<div class="lr">${head}</div>`;
   return `<details${top?' open':''}><summary>${head}<span class="lm">(${n.children.length})</span></summary>${n.children.map(c=>listHtml(c,false)).join('')}</details>`;}
 $('#bList').onclick=()=>{$('#lBody').innerHTML=listHtml(data.root,true);$('#lst').style.display='block';};
@@ -509,9 +559,8 @@ function studyInfo(n){if(n.dead||n.death)return null;if(!n.es)return{kind:'unkno
   if(n.es!=='study')return{kind:n.es};
   const L=(data.lab&&data.lab[n.ec])||[],j=(n.ei||0)+(curYear()-(n.ey||curYear()));
   return j>=0&&j<L.length?{kind:'study',label:L[j]+(n.em?' — '+n.em:''),uni:n.eu||''}:{kind:'done'};}
-function fullName(n){const anc=pathTo(n.id).slice(0,3);let s=n.name||'—';
-  if(anc.length)s+=(n.female?' بنت ':' بن ')+anc.map(a=>a.name).join(' بن ');
-  const x=[];if(n.spouse)x.push('الزوجة: '+n.spouse);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
+function fullName(n){let s=n.name||'—';const ns=FAM.nasab(Cx(),n,3);if(ns)s+=' '+ns;
+  const x=[];const spn=FAM.spName(Cx(),n);if(spn)x.push(FAM.spLabel(n)+': '+spn);const b=parseDate(n.birth);if(b)x.push('مواليد '+b.y);
   return s+(x.length?' ('+x.join('، ')+')':'');}
 let sugPid=null,sugUnk=false;
 function sugSync(){const t=$('#sType').value;$('#sFill').style.display=(sugUnk&&t==='edit')?'block':'none';$('#fAdd').style.display=t==='add'?'':'none';$('#fEdit').style.display=t==='edit'?'':'none';
@@ -635,7 +684,7 @@ async function init(){
 /* ---- لعبة من أنا ---- */
 let G=null;
 function gInfo(n,p){const sib=p?p.children:[n];const gp=p?find(p.id).p:null;
-  return{f:p?p.name:null,g:gp?gp.name:null,k:n.children.length,r:sib.indexOf(n)+1,sn:sib.length,sp:!!n.spouse,fe:!!n.female};}
+  return{pf:!!(p&&p.female),f:p?p.name:null,g:gp?gp.name:null,k:n.children.length,r:sib.indexOf(n)+1,sn:sib.length,sp:!!n.spouse,fe:!!n.female};}
 function gPool(){return everyone().filter(x=>x.p&&x.n.name&&x.p.name);}
 function gNames(){const c={};gPool().forEach(x=>c[x.n.name]=(c[x.n.name]||0)+1);return c;}
 function gMake(){const pool=gPool(),cnt=gNames();
@@ -648,7 +697,7 @@ function gMake(){const pool=gPool(),cnt=gNames();
   const pref=sh(others.filter(x=>!!x.n.female===!!t.n.female));const rest=sh(others);const seen=new Set([t.n.name]),opts=[t];
   for(const x of pref.concat(rest)){if(opts.length>=4)break;if(seen.has(x.n.name))continue;seen.add(x.n.name);opts.push(x);}
   const cl=[];const g=ti.fe?'أنثى':'ذكر';
-  cl.push('أنا '+g+' وأبي اسمه <b>'+ti.f+'</b>');
+  cl.push('أنا '+g+(ti.pf?' وأمّي اسمها <b>':' وأبي اسمه <b>')+ti.f+'</b>');
   if(ti.g)cl.push('جدّي اسمه <b>'+ti.g+'</b>');
   cl.push(ti.k?'لدي <b>'+ti.k+'</b> '+(ti.k===1?'ابن/ابنة':ti.k===2?'ابنان/ابنتان':'أبناء'):'ليس لدي أبناء في الشجرة');
   if(ti.sn>1)cl.push('ترتيبي بين إخوتي: <b>'+ti.r+'</b> من '+ti.sn);else cl.push('أنا الوحيد/ة لأبي في الشجرة');
@@ -662,13 +711,13 @@ function gDraw(){const B=$('#gBody');
   B.innerHTML=q.cl.slice(0,q.shown).map(c=>'<div class="cl">'+c+'</div>').join('')+
    (q.done?'':(q.shown<q.cl.length?'<button class="gb s" id="gHint">💡 تلميح آخر (ينقص نقطة)</button>':''))+
    '<div style="margin-top:10px;font-weight:600">من أنا؟</div>'+
-   q.opts.map((o,i)=>'<button class="op" data-i="'+i+'">'+o.n.name+' <span style="color:#8a97b3;font-size:12px">بن '+o.p.name+'</span></button>').join('')+
+   q.opts.map((o,i)=>'<button class="op" data-i="'+i+'">'+o.n.name+' <span style="color:#8a97b3;font-size:12px">'+FAM.bn(o.n)+' '+o.p.name+'</span></button>').join('')+
    (q.done?'<div id="gRes" style="margin:8px 0;font-weight:600"></div><button class="gb" id="gNext">'+(G.round>=G.total?'النتيجة':'التالي')+'</button><button class="gb s" id="gGo">اعرض على الشجرة</button>':'');
   const h=$('#gHint');if(h)h.onclick=()=>{q.shown++;gDraw();};
   B.querySelectorAll('.op').forEach(b=>b.onclick=()=>{if(q.done)return;const i=+b.dataset.i,ok=q.opts[i]===q.t;q.done=true;
     const pts=ok?Math.max(1,3-(q.shown-Math.min(2,q.cl.length))):0;if(ok)G.score+=pts;gDraw();
     B.querySelectorAll('.op').forEach((x,j)=>{if(q.opts[j]===q.t)x.classList.add('ok');else if(j===i)x.classList.add('no');});
-    $('#gRes').textContent=ok?'✅ أحسنت! +'+pts+' نقطة':'❌ الجواب: '+q.t.n.name+' بن '+q.t.p.name;});
+    $('#gRes').textContent=ok?'✅ أحسنت! +'+pts+' نقطة':'❌ الجواب: '+q.t.n.name+' '+FAM.bn(q.t.n)+' '+q.t.p.name;});
   const nx=$('#gNext');if(nx){nx.onclick=()=>{G.round++;if(G.round<=G.total)G.q=gMake();gDraw();};$('#gGo').onclick=()=>{gCloseF();goTo(q.t.n.id);};}}
 function gStart(){if(gPool().length<4){alert('عدد الأشخاص في الشجرة قليل للعبة.');return;}G={round:1,total:8,score:0,q:null};G.q=gMake();gDraw();}
 function gCloseF(){$('#gm').style.display='none';}

@@ -58,6 +58,8 @@ textarea{resize:vertical;min-height:58px}
 select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;border-radius:6px;background:#fff;color:#1b2a4a;max-width:100%}
 #e_sel{width:100%}
 .modal .box.wide{width:min(1040px,100%)}
+.splink{border:1px dashed #d6336c;border-radius:10px;padding:8px 10px;margin:6px 0;background:#fff7fa}.splink a{color:#d6336c;font-weight:600}
+.sppick{position:relative}#spRes>div{padding:6px 8px;border-bottom:1px solid #eef1f7;cursor:pointer}#spRes>div:hover{background:#f2f5fb}#spRes small{color:#8a97b3}
 .modal .body{overflow:auto;flex:1}
 .two3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .card{background:#fff;border:1px solid #e0d3bf;border-radius:10px;padding:10px 12px}
@@ -100,7 +102,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
   <button id="bZo">−</button><button id="bZi">+</button><button id="bFit">ملاءمة</button>
   <span id="fstat" class="fstat"></span><span id="cstat" class="fstat"></span><button id="bLink" style="display:none"></button><button id="bDl" style="display:none">تنزيل نسخة محدّثة</button>
   <button id="bUndo" title="تراجع (Cmd/Ctrl+Z)" disabled>↶</button><button id="bRedo" title="إعادة (Cmd/Ctrl+Shift+Z)" disabled>↷</button><button id="bStudy">🎓 الدراسة</button><button id="bPdf">📄 تصدير PDF</button>
-  <button id="bVisits" title="عدد زوّار الموقع">📊 الزيارات</button><button id="bInbox">📥 الاقتراحات</button><button id="bPub">🌐 نشر للعرض</button><button id="bOut" style="display:none">خروج</button>
+  <button id="bFem" title="تحديد الإناث تلقائيًا حسب الأسماء">♀ تحديد الإناث</button><button id="bVisits" title="عدد زوّار الموقع">📊 الزيارات</button><button id="bInbox">📥 الاقتراحات</button><button id="bPub">🌐 نشر للعرض</button><button id="bOut" style="display:none">خروج</button>
   <button id="bData">نسخ احتياطي / استيراد</button>
 </div>
 
@@ -129,6 +131,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 </div></div>
 <div id="gate"><div class="box" id="gateBox"></div></div>
 <div class="modal" id="inboxM"><div class="box wide"><strong>اقتراحات الزوّار</strong><div id="inboxList" style="overflow:auto;display:flex;flex-direction:column;gap:10px"></div><div class="row" style="margin:0"><button id="inboxClose">إغلاق</button></div></div></div>
+<div class="modal" id="femM"><div class="box wide"><strong>تحديد الإناث</strong><div class="hint">اقترحتُ الإناث حسب الاسم. راجع العلامات ثم اضغط «تطبيق». الذين لم تُعلَّم أسماؤهم يبقون ذكورًا.</div><div class="row" style="margin:0"><input id="femQ" type="text" placeholder="تصفية بالاسم…" dir="auto" style="flex:1"><button id="femAll">تعليم المقترحات</button><button id="femNone">إلغاء الكل</button></div><div id="femList" class="body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 12px"></div><div class="row" style="margin:0"><button class="primary" id="femApply">تطبيق</button><button id="femClose">إغلاق</button></div></div></div>
 <div class="modal" id="visM"><div class="box"><strong>زيارات الموقع</strong><div id="visBody" style="overflow:auto">جارٍ التحميل…</div><div class="row" style="margin:0"><button id="visClose">إغلاق</button></div></div></div>
 <div class="modal" id="pubm"><div class="box">
   <strong>نشر للعرض (tree.json)</strong>
@@ -153,6 +156,39 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 
 <script>
 const PRISTINE='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+/* ===== FAM: gender, spouse links & nasab — shared block, keep identical in index.html and edit.html ===== */
+const FAM=(()=>{
+  const nm=s=>String(s||'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/يي$/,'ي').replace(/\s+/g,' ').trim();
+  const F_NAMES='فاطمة عائشة حواء مريم زينب سارة هاجر سلمى إلهام آسيا نعيمة رحيمة رقية حفصة زبيدة مسعودة فوزية سندس ليان غفران لويزة بتول رميساء إكرام هبة كوثر فريال رتاج حسناء ضحى سهام سميرة فتيحة يمينة صبرينة كريمة لالة مامة هدى خولة نور أمينة خديجة صفية جميلة نادية سعاد وردة حليمة زهرة زهور نوال ليلى سمية أسماء آمنة شيماء إيمان أمال آمال حياة حنان دنيا ياسمين منى ملاك مروة نسرين وفاء صليحة باية حاية زيلوخة عيشة تونس جوهرة دليلة سهيلة جنات إسراء آية بشرى رانيا لينة لينا جنى تسنيم رحمة فرح نجاة ربيعة حورية جويدة ونيسة مباركة عتيقة يامنة خيرة سكينة بهية';
+  const M_EXC='حمزة أسامة طلحة عبيدة حذيفة عكرمة معاوية عروة قتادة عطية بوعلامة زكرياء زكريا علاء بهاء ضياء الأولياء';
+  const FS=new Set(F_NAMES.split(' ').map(nm)),MS=new Set(M_EXC.split(' ').map(nm));
+  function guess(name){const raw=String(name||'').trim().split(/\s+/),w=raw.map(nm),all=nm(name),last=w[w.length-1]||'',first=w[0]||'',rl=raw[raw.length-1]||'';
+    if(/الدين|عبد/.test(all))return 'm';
+    if(MS.has(last))return 'm';
+    if(FS.has(all)||FS.has(last)||FS.has(first))return 'f';
+    if(/ة$/.test(rl)||/اء$/.test(rl))return 'f';
+    return 'm';}
+  function ctx(root){const by={},par={};(function w(n,p){by[n.id]=n;par[n.id]=p;n.children.forEach(c=>w(c,n));})(root,null);
+    return {by,par,parent:n=>par[n.id]||null,spouse:n=>(n.spouseId&&by[n.spouseId]&&by[n.spouseId]!==n)?by[n.spouseId]:null};}
+  const bn=n=>n&&n.female?'بنت':'بن';
+  const ibn=n=>n&&n.female?'ابنة':'ابن';
+  const spLabel=n=>n&&n.female?'الزوج':'الزوجة';
+  const dua=n=>n.female?'رحمها الله':'رحمه الله';
+  const spDua=n=>n.female?'رحمه الله':'رحمها الله';
+  const spName=(C,n)=>{const s=C.spouse(n);return s?(s.name||''):(n.spouse||'');};
+  /* nasab after the name, e.g. "بن بكير بن الناصر" — through a mother: "بن زوجها، وأمه فلانة بنت فلان" */
+  function nasab(C,n,max,_d){max=max||99;_d=_d||0;const p=C.parent(n);if(!p||_d>=max)return '';
+    if(!p.female){const rest=nasab(C,p,max,_d+1);return bn(n)+' '+(p.name||'—')+(rest?' '+rest:'');}
+    const h=C.spouse(p),hn=h?h.name:(p.spouse||'');
+    const mom=(n.female?'وأمها ':'وأمه ')+(p.name||'—'),mrest=nasab(C,p,Math.min(max,_d+3),_d+1);
+    if(h){const hr=nasab(C,h,max,_d+1);return bn(n)+' '+hn+(hr?' '+hr:'')+'، '+mom+(mrest?' '+mrest:'');}
+    return (hn?bn(n)+' '+hn+'، ':'')+mom+(mrest?' '+mrest:'');}
+  /* children to show for n: own, or (if none) those recorded under the linked spouse */
+  function viaSpouse(C,n){if(n.children.length)return null;const s=C.spouse(n);return s&&s.children.length?s:null;}
+  return {nm,guess,ctx,bn,ibn,spLabel,dua,spDua,spName,nasab,viaSpouse};
+})();
+/* ===== end FAM ===== */
+let _C=null;const Cx=()=>_C||FAM.ctx(data.root);
 const NS='http://www.w3.org/2000/svg';
 const $=s=>document.querySelector(s);
 function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs||{})e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
@@ -402,7 +438,7 @@ function ageBadge(g,x,y,n){const NW=168,NH=76,r=ageOf(n);if(!r||r.age==null)retu
   const u=el('text',{x:cx,y:cy+17,'text-anchor':'middle','font-size':9.5,'font-weight':600,'font-family':'Alexandria,Tahoma,sans-serif',fill:'#fff',opacity:.92},b);u.textContent='سنة';}
 
 function draw(){
-  const svg=$('#svg');svg.innerHTML='';
+  _C=FAM.ctx(data.root);const svg=$('#svg');svg.innerHTML='';
   const {leaves,maxD}=layout();const up=data.settings.up;
   const NW=168,NH=76,GX=26,LG=112,M=70;
   const W=Math.max(leaves,1)*(NW+GX)+M*2;
@@ -482,11 +518,14 @@ function draw(){
     const dua=(n.dead||n.death)?(n.female?'رحمها الله':'رحمه الله'):'';const years=[n.birth,n.death].filter(Boolean).join(' – ');
     const meta=[years,n.place].filter(Boolean).join(' · ');
     const FF="Alexandria,Tahoma,sans-serif";
-    const items=[['name',n.name||'—']];if(dua)items.push(['dua',dua]);if(n.spouse)items.push(['sp',n.spouse+((n.spouseDead||n.spouseDeath)?' رحمها الله':'')]);if(meta)items.push(['meta',meta]);
+    const items=[['name',n.name||'—']];if(dua)items.push(['dua',dua]);{const spn=FAM.spName(Cx(),n);if(spn)items.push(['sp',(Cx().spouse(n)?'💍 ':'')+spn+((n.spouseDead||n.spouseDeath)?' '+FAM.spDua(n):'')]);}if(meta)items.push(['meta',meta]);
     const YS={1:[7],2:[-6,18],3:[-14,6,26],4:[-19,-5,12,31]}[items.length];
     const ST={name:[17,700,'#1b2a4a'],dua:[10.5,500,'#8a97b3'],sp:[14.5,600,'#d6336c'],meta:[11,500,'#6b7a99']};
     items.forEach((it,i)=>{const s=ST[it[0]],t=el('text',{x,y:y+YS[i]-(items.length===4&&it[0]==='sp'?0:0),'text-anchor':'middle','font-size':s[0],'font-weight':s[1],'font-family':FF,fill:s[2]},g);t.textContent=it[1];fit.push([t,s[0],NW-22]);});
     ageBadge(g,x,y,n);
+    {const vs=FAM.viaSpouse(Cx(),n);if(vs){const jg=el('g',{class:'sjump','data-go':vs.id,style:'cursor:pointer'},nodesG),lb=(n.female?'أبناؤها عند زوجها ':'أبناؤه عند زوجته ')+'←',w=lb.length*7.2+20,oy=y+NH/2+12;
+      el('rect',{x:x-w/2,y:oy-11,width:w,height:22,rx:11,fill:'#fff',stroke:'#d6336c','stroke-width':1.3,'stroke-dasharray':'4 2.5'},jg);
+      const jt=el('text',{x,y:oy+4.5,direction:'rtl','text-anchor':'middle','font-size':11.5,'font-weight':600,'font-family':FF,fill:'#d6336c'},jg);jt.textContent=lb;}}
     {const st=stateAt(n,VY);let bt='',bc='';
       if(st.kind==='study'){bt=st.mile?'★ '+MILE_SHORT[st.mile]:LBL[st.lvl];bc=st.mile?'#d9962b':'#5f86ad';}
       else if(st.kind==='notyet'){bt='لا يدرس بعد';bc='#9aa7bd';}else if(st.kind==='stopped'){bt='توقف';bc='#9a9087';}else if(st.kind==='working'){bt='يعمل';bc='#8a7fb0';}else if(st.kind==='done'){bt='متخرّج';bc='#6b9a6f';}
@@ -495,6 +534,8 @@ function draw(){
     if(n.unsure){el('circle',{cx:x+NW/2-2,cy:y-NH/2+2,r:8,fill:'#f2c04e',stroke:'#b0761a'},g);const q=el('text',{x:x+NW/2-2,y:y-NH/2+6,'text-anchor':'middle','font-size':11,'font-weight':700,fill:'#5a3a08'},g);q.textContent='?';}
   });
 
+  {const sn=sel&&Cx().by[sel],sp=sn&&Cx().spouse(sn);if(sp){const x1=sn._x,y1=sn._y-NH/2,x2=sp._x,y2=sp._y-NH/2,cy=Math.min(y1,y2)-60-Math.abs(x2-x1)*.08;
+    el('path',{d:`M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}`,stroke:'#d6336c','stroke-width':2.4,'stroke-dasharray':'7 5',fill:'none',opacity:.85},nodesG);}}
   // on-tree "+" buttons for the selected person
   const cur=sel&&find(sel);
   if(cur){
@@ -525,12 +566,58 @@ function draw(){
   if(data.subtitle){const S=el('text',{x:tx,y:ty+32,'text-anchor':'middle','font-size':20,'font-weight':600,'font-family':"Alexandria,Tahoma,sans-serif",fill:'#6b7a99'},svg);S.textContent=data.subtitle;fit.push([S,16,W-160]);}
   const vy=ty+(data.subtitle?50:22);
 
+  _C=null;
   applyFit(fit);if(autoFit)fitZoom();else applyZoom();
   renderNotice();
 }
 function applyFit(list){list.forEach(([t,size,maxw])=>{try{const L=t.getComputedTextLength();if(L>maxw)t.setAttribute('font-size',(size*maxw/L).toFixed(1));}catch(e){}});}
 function applyZoom(){const s=$('#svg');s.style.width=(vbW*zoom)+'px';}
 function fitZoom(){autoFit=true;zoom=Math.max(.08,Math.min(1.6,($('#paper').clientWidth-2)/vbW));applyZoom();}
+
+/* ---- spouse link inside the family + merging duplicated children ---- */
+function spouseSection(n){const C=Cx(),s=C.spouse(n);
+  if(s){const dup=n.children.length&&s.children.length;
+    return `<div class="splink"><b>💍 ${n.female?'متزوجة من':'متزوج من'}:</b> <a href="#" id="spGo">${esc(s.name)} ${esc(FAM.nasab(C,s,2))}</a>
+    <div class="hint">${dup?'⚠ لكلٍّ منهما أبناء مسجّلون. ادمجهم ليُكتبوا مرة واحدة عند الأب.':(n.children.length||s.children.length?'الأبناء مسجّلون مرة واحدة ويظهرون عند الآخر برابط.':'')}</div>
+    <div class="row" style="margin:4px 0">${dup?'<button class="primary" id="spMerge">دمج الأبناء عند الأب</button>':''}<button id="spUn">فكّ الربط</button></div></div>`;}
+  return `<label>${n.female?'زوجها':'زوجته'} من العائلة؟</label><div class="sppick"><input type="text" id="spQ" dir="auto" placeholder="ابحث في الشجرة لربط ${n.female?'الزوج':'الزوجة'}…"><div id="spRes"></div></div>`;}
+function wireSpouse(n){const C=Cx(),s=C.spouse(n);
+  if(s){$('#spGo').onclick=e=>{e.preventDefault();select(s.id);};
+    $('#spUn').onclick=()=>{delete n.spouseId;if(s.spouseId===n.id)delete s.spouseId;draw();renderPanel();save();toast('فُكّ الربط');};
+    const mg=$('#spMerge');if(mg)mg.onclick=()=>mergeKids(n,s);return;}
+  const q=$('#spQ'),box=$('#spRes');if(!q)return;
+  const anc=new Set();{let p=C.parent(n);while(p){anc.add(p);p=C.parent(p);}}
+  q.addEventListener('input',()=>{const w=FAM.nm(q.value).split(' ').filter(Boolean);if(!w.length){box.innerHTML='';return;}
+    const hits=Object.values(C.by).filter(m=>m!==n&&!anc.has(m)&&!find(m.id,n)&&w.every(x=>FAM.nm(m.name+' '+FAM.nasab(C,m,3)).includes(x)))
+      .sort((a,b)=>(!!a.female===!!n.female)-(!!b.female===!!n.female)).slice(0,12);
+    box.innerHTML=hits.map(m=>`<div data-id="${m.id}"><b>${esc(m.name)}</b> <small>${esc(FAM.nasab(C,m,3))}</small></div>`).join('')||'<div class="hint">لا نتائج</div>';
+    box.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>linkSpouse(n,C.by[d.dataset.id]));});}
+function linkSpouse(a,b){const C=Cx();[a,b].forEach(x=>{const o=C.spouse(x);if(o&&o.spouseId===x.id)delete o.spouseId;});
+  a.spouseId=b.id;b.spouseId=a.id;a.spouse=b.name;b.spouse=a.name;
+  if(!a.female&&!b.female&&FAM.guess(b.name)==='f')b.female=true;
+  draw();renderPanel();save();toast('✓ رُبط الزوجان','ok');}
+function mergeKids(a,b){
+  let dad=!a.female&&b.female?a:!b.female&&a.female?b:null;
+  if(!dad){if(!confirm('لم يُحدَّد من الأنثى منهما. هل «'+a.name+'» هو الأب؟ (موافق = نعم، إلغاء = «'+b.name+'» هو الأب)'))dad=b;else dad=a;}
+  const mom=dad===a?b:a;let merged=0,moved=0;
+  const fill=(d,s)=>{['birth','death','place','note','spouse','spouseBirth','spouseDeath'].forEach(k=>{if(!d[k]&&s[k])d[k]=s[k];});
+    ['dead','female','spouseDead'].forEach(k=>{if(s[k]&&!d[k])d[k]=s[k];});if(!d.spouseId&&s.spouseId)d.spouseId=s.spouseId;if(!d.edu&&s.edu)d.edu=s.edu;};
+  const relink=(from,to)=>{(function w(n){if(n.spouseId===from)n.spouseId=to;n.children.forEach(w);})(data.root);};
+  function into(dst,src){src.forEach(c=>{const m=dst.children.find(x=>FAM.nm(x.name)===FAM.nm(c.name));
+    if(m){fill(m,c);relink(c.id,m.id);merged++;into(m,c.children);}else{dst.children.push(c);moved++;}});}
+  into(dad,mom.children);mom.children=[];sortKids(dad);
+  draw();renderPanel();save();toast(`✓ دُمج ${merged} ونُقل ${moved} — يمكنك التراجع بـ ↶`,'ok');}
+/* ---- auto-detect females ---- */
+function femOpen(){const C=FAM.ctx(data.root),L=$('#femList');
+  const people=Object.values(C.by).filter(n=>!n.female).map(n=>({n,g:FAM.guess(n.name)})).sort((a,b)=>(a.g==='f'?0:1)-(b.g==='f'?0:1));
+  L.innerHTML=people.map(({n,g})=>`<label class="chk" data-name="${esc(FAM.nm(n.name))}" style="margin:0"><input type="checkbox" data-id="${n.id}" ${g==='f'?'checked data-sug="1"':''}> <b>${esc(n.name)}</b> <small style="color:#8a97b3">${esc(FAM.nasab(C,n,2))}</small></label>`).join('')||'<div class="hint">كل الأشخاص محدَّدون.</div>';
+  $('#femM').classList.add('on');}
+$('#bFem').onclick=femOpen;$('#femClose').onclick=()=>$('#femM').classList.remove('on');
+$('#femAll').onclick=()=>document.querySelectorAll('#femList input[data-sug]').forEach(i=>i.checked=true);
+$('#femNone').onclick=()=>document.querySelectorAll('#femList input').forEach(i=>i.checked=false);
+$('#femQ').oninput=e=>{const q=FAM.nm(e.target.value);document.querySelectorAll('#femList label').forEach(l=>l.style.display=!q||l.dataset.name.includes(q)?'':'none');};
+$('#femApply').onclick=()=>{const C=FAM.ctx(data.root);let k=0;document.querySelectorAll('#femList input:checked').forEach(i=>{const n=C.by[i.dataset.id];if(n){n.female=true;k++;}});
+  $('#femM').classList.remove('on');draw();renderPanel();save();toast('✓ عُلِّم '+k+' أنثى','ok');};
 
 /* ---- side panel ---- */
 function renderPanel(){
@@ -540,13 +627,15 @@ function renderPanel(){
   box.innerHTML=`<h2>الشخص</h2>
   <label>الاسم</label><input type="text" id="f_name" dir="auto">
   <label>تاريخ الميلاد</label><input type="text" id="f_birth" dir="auto" placeholder="مثال: 1950 أو 1950-03-12 أو 12/03/1950">
+  <label class="chk"><input type="checkbox" id="f_female"> أنثى (تظهر «بنت» بدل «بن» وتؤنَّث العبارات)</label>
   <label class="chk"><input type="checkbox" id="f_dead"> متوفى</label>
-  <div id="deathBox"><label class="chk"><input type="checkbox" id="f_female"> أنثى (تظهر «رحمها الله»)</label><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
+  <div id="deathBox"><label>تاريخ الوفاة</label><input type="text" id="f_death" dir="auto" placeholder="مثال: 2015 أو 2015-06-20"></div>
   <div class="hint" id="f_age" style="margin:4px 0 8px"></div>
   <hr class="sep">
-  <label>الزوجة</label><input type="text" id="f_spouse" dir="auto">
-  <div id="spBox"><label>تاريخ ميلاد الزوجة</label><input type="text" id="f_spouseBirth" dir="auto" placeholder="مثال: 1955 أو 1955-02-10">
-  <label class="chk"><input type="checkbox" id="f_spouseDead"> الزوجة متوفاة</label>
+  ${spouseSection(n)}
+  <div style="${Cx().spouse(n)?'display:none':''}"><label id="l_spouse">${FAM.spLabel(n)} (من خارج العائلة)</label><input type="text" id="f_spouse" dir="auto"></div>
+  <div id="spBox"><label>تاريخ ميلاد ${n.female?'الزوج':'الزوجة'}</label><input type="text" id="f_spouseBirth" dir="auto" placeholder="مثال: 1955 أو 1955-02-10">
+  <label class="chk"><input type="checkbox" id="f_spouseDead"> ${n.female?'الزوج متوفى':'الزوجة متوفاة'}</label>
   <div id="spDeathBox"><label>تاريخ الوفاة</label><input type="text" id="f_spouseDeath" dir="auto" placeholder="مثال: 2018"></div>
   <div class="hint" id="f_spAge" style="margin:4px 0 8px"></div></div>
   <hr class="sep">
@@ -569,13 +658,14 @@ function renderPanel(){
   const deathVis=()=>{$('#deathBox').style.display=n.dead?'':'none';};
   ['name','spouse','birth','death','place','note'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;if(k==='birth'){const ff=find(n.id);if(ff&&ff.parent)sortKids(ff.parent);}draw();save();ageTxt();});});
   const spTxt=()=>{const r=spAgeOf(n);$('#f_spAge').textContent=!r?(n.spouseBirth?'تعذّر قراءة تاريخ الميلاد.':''):(r.age==null?'أضف تاريخ الوفاة لحساب العمر.':(r.dead?'العمر عند الوفاة: ':'العمر: ')+r.age+' سنة');};
-  const spVis=()=>{$('#spBox').style.display=n.spouse?'':'none';$('#spDeathBox').style.display=n.spouseDead?'':'none';};
+  const spVis=()=>{$('#spBox').style.display=(n.spouse&&!Cx().spouse(n))?'':'none';$('#spDeathBox').style.display=n.spouseDead?'':'none';};
   ['spouseBirth','spouseDeath'].forEach(k=>{const i=$('#f_'+k);i.value=n[k]||'';i.addEventListener('input',()=>{n[k]=i.value;draw();save();spTxt();});});
   $('#f_spouse').addEventListener('input',spVis);
   $('#f_spouseDead').checked=!!n.spouseDead;spVis();spTxt();
   $('#f_spouseDead').addEventListener('change',e=>{n.spouseDead=e.target.checked;if(!n.spouseDead){n.spouseDeath='';$('#f_spouseDeath').value='';}spVis();draw();save();spTxt();});
   $('#f_dead').checked=!!n.dead;deathVis();ageTxt();
-  $('#f_female').checked=!!n.female;$('#f_female').addEventListener('change',e=>{n.female=e.target.checked;draw();save();});
+  $('#f_female').checked=!!n.female;$('#f_female').addEventListener('change',e=>{n.female=e.target.checked;draw();renderPanel();save();});
+  wireSpouse(n);
   $('#f_dead').addEventListener('change',e=>{n.dead=e.target.checked;if(!n.dead){n.death='';$('#f_death').value='';}deathVis();draw();save();ageTxt();renderPanel();renderNotice&&renderNotice();});
   $('#f_unsure').checked=n.unsure;$('#f_unsure').addEventListener('change',e=>{n.unsure=e.target.checked;draw();save();});
   wireEdu(n);
@@ -590,6 +680,7 @@ function renderPanel(){
   const del=$('#aDel');let armed=false;
   del.onclick=()=>{
     if(!armed){armed=true;del.classList.add('armed');const c=count(n);del.textContent=c>1?`اضغط مجدداً: حذف ${c} أشخاص`:'اضغط مجدداً للحذف';setTimeout(()=>{if(armed&&del.isConnected){armed=false;del.classList.remove('armed');del.textContent='حذف';}},3500);return;}
+    (function u(m){const sp=Cx().spouse(m);if(sp&&sp.spouseId===m.id)delete sp.spouseId;m.children.forEach(u);})(n);
     parent.children.splice(parent.children.indexOf(n),1);sel=parent.id;draw();renderPanel();save();
   };
 }
@@ -604,6 +695,7 @@ function syncBar(){$('#bOri').textContent='اتجاه النمو: '+(data.settin
 function refreshAll(keepSel){if(!keepSel)sel=null;syncBar();draw();renderPanel();if(autoFit)fitZoom();}
 $('#svg').addEventListener('click',e=>{if(suppressClick)return;const a=e.target.closest('.add');if(a){const f=find(a.getAttribute('data-id'));if(!f)return;const act=a.getAttribute('data-act'),n=f.n;
     if(act==='child')addChild(n);else if(act==='parent')addParent(n);else if(act==='sibA')addSibling(n,true);else if(act==='sibB')addSibling(n,false);else addSibling(n,(act==='sibL')===data.settings.rtl);return;}
+  const sj=e.target.closest('.sjump');if(sj){select(sj.getAttribute('data-go'));return;}
   const g=e.target.closest('.node');if(g)select(g.getAttribute('data-id'));});
 $('#bOri').onclick=()=>{data.settings.up=!data.settings.up;syncBar();draw();save();if(autoFit)fitZoom();};
 $('#bOrd').onclick=()=>{data.settings.rtl=!data.settings.rtl;syncBar();draw();save();};
@@ -737,7 +829,7 @@ function publicData(){
     if(st.kind==='none')return {};
     if(st.kind==='study')return Object.assign({es:'study',ec:chainKey(st.chain),ei:st.idx,ey:Y0},((n.edu&&n.edu.major)||'').trim()?{em:n.edu.major.trim().slice(0,80)}:{},((n.edu&&n.edu.uni)||'').trim()?{eu:n.edu.uni.trim().slice(0,80)}:{});
     return {es:st.kind};};
-  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)},pe(n));
+  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',spouseId:n.spouseId||undefined,birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,children:n.children.map(strip)},pe(n));
   return {lab:{m:CH_MAIN.map(k=>LBL[k]),d:CH_DOC.map(k=>LBL[k]),e:CH_MED.map(k=>LBL[k]),p:CH_PH.map(k=>LBL[k]),s:CH_SP.map(k=>LBL[k]),q:CH_PM.map(k=>LBL[k])},title:data.title,subtitle:data.subtitle,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
