@@ -106,7 +106,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
   <button id="bZo">−</button><button id="bZi">+</button><button id="bFit">ملاءمة</button>
   <span id="fstat" class="fstat"></span><span id="cstat" class="fstat"></span><button id="bLink" style="display:none"></button><button id="bDl" style="display:none">تنزيل نسخة محدّثة</button>
   <button id="bUndo" title="تراجع (Cmd/Ctrl+Z)" disabled>↶</button><button id="bRedo" title="إعادة (Cmd/Ctrl+Shift+Z)" disabled>↷</button><button id="bStudy">🎓 الدراسة</button><button id="bPdf">📄 تصدير PDF</button>
-  <button id="bStory" title="نص يظهر للزوار في تبويب «قصة العائلة»">📖 قصة العائلة</button><button id="bDone" title="نسبة اكتمال بيانات كل فرع">📈 اكتمال البيانات</button><button id="bFem" title="تحديد الإناث تلقائيًا حسب الأسماء">♀ تحديد الإناث</button><button id="bClean" title="حذف اسم عائلة الزوج المكرر من أسماء أبناء البنات">🧹 تنظيف الأسماء</button><button id="bVisits" title="عدد زوّار الموقع">📊 الزيارات</button><button id="bInbox">📥 الاقتراحات</button><button id="bPub">🌐 نشر للعرض</button><button id="bOut" style="display:none">خروج</button>
+  <button id="bStory" title="نص يظهر للزوار في تبويب «قصة العائلة»">📖 قصة العائلة</button><button id="bDone" title="نسبة اكتمال بيانات كل فرع">📈 اكتمال البيانات</button><button id="bFem" title="تحديد الإناث تلقائيًا حسب الأسماء">♀ تحديد الإناث</button><button id="bClean" title="حذف اسم عائلة الزوج المكرر من أسماء أبناء البنات">🧹 تنظيف الأسماء</button><button id="bVisits" title="عدد زوّار الموقع">📊 الزيارات</button><button id="bInbox">📥 الاقتراحات</button><button id="bDuas" title="أدعية الزوّار لمن رحلوا، تظهر بعد موافقتك">🤲 الأدعية</button><button id="bPub">🌐 نشر للعرض</button><button id="bOut" style="display:none">خروج</button>
   <button id="bData">نسخ احتياطي / استيراد</button>
 </div>
 
@@ -139,6 +139,7 @@ select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d5ddec;bord
 <div class="modal" id="cleanM"><div class="box wide"><strong>تنظيف أسماء أبناء البنات</strong><div class="hint">هذه عائلات كل أبنائها يبدأ اسمهم بالكلمات نفسها (اسم عائلة الأب). سيُحذف المقطع المكرر من أسمائهم، ويُكتب في خانة زوج الأم، فيظهر النسب: «سليمان بن حمدي عيسى، وأمه لالة…». أزل العلامة عن أي عائلة لا تريد تغييرها.</div><div id="cleanList" class="body"></div><div class="row" style="margin:0"><button class="primary" id="cleanGo">تطبيق</button><button id="cleanX">إغلاق</button></div></div></div>
 <div class="modal" id="storyM"><div class="box wide"><strong>📖 قصة العائلة</strong><div class="hint">اكتب عن الجدّ الأكبر، وأصل العائلة وبلدتها، وما تحب أن تعرفه الأجيال الصغيرة. يظهر النص للزوّار في «📊 العائلة ← 📖 القصة». سطر يبدأ بـ ## يصبح عنوانًا.</div><textarea id="storyT" dir="auto" style="min-height:340px;font-family:inherit;font-size:15px;line-height:1.9"></textarea><div class="row" style="margin:0"><button class="primary" id="storyOk">حفظ</button><button id="storyX">إغلاق</button></div></div></div>
 <div class="modal" id="doneM"><div class="box wide"><strong>📈 اكتمال البيانات حسب الفرع</strong><div class="hint">نسبة من سُجّل له كل نوع من المعلومات. اضغط «📋 رسالة» لنسخ رسالة جاهزة فيها روابط مباشرة للناقصين، ترسلها لأفراد ذلك الفرع على واتساب ليكملوا معلوماتهم.</div><div id="doneList" class="body"></div><div class="row" style="margin:0"><button id="doneX">إغلاق</button></div></div></div>
+<div class="modal" id="duaM"><div class="box wide"><strong>🤲 أدعية الزوّار</strong><div class="hint">تظهر الأدعية للزوّار تحت اسم المتوفى بعد أن تضغط «إظهار».</div><div id="duaList" class="body" style="display:flex;flex-direction:column;gap:8px"></div><div class="row" style="margin:0"><button id="duaX">إغلاق</button></div></div></div>
 <div class="modal" id="visM"><div class="box"><strong>زيارات الموقع</strong><div id="visBody" style="overflow:auto">جارٍ التحميل…</div><div class="row" style="margin:0"><button id="visClose">إغلاق</button></div></div></div>
 <div class="modal" id="pubm"><div class="box">
   <strong>نشر للعرض (tree.json)</strong>
@@ -659,6 +660,16 @@ function cleanApply(){const B=$('#cleanList'),L=B._L||[];let g=0,k=0;
   B.querySelectorAll('input:checked').forEach(i=>{const x=L[+i.dataset.i];if(!x)return;x.n.female=true;if(!x.n.spouse&&!x.n.spouseLaqab&&!x.n.spouseId){const sp=splitPre(x.pre);x.n.spouseLaqab=sp.laqab;x.n.spouse=sp.name;}
     x.kids.forEach(c=>{const t=c.name.trim();if(t.startsWith(x.pre+' ')){c.name=t.slice(x.pre.length).trim();k++;}});g++;});
   $('#cleanM').classList.remove('on');draw();renderPanel();save();toast(`✓ نُظّف ${k} اسمًا في ${g} عائلة — يمكنك التراجع بـ ↶`,'ok');}
+/* ---- visitors' duas for the deceased ---- */
+async function duaCount(){try{const r=await sb('duas?status=eq.new&select=id');$('#bDuas').innerHTML='🤲 الأدعية'+(r.length?' <span class="nb">'+r.length+'</span>':'');}catch(e){}}
+async function duaOpen(){$('#duaM').classList.add('on');const L=$('#duaList');L.textContent='جارٍ التحميل…';
+  try{const rows=await sb('duas?select=*&order=created_at.desc&limit=300');const C=FAM.ctx(data.root);
+    if(!rows.length){L.innerHTML='<div class="hint">لا توجد أدعية بعد.</div>';return;}
+    L.innerHTML=rows.map(r=>{const p=C.by[r.person_id];return `<div class="sg ${r.status==='new'?'new':''}" data-id="${r.id}" style="border:1px solid #e3e8f2;border-radius:10px;padding:8px 10px"><div style="font-size:13px;color:#6b7a99"><b>${esc(r.sender)}</b> · لـ <b>${esc(p?p.name+' '+FAM.nasab(C,p,1):'(شخص محذوف)')}</b> · ${new Date(r.created_at).toLocaleDateString('ar')} ${r.status==='new'?'<em style="color:#d6336c">جديد</em>':r.status==='ok'?'<span style="color:#2f9e44">ظاهر</span>':'<span>مخفي</span>'}</div><div style="margin:6px 0;line-height:1.8">${esc(r.body)}</div><div class="row" style="margin:0">${r.status!=='ok'?'<button class="primary" data-a="ok">إظهار</button>':''}${r.status!=='hidden'?'<button data-a="hidden">إخفاء</button>':''}<button class="danger" data-a="del">حذف</button></div></div>`;}).join('');
+    L.querySelectorAll('button[data-a]').forEach(b=>b.onclick=async()=>{const id=b.closest('[data-id]').dataset.id,a=b.dataset.a;
+      try{if(a==='del'){if(!confirm('حذف هذا الدعاء نهائيًا؟'))return;await sb('duas?id=eq.'+id,{method:'DELETE'});}else await sb('duas?id=eq.'+id,{method:'PATCH',body:{status:a}});await duaOpen();duaCount();}catch(x){alert('تعذّر التنفيذ');}});
+  }catch(x){L.textContent='تعذّر تحميل الأدعية.';}}
+$('#bDuas').onclick=duaOpen;$('#duaX').onclick=()=>$('#duaM').classList.remove('on');
 /* ---- family story ---- */
 $('#bStory').onclick=()=>{$('#storyT').value=data.story||'';$('#storyM').classList.add('on');};
 $('#storyX').onclick=()=>$('#storyM').classList.remove('on');
@@ -912,7 +923,8 @@ function publicData(){
     if(st.kind==='none')return {};
     if(st.kind==='study')return Object.assign({es:'study',ec:chainKey(st.chain),ei:st.idx,ey:Y0},((n.edu&&n.edu.major)||'').trim()?{em:n.edu.major.trim().slice(0,80)}:{},((n.edu&&n.edu.uni)||'').trim()?{eu:n.edu.uni.trim().slice(0,80)}:{});
     return {es:st.kind};};
-  const strip=n=>Object.assign({id:n.id,name:n.name,spouse:n.spouse||'',spouseLaqab:n.spouseLaqab||undefined,married:n.married||undefined,marDate:n.marDate||undefined,job:n.job||undefined,burial:n.burial||undefined,spouseId:n.spouseId||undefined,birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,wives:(n.wives||[]).length?n.wives.map(w=>({name:w.name||'',laqab:w.laqab||undefined,birth:w.birth||'',death:w.death||'',dead:w.dead?true:undefined})):undefined,mom:n.mom||undefined,children:n.children.map(strip)},pe(n));
+  const honOf=n=>{if(n.dead)return undefined;const p=passedOf(n,Y0);return Object.keys(p).length?p:undefined;};
+  const strip=n=>Object.assign({hon:honOf(n),id:n.id,name:n.name,spouse:n.spouse||'',spouseLaqab:n.spouseLaqab||undefined,married:n.married||undefined,marDate:n.marDate||undefined,job:n.job||undefined,burial:n.burial||undefined,spouseId:n.spouseId||undefined,birth:n.birth||'',death:n.death||'',dead:n.dead?true:undefined,female:n.female?true:undefined,spouseBirth:n.spouseBirth||'',spouseDeath:n.spouseDeath||'',spouseDead:n.spouseDead?true:undefined,place:n.place||'',stack:n.stack?true:undefined,wives:(n.wives||[]).length?n.wives.map(w=>({name:w.name||'',laqab:w.laqab||undefined,birth:w.birth||'',death:w.death||'',dead:w.dead?true:undefined})):undefined,mom:n.mom||undefined,children:n.children.map(strip)},pe(n));
   return {lab:{m:CH_MAIN.map(k=>LBL[k]),d:CH_DOC.map(k=>LBL[k]),e:CH_MED.map(k=>LBL[k]),p:CH_PH.map(k=>LBL[k]),s:CH_SP.map(k=>LBL[k]),q:CH_PM.map(k=>LBL[k])},title:data.title,subtitle:data.subtitle,story:data.story||undefined,settings:data.settings,v:3,updated:new Date().toISOString().slice(0,10),root:strip(data.root)};
 }
 function toast(t,kind){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e);}
@@ -1016,7 +1028,7 @@ async function cloudInit(){
     else{if(usedDefault){try{const pr=await sb('tree_public?id=eq.1&select=data');if(pr&&pr[0]&&pr[0].data&&pr[0].data.root){data=normalize(pr[0].data);refreshAll();}else{const tr=await fetch('tree.json?'+Date.now(),{cache:'no-store'});if(tr.ok){const td=await tr.json();if(td&&td.root){data=normalize(td);refreshAll();}}}}catch(e){}}
       data.savedAt=Date.now();try{await up('tree_private',{data:JSON.parse(exportJSON())});cstat('☁ رُفعت أول نسخة إلى السحابة');}catch(e){cstat('☁ تعذّر الرفع الأول',true);}}
   }catch(e){cstat('☁ تعذّر الاتصال بالسحابة',true);}
-  inboxCount();setInterval(inboxCount,60000);
+  inboxCount();setInterval(inboxCount,60000);duaCount();setInterval(duaCount,60000);
   markPublished();
 }
 /* unpublished-changes guard */

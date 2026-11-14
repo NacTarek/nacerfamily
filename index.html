@@ -121,6 +121,12 @@ svg.drag{cursor:grabbing}
 #wel{position:fixed;inset:0;z-index:45;background:rgba(15,25,50,.55);display:none;align-items:center;justify-content:center;padding:16px}#wel .box{background:#fff;border-radius:20px;padding:22px;width:min(460px,100%);max-height:calc(100% - 32px);overflow:auto;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #wel h2{margin:6px 0 4px;font-size:21px}#wel p{color:#6b7a99;font-size:14px;line-height:1.8;margin:0 0 12px}#wel input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:11px 12px;border:1px solid #d5ddec;border-radius:12px}
 #welRes{text-align:right;margin-top:6px}#welRes div{padding:9px 10px;border-bottom:1px solid #eef1f7;cursor:pointer}#welRes div:hover{background:#eaf1ff}#welRes small{display:block;color:#8a97b3;font-size:12px}#welSkip{margin-top:14px;padding:10px 18px;border-radius:999px;color:#6b7a99}
+#duaW{position:fixed;inset:0;z-index:36;background:rgba(15,25,50,.5);display:none;align-items:center;justify-content:center;padding:16px}#duaW .box{background:#fff;border-radius:18px;padding:18px;width:min(460px,100%);max-height:calc(100% - 32px);overflow:auto}
+#duaW h2{margin:0 0 4px;font-size:19px}#duaW p{margin:0 0 8px;color:#6b7a99;font-size:13px}#duaW label{display:block;font-size:13px;color:#6b7a99;margin:10px 0 4px}#duaW input,#duaW textarea{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:9px 11px;border:1px solid #d5ddec;border-radius:10px}
+#duaW .dsug{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}#duaW .dsug button{border-radius:999px;font-size:12.5px;padding:5px 10px;background:#f5f7fc}#duaW .err{min-height:18px;font-size:13px;margin-top:8px;color:#c0392b}#duaW .row{display:flex;gap:8px;margin-top:8px}#duaW .row button{flex:1;padding:10px}
+.duas{margin-top:6px}.duas .du{background:#f7f8fb;border-radius:10px;padding:7px 10px;margin:5px 0;font-size:13.5px;line-height:1.8}.duas .du small{display:block;color:#8a97b3;font-size:11.5px}.dbtn{margin-top:6px}
+#fam .mr .mn .duas .du{font-size:13px}#fam .mr .dw2{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}#fam .mr .dw2 button{padding:4px 10px;border-radius:999px;font-size:12.5px}
+#fam .hy{font-weight:800;font-size:18px;color:#8a5a00;margin:14px 0 6px;display:flex;align-items:center;gap:8px}#fam .hg{border:1px solid #f1e2b8;background:#fffaf0;border-radius:14px;padding:10px 12px;margin:8px 0}#fam .hg h5{margin:0 0 6px;font-size:14px;color:#8a5a00}
 #pick{position:fixed;inset:0;z-index:31;background:rgba(15,25,50,.45);display:none;align-items:flex-start;justify-content:center;padding:16px}#pick .box{background:#fff;border-radius:16px;padding:16px;width:min(520px,100%);max-height:calc(100% - 32px);overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.35)}#pick h2{margin:0 0 4px;font-size:18px}#pick p{margin:0 0 10px;color:#6b7a99;font-size:13px}#pick input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:1px solid #d5ddec;border-radius:10px}#pkRes div{padding:9px 10px;border-bottom:1px solid #eef1f7;cursor:pointer}#pkRes div:hover{background:#eaf1ff}#pkRes small{display:block;color:#8a97b3;font-size:12px}#pick .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 #prof{position:fixed;inset:0;z-index:32;background:rgba(15,25,50,.45);display:none}
 #prof .pbox{max-width:540px;margin:16px auto;max-height:calc(100% - 32px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
@@ -154,6 +160,7 @@ svg.drag{cursor:grabbing}
   <div id="menu">
     <button id="bMine">🙋 فرعي</button>
     <button id="bFam">📊 العائلة · إحصاءات ومناسبات</button>
+    <button id="bHon">🏆 لوحة الشرف</button>
     <button id="bList">📜 قائمة العائلة</button>
     <button id="bSimple" title="عرض مبسّط: شخص واحد مع أبيه وإخوته وأبنائه">📱 عرض مبسّط</button>
     <button id="bGame">🎮 لعبة: من أنا؟</button>
@@ -178,7 +185,7 @@ svg.drag{cursor:grabbing}
 </main>
 <aside id="card"></aside>
 <div id="lst"><div class="lbox"><div class="lh"><b>قائمة العائلة</b><span class="lsub">اضغط على السهم لفتح الأبناء، وعلى «عرض» للذهاب إلى الشجرة</span><button id="lX" aria-label="إغلاق">✕</button></div><div class="lb" id="lBody"></div></div></div>
-<div id="fam"><div class="lbox"><div class="lh"><b>📊 العائلة</b><div class="tabs"><button data-t="st" class="on">إحصاءات</button><button data-t="occ">📅 مناسبات</button><button data-t="tl">⏳ الخط الزمني</button><button data-t="mem">🤲 ذكرى</button><button data-t="story" id="tStory" style="display:none">📖 القصة</button></div><button id="famX" aria-label="إغلاق">✕</button></div><div class="lb" id="famBody"></div></div></div>
+<div id="fam"><div class="lbox"><div class="lh"><b>📊 العائلة</b><div class="tabs"><button data-t="st" class="on">إحصاءات</button><button data-t="hon">🏆 لوحة الشرف</button><button data-t="occ">📅 مناسبات</button><button data-t="tl">⏳ الخط الزمني</button><button data-t="mem">🤲 ذكرى</button><button data-t="story" id="tStory" style="display:none">📖 القصة</button></div><button id="famX" aria-label="إغلاق">✕</button></div><div class="lb" id="famBody"></div></div></div>
 <div id="shr"><div class="sbx"><div class="lh"><b>📤 صورة للمشاركة</b><button id="shrX" aria-label="إغلاق">✕</button></div><div class="sb"><div class="shk"><button data-k="s" class="on">بطاقة مختصرة</button><button data-k="f">تقرير كامل</button></div><img id="shrImg" alt="إحصاءات العائلة"><div class="row"><button id="shrGo" class="sugb">مشاركة</button><button id="shrDl">⬇ تنزيل الصورة</button></div><div class="sh">مقاس مناسب لواتساب وإنستغرام وفيسبوك.</div></div></div></div>
 <div id="gm"><div class="rbox"><div class="lh"><b>🎮 من أنا؟</b><span class="lsub" id="gSub"></span><button id="gX" aria-label="إغلاق">✕</button></div><div class="rb" id="gBody"></div></div></div>
 <div id="rel"><div class="rbox"><div class="lh"><b>صلة القرابة</b><span class="lsub" id="rSub"></span><button id="rX" aria-label="إغلاق">✕</button></div>
@@ -225,6 +232,11 @@ svg.drag{cursor:grabbing}
 <div id="wel"><div class="box"><div style="font-size:40px">👋</div><h2 id="welT">أهلًا بك</h2><p>اختر اسمك لنفتح لك فرعك مباشرة، ونعرّفك بصلتك بكل فرد في العائلة.</p>
   <input id="welQ" dir="auto" placeholder="اكتب اسمك… (مثال: طارق بن عمار)" autocomplete="off"><div id="welRes"></div>
   <button id="welSkip" type="button">أتصفّح فقط</button></div></div>
+<div id="duaW"><div class="box"><h2>🤲 دعاء لـ <span id="duaWho"></span></h2><p>يظهر دعاؤك تحت اسمه بعد مراجعته.</p>
+  <label for="duaName">اسمك *</label><input id="duaName" autocomplete="name">
+  <label for="duaTxt">الدعاء *</label><div class="dsug" id="duaSug"></div><textarea id="duaTxt" dir="auto" rows="3" maxlength="600"></textarea>
+  <div class="err" id="duaErr"></div>
+  <div class="row"><button id="duaSend" class="sugb">إرسال</button><button id="duaX" type="button">إغلاق</button></div></div></div>
 <div id="pick"><div class="box"><h2>✍ تصحيح أو إكمال المعلومات</h2><p>ابحث عن الشخص الذي تريد تصحيح معلوماته أو إكمالها (أو عن الأب لإضافة أبناء له).</p>
   <input id="pkQ" dir="auto" placeholder="اكتب الاسم… (مثال: ناصر بن يوسف)" autocomplete="off"><div id="pkRes"></div>
   <div class="row"><button id="pkNone" type="button">الشخص غير موجود في الشجرة؟</button><button id="pkX" type="button">إغلاق</button></div></div></div>
@@ -494,6 +506,8 @@ function showCard(){crumbRender();
   ${n.job?`<div class="row">💼 ${esc(n.job)}</div>`:''}
   ${n.place?`<div class="row">📍 ${esc(n.place)}</div>`:''}
   ${n.burial?`<div class="row">🕌 مكان الدفن: ${esc(n.burial)}</div>`:''}
+  ${n.hon?`<div class="row">🏆 ${HON_ORDER.filter(m=>n.hon[m]!=null).map(m=>esc(HON_FULL[m])+' '+(n.hon[m]+1)).join(' · ')}</div>`:''}
+  ${n.dead||n.death?`<h3>🤲 دعاء العائلة</h3><div id="cDuas">${duasHtml(n.id,5)}</div><button class="dbtn" data-dua="${n.id}">🤲 اكتب دعاءً ${n.female?'لها':'له'}</button>`:''}
   ${(()=>{const i=studyInfo(n);if(!i)return '';if(i.kind==='study')return `<div class="row">📚 <b>يدرس:</b> ${esc(i.label)}</div>`+(i.uni?`<div class="row">🏛 <b>الجامعة:</b> ${esc(i.uni)}</div>`:'');if(i.kind==='unknown')return `<div class="row" style="color:#8a97b3">📚 السنة الدراسية / العمل: <i>فارغة، بانتظار المعلومة</i></div>`;return '';})()}
   ${cardSpouses(n)}
   ${cardParents(n,p)}
@@ -502,6 +516,8 @@ function showCard(){crumbRender();
   <div class="acts"><button id="cLink">🔗 نسخ رابط هذا الشخص</button><button id="cRel">🧬 ما صلتي به؟</button></div>
   <div class="acts"><button id="cProf" class="sugb">✍ تصحيح أو إكمال المعلومات</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
   c.style.display='block';placeCard();
+  c.querySelectorAll('[data-dua]').forEach(b=>b.onclick=()=>duaOpen(n));
+  if((n.dead||n.death)&&!DUAS)duasLoad().then(()=>{const d=$('#cDuas');if(d&&sel===n.id)d.innerHTML=duasHtml(n.id,5);});
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
   const t=$('#cTog');if(t)t.onclick=()=>{const opening=collapsed.has(n.id);toggle(n.id);sel=null;draw();showCard();if(opening)fitBranch(n);};
   $('#cLink').onclick=e=>copyLink(n.id,e.currentTarget);
@@ -691,6 +707,49 @@ $('#lX').onclick=()=>{$('#lst').style.display='none';};
 $('#lst').addEventListener('click',e=>{if(e.target.id==='lst'){$('#lst').style.display='none';return;}
   const g=e.target.closest('[data-go]');if(g){$('#lst').style.display='none';goTo(g.getAttribute('data-go'));}});
 
+/* ---- duas for the deceased ---- */
+let DUAS=null;
+async function duasLoad(force){if(DUAS&&!force)return DUAS;try{const r=await fetch(SB.url+'/rest/v1/duas?select=person_id,sender,body,created_at&status=eq.ok&order=created_at.desc&limit=1000',{headers:{apikey:SB.key},cache:'no-store'});DUAS=r.ok?await r.json():[];}catch(e){DUAS=[];}return DUAS;}
+const duasOf=id=>(DUAS||[]).filter(d=>d.person_id===id);
+function duasHtml(id,max){const L=duasOf(id);if(!L.length)return '';const s=L.slice(0,max||99);return `<div class="duas">${s.map(d=>`<div class="du">${esc(d.body)}<small>— ${esc(d.sender)}</small></div>`).join('')}${L.length>s.length?`<small style="color:#8a97b3">و${L.length-s.length} أدعية أخرى</small>`:''}</div>`;}
+let duaPerson=null;
+function duaOpen(n){duaPerson=n;$('#duaWho').textContent=n.name+' '+FAM.nasab(Cx(),n,1);try{$('#duaName').value=localStorage.getItem('famSender')||'';}catch(e){}
+  const h=n.female?'ها':'ه',S=[`اللهم اغفر ل${h} وارحم${h}`,`اللهم أسكن${h} فسيح جناتك`,`اللهم اجعل قبر${h} روضة من رياض الجنة`,`رحم${n.female?'ها':'ه'} الله وجعل مثوا${h} الجنة`];
+  $('#duaSug').innerHTML=S.map(t=>`<button type="button">${t}</button>`).join('');$('#duaSug').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#duaTxt').value=b.textContent;});
+  $('#duaTxt').value='';$('#duaErr').textContent='';$('#duaErr').style.color='#c0392b';$('#duaSend').disabled=false;$('#duaW').style.display='flex';}
+$('#duaX').onclick=()=>{$('#duaW').style.display='none';};
+$('#duaW').addEventListener('click',e=>{if(e.target.id==='duaW')$('#duaW').style.display='none';});
+$('#duaSend').onclick=async()=>{const nm=$('#duaName').value.trim(),tx=$('#duaTxt').value.trim(),E=$('#duaErr');
+  if(!nm){E.textContent='اكتب اسمك.';return;}if(!tx){E.textContent='اكتب الدعاء أو اختر واحدًا.';return;}
+  try{localStorage.setItem('famSender',nm);}catch(e){}$('#duaSend').disabled=true;E.style.color='#6b7a99';E.textContent='جارٍ الإرسال…';
+  try{const r=await fetch(SB.url+'/rest/v1/duas',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({person_id:duaPerson.id,sender:nm.slice(0,80),body:tx.slice(0,600)})});if(!r.ok)throw 0;
+    E.style.color='#2a7a3b';E.textContent='تقبّل الله دعاءك 🤲 سيظهر بعد مراجعته.';setTimeout(()=>{$('#duaW').style.display='none';},1800);}catch(x){E.style.color='#c0392b';E.textContent='تعذّر الإرسال، حاول لاحقًا.';$('#duaSend').disabled=false;}};
+/* ---- honour board ---- */
+const HON_FULL={BEM:'شهادة التعليم المتوسط (BEM)',BAC:'البكالوريا (BAC)',LIC:'الليسانس',MAS:'الماستر',DOC:'الدكتوراه',MD:'دكتور في الطب',PD:'دكتور في الصيدلة',SP:'التخصص الطبي',PM:'شهادة شبه طبي'};
+const HON_ORDER=['DOC','MD','PD','SP','MAS','LIC','PM','BAC','BEM'];
+function honData(){const C=Cx(),by={};everyone().forEach(({n})=>{const h=n.hon;if(!h)return;Object.keys(h).forEach(m=>{const y=h[m]+1;(by[y]=by[y]||{});(by[y][m]=by[y][m]||[]).push(n);});});
+  return Object.keys(by).map(Number).sort((a,b)=>b-a).map(y=>({y,groups:HON_ORDER.filter(m=>by[y][m]).map(m=>({m,people:by[y][m]}))}));}
+function famHon(){const C=Cx(),D=honData();
+  if(!D.length)return '<div class="mh">لا توجد نتائج مسجّلة بعد.<br><small style="color:#8a97b3">تظهر هنا تلقائيًا الشهادات التي يجتازها أفراد العائلة: BEM، البكالوريا، الليسانس، الماستر…</small></div>';
+  return `<button id="honShare" class="sugb" style="width:100%;margin-bottom:12px;padding:11px">📤 صورة تهنئة دفعة ${D[0].y} للمشاركة</button>`+D.map(Y=>`<div class="hy">🏆 دفعة ${Y.y}</div>`+Y.groups.map(g=>`<div class="hg"><h5>🎓 ${HON_FULL[g.m]} (${g.people.length})</h5><div class="pp">${g.people.map(n=>`<span class="pc" data-go="${n.id}">${esc(n.name)} <small>${esc(FAM.nasab(C,n,1))}</small></span>`).join('')}</div></div>`).join('')).join('')+
+   '<div style="font-size:12px;color:#8a97b3;margin-top:12px">ألف مبروك للناجحين، ونسأل الله التوفيق للجميع.</div>';}
+async function honImage(){const C=Cx(),Y=honData()[0];if(!Y)return null;const W=1080,mx=60;
+  try{await Promise.all(['800 60px Alexandria','700 40px Alexandria','500 30px Alexandria'].map(f=>document.fonts.load(f)));}catch(e){}
+  const RH=62,gH=g=>86+Math.ceil(g.people.length)*RH+20,H=Math.max(1350,360+Y.groups.reduce((a,g)=>a+gH(g)+24,0)+150);
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');g.direction='rtl';
+  const F=(w,s)=>`${w} ${s}px Alexandria, Tahoma, sans-serif`,fit=(t,maxW,w,s)=>{g.font=F(w,s);while(g.measureText(t).width>maxW&&s>14){s-=1;g.font=F(w,s);}};
+  const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();};
+  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#fffaf0');bg.addColorStop(1,'#fdf3dc');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  const hd=g.createLinearGradient(0,0,W,330);hd.addColorStop(0,'#7a4b00');hd.addColorStop(1,'#d9962b');g.fillStyle=hd;rr(0,-40,W,370,48);g.fill();
+  g.globalAlpha=.12;g.fillStyle='#fff';for(let i=0;i<24;i++){const x=(i*137)%W,y=20+((i*71)%280);g.beginPath();g.arc(x,y,3+(i%4),0,Math.PI*2);g.fill();}g.globalAlpha=1;
+  g.textAlign='center';g.fillStyle='#fff';g.font=F(500,56);g.fillText('🏆',W/2,100);fit('ألف مبروك للناجحين',W-120,800,64);g.fillText('ألف مبروك للناجحين',W/2,186);
+  g.fillStyle='#ffe7b3';g.font=F(600,34);g.fillText((data.title||'العائلة')+' · دفعة '+Y.y,W/2,246);
+  let y=370;Y.groups.forEach(gr=>{const h=gH(gr);g.shadowColor='rgba(122,75,0,.12)';g.shadowBlur=24;g.shadowOffsetY=8;g.fillStyle='#fff';rr(mx,y,W-mx*2,h,28);g.fill();g.shadowColor='transparent';
+    g.textAlign='right';g.fillStyle='#8a5a00';fit('🎓 '+HON_FULL[gr.m],W-mx*2-60,800,36);g.fillText('🎓 '+HON_FULL[gr.m],W-mx-30,y+58);let yy=y+86;
+    gr.people.forEach((n,i)=>{g.fillStyle=i%2?'#fff':'#fff7e6';rr(mx+20,yy,W-mx*2-40,RH-8,14);g.fill();g.fillStyle='#3a2a05';const t=n.name+' '+FAM.nasab(C,n,2);fit(t,W-mx*2-90,700,30);g.fillText(t,W-mx-40,yy+38);yy+=RH;});y+=h+24;});
+  g.textAlign='center';g.fillStyle='#8a5a00';g.font=F(600,30);g.fillText('نسأل الله لهم دوام التوفيق والنجاح 🤲',W/2,H-96);
+  g.fillStyle='#a07a3a';g.font=F(500,24);g.fillText(location.host+location.pathname.replace(/index\.html$/,''),W/2,H-46);return cv;}
+$('#bHon').onclick=()=>{famTab='hon';$('#fam').style.display='block';famRender();};
 /* ---- family stats & memorial ---- */
 let famTab='st';
 function famStats(){const C=Cx(),all=everyone(),ppl=all.map(x=>x.n);let maxD=0;(function w(n,d){maxD=Math.max(maxD,d);n.children.forEach(c=>w(c,d+1));})(data.root,0);
@@ -716,13 +775,13 @@ function famStats(){const C=Cx(),all=everyone(),ppl=all.map(x=>x.n);let maxD=0;(
    (()=>{const cj={},cp={};ppl.forEach(n=>{const j=(n.job||'').trim(),p=(n.place||'').trim();if(j)cj[j]=(cj[j]||0)+1;if(p)cp[p]=(cp[p]||0)+1;});const J=Object.entries(cj).sort((a,b)=>b[1]-a[1]).slice(0,8),P=Object.entries(cp).sort((a,b)=>b[1]-a[1]).slice(0,8);return (J.length?`<h4>💼 المهن</h4>${bars(J)}`:'')+(P.length?`<h4>📍 أين تعيش العائلة</h4>${bars(P)}`:'');})()+
    (decR.length?`<h4>📅 المواليد حسب العقد</h4>${bars(decR)}<div style="font-size:12px;color:#8a97b3;margin-top:6px">يشمل فقط من سُجّل تاريخ ميلاده.</div>`:'');}
 function famMem(){const C=Cx(),rows=[];
-  everyone().forEach(({n})=>{if(n.dead||n.death)rows.push({id:n.id,name:n.name,sub:FAM.nasab(C,n,2)+(n.burial?' · 🕌 '+n.burial:''),birth:n.birth,death:n.death,f:n.female});
+  everyone().forEach(({n})=>{if(n.dead||n.death)rows.push({id:n.id,name:n.name,sub:FAM.nasab(C,n,2)+(n.burial?' · 🕌 '+n.burial:''),birth:n.birth,death:n.death,f:n.female,self:true});
     FAM.spouses(C,n).forEach(x=>{if(x.dead&&!x.link)rows.push({id:n.id,name:x.name,sub:(n.female?'زوج ':'زوجة ')+n.name+' '+FAM.nasab(C,n,1),birth:x.birth,death:x.death,f:!n.female});});});
   const key=r=>{const d=parseDate(r.death);return d?-(d.y*400+d.m*31+d.d):1;};rows.sort((a,b)=>key(a)-key(b));
   if(!rows.length)return '<div class="mh">لا يوجد متوفون مسجّلون.</div>';
   return `<div class="mh">اللهم اغفر لهم وارحمهم، وعافهم واعفُ عنهم، وأكرم نزلهم، ووسّع مدخلهم<br><small style="color:#8a97b3">${rows.length} من أفراد العائلة رحمهم الله</small></div>`+
    rows.map(r=>{const a=calcAge(r.birth,r.death,true),y=[r.birth&&parseDate(r.birth)?parseDate(r.birth).y:'',r.death&&parseDate(r.death)?parseDate(r.death).y:''];
-     return `<div class="mr" data-go="${r.id}"><span>🤲</span><div class="mn"><b>${esc(r.name)}</b> <small>${esc(r.sub)}</small></div><div class="md">${y[0]||y[1]?(y[0]||'؟')+' – '+(y[1]||'؟'):''}${a&&a.age!=null?'<br>'+a.age+' سنة':''}</div></div>`;}).join('');}
+     return `<div class="mr" data-go="${r.id}"><span>🤲</span><div class="mn"><b>${esc(r.name)}</b> <small>${esc(r.sub)}</small>${r.self?duasHtml(r.id,2)+`<div class="dw2"><button data-dua="${r.id}">🤲 اكتب دعاءً</button>${duasOf(r.id).length?`<small style="display:inline;color:#8a97b3">${duasOf(r.id).length} دعاء</small>`:''}</div>`:''}</div><div class="md">${y[0]||y[1]?(y[0]||'؟')+' – '+(y[1]||'؟'):''}${a&&a.age!=null?'<br>'+a.age+' سنة':''}</div></div>`;}).join('');}
 /* ---- shareable stats image ---- */
 function famData(){const C=Cx(),ppl=everyone().map(x=>x.n),dead=n=>!!(n.dead||n.death),alive=ppl.filter(n=>!dead(n));let maxD=0;(function w(n,d){maxD=Math.max(maxD,d);n.children.forEach(c=>w(c,d+1));})(data.root,0);
   const fem=ppl.filter(n=>n.female).length,cnt={};ppl.forEach(n=>{const k=(n.name||'').trim();if(k&&k!=='شخص جديد')cnt[k]=(cnt[k]||0)+1;});
@@ -817,11 +876,11 @@ async function famImageFull(){const A=famAll(),D=A.D,W=1080,mx=60,cw=W-mx*2;
   g.textAlign='center';g.fillStyle='#6b7a99';g.font=F(500,26);g.fillText('تصفّح الشجرة كاملة: '+location.host+location.pathname.replace(/index\.html$/,''),W/2,H-50);
   return cv;}
 let shrBlob=null,shrKind='s';
-async function famShare(){$('#shr').style.display='flex';$('#shrImg').src='';document.querySelectorAll('#shr .shk button').forEach(b=>b.classList.toggle('on',b.dataset.k===shrKind));$('#shr .sh').textContent=shrKind==='f'?'صورة طويلة فيها كل الإحصاءات، مناسبة لواتساب ومجموعات العائلة.':'مقاس مربّع تقريبًا، مناسب لواتساب وإنستغرام وفيسبوك.';const cv=shrKind==='f'?await famImageFull():await famImage();$('#shrImg').src=cv.toDataURL('image/png');shrBlob=await new Promise(r=>cv.toBlob(r,'image/png'));
+async function famShare(){$('#shr').style.display='flex';$('#shrImg').src='';document.querySelectorAll('#shr .shk button').forEach(b=>b.classList.toggle('on',b.dataset.k===shrKind));$('#shr .sh').textContent=shrKind==='h'?'صورة تهنئة للناجحين، شاركها في مجموعة العائلة 🎉':shrKind==='f'?'صورة طويلة فيها كل الإحصاءات، مناسبة لواتساب ومجموعات العائلة.':'مقاس مربّع تقريبًا، مناسب لواتساب وإنستغرام وفيسبوك.';$('#shr .shk').style.display=shrKind==='h'?'none':'';const cv=shrKind==='h'?await honImage():shrKind==='f'?await famImageFull():await famImage();$('#shrImg').src=cv.toDataURL('image/png');shrBlob=await new Promise(r=>cv.toBlob(r,'image/png'));
   const f=new File([shrBlob],'family-stats.png',{type:'image/png'});$('#shrGo').style.display=(navigator.canShare&&navigator.canShare({files:[f]}))?'':'none';}
 $('#shrX').onclick=()=>{$('#shr').style.display='none';};
 document.querySelectorAll('#shr .shk button').forEach(b=>b.onclick=()=>{shrKind=b.dataset.k;famShare();});
-$('#shrDl').onclick=()=>{if(!shrBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(shrBlob);a.download=(data.title||'family')+(shrKind==='f'?' - تقرير كامل.png':' - إحصاءات.png');document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
+$('#shrDl').onclick=()=>{if(!shrBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(shrBlob);a.download=(data.title||'family')+(shrKind==='h'?' - لوحة الشرف.png':shrKind==='f'?' - تقرير كامل.png':' - إحصاءات.png');document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
 $('#shrGo').onclick=async()=>{if(!shrBlob)return;try{await navigator.share({files:[new File([shrBlob],shrKind==='f'?'family-report.png':'family-stats.png',{type:'image/png'})],title:data.title||'',text:(data.title||'')+' بالأرقام 🌳 '+location.href.split('?')[0]});}catch(e){}};
 function famOcc(){const C=Cx(),now=new Date(),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),ev=[];
   const next=d=>{let x=new Date(t0.getFullYear(),d.m-1,d.d);if(x<t0)x=new Date(t0.getFullYear()+1,d.m-1,d.d);return {x,days:Math.round((x-t0)/864e5),yrs:x.getFullYear()-d.y};};
@@ -853,7 +912,10 @@ function famStory(){const t=String(data.story||'').trim();if(!t)return '<div cla
   const out=[];let buf=[];const flush=()=>{if(buf.length){out.push('<p>'+buf.map(esc).join('<br>')+'</p>');buf=[];}};
   t.split('\n').forEach(l=>{if(/^\s*##/.test(l)){flush();out.push('<h4>'+esc(l.replace(/^\s*##\s*/,''))+'</h4>');}else if(!l.trim())flush();else buf.push(l);});flush();
   return '<div class="story">'+out.join('')+'</div>';}
-function famRender(){$('#tStory').style.display=data.story?'':'none';document.querySelectorAll('#fam .tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===famTab));$('#famBody').innerHTML=famTab==='st'?famStats():famTab==='occ'?famOcc():famTab==='tl'?famTimeline():famTab==='story'?famStory():famMem();$('#famBody').querySelectorAll('[data-tf]').forEach(b=>b.onclick=e=>{e.stopPropagation();tlF=b.dataset.tf;famRender();});$('#famBody').scrollTop=0;const fs=$('#famShare');if(fs)fs.onclick=famShare;}
+function famRender(){$('#tStory').style.display=data.story?'':'none';document.querySelectorAll('#fam .tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===famTab));$('#famBody').innerHTML=famTab==='st'?famStats():famTab==='hon'?famHon():famTab==='occ'?famOcc():famTab==='tl'?famTimeline():famTab==='story'?famStory():famMem();
+  {const hs=$('#honShare');if(hs)hs.onclick=e=>{e.stopPropagation();shrKind='h';famShare();};}
+  if(famTab==='mem'&&!DUAS)duasLoad().then(()=>{if(famTab==='mem'&&$('#fam').style.display==='block')famRender();});
+  $('#famBody').querySelectorAll('[data-dua]').forEach(b=>b.onclick=e=>{e.stopPropagation();duaOpen(find(b.dataset.dua).n);});$('#famBody').querySelectorAll('[data-tf]').forEach(b=>b.onclick=e=>{e.stopPropagation();tlF=b.dataset.tf;famRender();});$('#famBody').scrollTop=0;const fs=$('#famShare');if(fs)fs.onclick=()=>{if(shrKind==='h')shrKind='s';famShare();};}
 $('#bFam').onclick=()=>{$('#fam').style.display='block';famRender();};
 $('#famX').onclick=()=>{$('#fam').style.display='none';};
 document.querySelectorAll('#fam .tabs button').forEach(b=>b.onclick=()=>{famTab=b.dataset.t;famRender();});
