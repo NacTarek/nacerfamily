@@ -102,6 +102,9 @@ svg.drag{cursor:grabbing}
 #prof .psec{margin:18px 0 4px;font-weight:700;font-size:15px;border-top:1px solid #e3e8f2;padding-top:12px}
 #prof .phint{font-size:12px;color:#6b7a99;line-height:1.7}
 #prof .prow{display:flex;gap:6px;margin:6px 0}#prof .prow input:first-child{flex:2}#prof .prow input:nth-child(2){flex:1}#prof .prow button{padding:4px 9px}
+#prof .dw{display:flex;gap:6px}#prof .dw select,#prof select{font:inherit;font-size:15px;padding:8px;border:1px solid #d5ddec;border-radius:10px;background:#fff;min-width:0}#prof .dw .dd{flex:1}#prof .dw .dm{flex:1.6}#prof .dw .dy{flex:1.2}#prof select{width:100%}
+#prof .dhint{font-size:11.5px;color:#8a97b3;margin-top:3px}#prof .pchk{display:flex;align-items:center;gap:8px;color:#1b2a4a;font-size:14px;margin:12px 0 2px;cursor:pointer}#prof .pchk input{width:auto}
+#prof .seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}#prof .seg button{flex:1;min-width:110px;padding:9px 6px;border:1px solid #d5ddec;border-radius:10px;background:#fff;font:inherit;font-size:14px;cursor:pointer}#prof .seg button.on{background:#2b59c3;border-color:#2b59c3;color:#fff}#prof #pStudyTxt,#prof #pLvl{margin-top:6px}
 #prof .err{color:#c0392b;font-size:13px;margin-top:10px;min-height:18px}#prof .row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 #lst summary::-webkit-details-marker{display:none}#lst summary::before{content:'◂';color:#6b7a99;font-size:13px;width:14px}#lst details[open]>summary::before{content:'▾'}
 #lst .lgo{margin-inline-start:auto;font-size:12px;padding:3px 10px}
@@ -138,12 +141,17 @@ svg.drag{cursor:grabbing}
 <div id="prof"><div class="pbox"><div class="lh"><b id="pTitle">إكمال المعلومات</b><span class="lsub">املأ ما تعرفه فقط، ويصل إلى مسؤول الشجرة للمراجعة</span><button id="pX" aria-label="إغلاق">✕</button></div>
   <div class="pb">
     <label for="pName">اسمك *</label><input id="pName" autocomplete="name">
-    <div class="psec">معلوماتك</div>
-    <label for="pBirth">تاريخ الميلاد</label><input id="pBirth" dir="auto" placeholder="مثال: 1990 أو 1990-05-12">
-    <label for="pSpouse">اسم الزوجة</label><input id="pSpouse" dir="auto">
-    <label for="pSpouseBirth">تاريخ ميلاد الزوجة</label><input id="pSpouseBirth" dir="auto" placeholder="مثال: 1992">
-    <label for="pPlace">مكان الإقامة</label><input id="pPlace" dir="auto" placeholder="مثال: سكيكدة">
-    <label for="pStudy">السنة الدراسية أو العمل</label><input id="pStudy" dir="auto" placeholder="مثال: يدرس 2 ثانوي، أو يعمل معلّمًا">
+    <div class="psec" id="pSec">معلومات الشخص</div>
+    <label>تاريخ الميلاد</label><div class="dw" id="dBirth"></div>
+    <label class="pchk"><input type="checkbox" id="pDead"> <span id="pDeadL">متوفى (رحمه الله)</span></label>
+    <div id="pDeathBox" style="display:none"><label>تاريخ الوفاة</label><div class="dw" id="dDeath"></div></div>
+    <label for="pSpouse" id="pSpouseL">اسم الزوجة</label><input id="pSpouse" dir="auto">
+    <label id="pSpouseBL">تاريخ ميلاد الزوجة</label><div class="dw" id="dSpouseBirth"></div>
+    <div id="pStudyBox"><label>الدراسة أو العمل</label>
+      <div class="seg" id="pSeg"><button type="button" data-k="working">💼 يعمل</button><button type="button" data-k="study">📚 يدرس</button><button type="button" data-k="done">🎓 أنهى دراسته</button><button type="button" data-k="other">✏️ أخرى</button></div>
+      <select id="pLvl" style="display:none"></select>
+      <input id="pStudyTxt" dir="auto" style="display:none">
+    </div>
     <div class="psec">الإخوة والأخوات</div><div class="phint" id="pSibKnown"></div><div id="pSibs"></div><button type="button" id="pAddSib">+ إضافة أخ أو أخت</button>
     <div class="psec">الأبناء</div><div class="phint" id="pKidKnown"></div><div id="pKids"></div><button type="button" id="pAddKid">+ إضافة ابن أو بنت</button>
     <div class="err" id="pErr"></div>
@@ -500,9 +508,41 @@ function profRow(box,n,b){const d=document.createElement('div');d.className='pro
   d.innerHTML='<input placeholder="الاسم" dir="auto"><input placeholder="سنة الميلاد" dir="auto" inputmode="numeric"><button type="button" aria-label="حذف">✕</button>';
   d.querySelector('input').value=n||'';d.querySelectorAll('input')[1].value=b||'';d.querySelector('button').onclick=()=>d.remove();box.appendChild(d);}
 function profRows(box){return [...box.querySelectorAll('.prow')].map(r=>{const i=r.querySelectorAll('input');return {n:i[0].value.trim().slice(0,100),b:i[1].value.trim().slice(0,30)};}).filter(x=>x.n).slice(0,12);}
+const MONTHS=['جانفي','فيفري','مارس','أفريل','ماي','جوان','جويلية','أوت','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function dateInit(id){const w=$('#'+id);if(w.dataset.ok)return;w.dataset.ok=1;
+  w.innerHTML='<select class="dd" aria-label="اليوم"><option value="">اليوم</option>'+Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')+'</select>'+
+    '<select class="dm" aria-label="الشهر"><option value="">الشهر</option>'+MONTHS.map((m,i)=>`<option value="${i+1}">${i+1} - ${m}</option>`).join('')+'</select>'+
+    '<input class="dy" inputmode="numeric" maxlength="4" placeholder="السنة" aria-label="السنة" dir="ltr">';
+  w.insertAdjacentHTML('afterend','<div class="dhint">إن لم تعرف اليوم والشهر فاكتب السنة فقط.</div>');
+  const y=w.querySelector('.dy');y.addEventListener('input',()=>{y.value=y.value.replace(/[٠-٩]/g,c=>c.charCodeAt(0)-1632).replace(/\D/g,'').slice(0,4);});}
+function dateSet(id,str){dateInit(id);const w=$('#'+id),d=parseDate(str);w.querySelector('.dd').value=d&&d.d?d.d:'';w.querySelector('.dm').value=d&&d.m?d.m:'';w.querySelector('.dy').value=d?d.y:'';}
+function dateGet(id){const w=$('#'+id),d=+w.querySelector('.dd').value,m=+w.querySelector('.dm').value,y=w.querySelector('.dy').value.trim(),Y=new Date().getFullYear(),z=x=>String(x).padStart(2,'0');
+  if(!y&&!d&&!m)return {v:''};
+  if(!/^\d{4}$/.test(y)||+y<1800||+y>Y)return {err:'اكتب السنة بأربعة أرقام (مثال: 1985).'};
+  if(d&&!m)return {err:'اختر الشهر أيضًا، أو اترك اليوم فارغًا.'};
+  if(d&&m&&new Date(+y,m-1,d).getMonth()!==m-1)return {err:'هذا اليوم غير موجود في هذا الشهر.'};
+  return {v:y+(m?'-'+z(m)+(d?'-'+z(d):''):'')};}
+const LAB0={m:['روضة','تحضيري','1 ابتدائي','2 ابتدائي','3 ابتدائي','4 ابتدائي','5 ابتدائي','1 متوسط','2 متوسط','3 متوسط','4 متوسط (BEM)','1 ثانوي','2 ثانوي','3 ثانوي (BAC)','ليسانس 1','ليسانس 2','ليسانس 3','ماستر 1','ماستر 2'],d:['دكتوراه 1','دكتوراه 2','دكتوراه 3'],e:['طب 1','طب 2','طب 3','طب 4','طب 5','طب 6','طب 7 (سنة التربص)'],p:['صيدلة 1','صيدلة 2','صيدلة 3','صيدلة 4','صيدلة 5','صيدلة 6 (التربص)'],s:['تخصص طبي 1','تخصص طبي 2','تخصص طبي 3','تخصص طبي 4','تخصص طبي 5'],q:['شبه طبي 1','شبه طبي 2','شبه طبي 3']};
+function lvlOptions(){const L=Object.assign({},LAB0,data.lab||{}),o=(k,i)=>`<option value="${k}:${i}">${esc(L[k][i])}</option>`,g=(t,k,a,b)=>`<optgroup label="${t}">${L[k].slice(a,b).map((_,j)=>o(k,a+j)).join('')}</optgroup>`;
+  return '<option value="">— اختر السنة —</option>'+g('قبل المدرسة','m',0,2)+g('ابتدائي','m',2,7)+g('متوسط','m',7,11)+g('ثانوي','m',11,14)+g('الجامعة: ليسانس','m',14,17)+g('الجامعة: ماستر','m',17,19)+g('دكتوراه','d',0,99)+g('الطب','e',0,99)+g('الصيدلة','p',0,99)+g('التخصص الطبي','s',0,99)+g('شبه طبي','q',0,99)+'<option value="x">سنتي أو تخصصي غير موجود…</option>';}
+let segK='';
+function segSet(k){segK=segK===k?'':k;document.querySelectorAll('#pSeg button').forEach(b=>b.classList.toggle('on',b.dataset.k===segK));
+  const L=$('#pLvl'),T=$('#pStudyTxt');L.style.display=segK==='study'?'':'none';
+  const ph={working:'المهنة أو مجال العمل (اختياري)',done:'آخر شهادة أو تخصص (اختياري)',other:'اكتب الحالة (مثال: ماكثة في البيت، متقاعد…)',study:'اكتب سنتك وتخصصك'};
+  const showT=segK==='working'||segK==='done'||segK==='other'||(segK==='study'&&L.value==='x');T.style.display=showT?'':'none';T.placeholder=ph[segK]||'';
+  if(segK==='study'&&L.value&&L.value!=='x'){T.style.display='';T.placeholder='التخصص أو الجامعة (اختياري)';}}
+document.querySelectorAll('#pSeg button').forEach(b=>b.onclick=()=>{$('#pStudyTxt').value='';$('#pLvl').value='';segSet(b.dataset.k);if(segK&&segK!=='study')$('#pStudyTxt').focus();});
+$('#pLvl').onchange=()=>{const k=segK;segK='';segSet(k);};
+function deadVis(){const d=$('#pDead').checked;$('#pDeathBox').style.display=d?'':'none';$('#pStudyBox').style.display=d?'none':'';}
+$('#pDead').onchange=deadVis;
 function profOpen(n){profPerson=n;const f=find(n.id),sibs=f&&f.p?f.p.children.filter(c=>c!==n):[];
   $('#pTitle').textContent='إكمال معلومات: '+(n.name||'');
-  $('#pName').value=n.name||'';$('#pBirth').value=n.birth||'';$('#pSpouse').value=n.spouse||'';$('#pSpouseBirth').value=n.spouseBirth||'';$('#pPlace').value=n.place||'';$('#pStudy').value='';
+  $('#pName').value='';$('#pSec').textContent='معلومات '+(n.name||'الشخص');
+  dateSet('dBirth',n.birth);dateSet('dDeath',n.death);dateSet('dSpouseBirth',n.spouseBirth);
+  $('#pDead').checked=!!(n.dead||n.death);$('#pDeadL').textContent=n.female?'متوفاة (رحمها الله)':'متوفى (رحمه الله)';deadVis();
+  const lk=Cx().spouse(n);$('#pSpouse').value=FAM.spName(Cx(),n);$('#pSpouse').disabled=!!lk;
+  $('#pSpouseL').textContent=n.female?'اسم الزوج':'اسم الزوجة';$('#pSpouseBL').textContent=n.female?'تاريخ ميلاد الزوج':'تاريخ ميلاد الزوجة';
+  $('#pLvl').innerHTML=lvlOptions();$('#pStudyTxt').value='';segK='';segSet('');
   $('#pSibs').innerHTML='';$('#pKids').innerHTML='';
   $('#pSibKnown').textContent=sibs.length?'المسجّلون حاليًا: '+sibs.map(c=>c.name).join('، ')+' — أضف الناقصين فقط.':'لا يوجد إخوة مسجّلون بعد.';
   $('#pKidKnown').textContent=n.children.length?'المسجّلون حاليًا: '+n.children.map(c=>c.name).join('، ')+' — أضف الناقصين فقط.':'لا يوجد أبناء مسجّلون بعد.';
@@ -514,11 +554,20 @@ $('#pLink').onclick=e=>{if(profPerson)copyLink(profPerson.id,e.currentTarget,tru
 $('#pSend').onclick=async()=>{const n=profPerson;if(!n)return;const E=$('#pErr'),v=id=>$('#'+id).value.trim();
   if(!v('pName')){E.textContent='اكتب اسمك أولًا.';$('#pName').focus();return;}
   const me={},ch=(k,val,old)=>{if(val&&val!==(old||''))me[k]=val.slice(0,100);};
-  ch('birth',v('pBirth'),n.birth);ch('spouse',v('pSpouse'),n.spouse);ch('spouseBirth',v('pSpouseBirth'),n.spouseBirth);ch('place',v('pPlace'),n.place);if(v('pStudy'))me.study=v('pStudy').slice(0,100);
+  const dates={dBirth:'birth',dSpouseBirth:'spouseBirth'};const dead=$('#pDead').checked;if(dead)dates.dDeath='death';
+  for(const id in dates){const r=dateGet(id);if(r.err){E.textContent=({birth:'تاريخ الميلاد',death:'تاريخ الوفاة',spouseBirth:'ميلاد الزوج/الزوجة'})[dates[id]]+': '+r.err;return;}ch(dates[id],r.v,n[dates[id]]);}
+  if(dead&&!(n.dead||n.death))me.dead=true;
+  if(!$('#pSpouse').disabled)ch('spouse',v('pSpouse'),n.spouse);
+  if(!dead&&segK){const lv=$('#pLvl').value,t=v('pStudyTxt').slice(0,100);
+    if(segK==='study'){if(!lv){E.textContent='اختر السنة الدراسية من القائمة، أو اختر «سنتي غير موجودة».';return;}
+      if(lv==='x'){if(!t){E.textContent='اكتب سنتك وتخصصك.';return;}me.study='يدرس: '+t;}
+      else{me.es=lv;me.study='يدرس: '+$('#pLvl').selectedOptions[0].textContent+(t?' — '+t:'');if(t)me.ed=t;}}
+    else if(segK==='other'){if(!t){E.textContent='اكتب الحالة في الخانة.';return;}me.study=t;}
+    else{me.es=segK;me.study=(segK==='working'?'يعمل':'أنهى دراسته')+(t?': '+t:'');if(t)me.ed=t;}}
   const sib=profRows($('#pSibs')),kids=profRows($('#pKids'));
   if(!Object.keys(me).length&&!sib.length&&!kids.length){E.textContent='لم تُضف أي معلومة جديدة.';return;}
-  const L=[];const nm={birth:'الميلاد',spouse:FAM.spLabel(n),spouseBirth:'ميلاد '+FAM.spLabel(n),place:'الإقامة',study:'الدراسة/العمل'};
-  Object.keys(me).forEach(k=>L.push(nm[k]+': '+me[k]));
+  const L=[];const nm={birth:'الميلاد',death:'الوفاة',spouse:FAM.spLabel(n),spouseBirth:'ميلاد '+FAM.spLabel(n),study:'الدراسة/العمل'};
+  if(me.dead)L.push(n.female?'متوفاة رحمها الله':'متوفى رحمه الله');Object.keys(me).forEach(k=>{if(nm[k])L.push(nm[k]+': '+me[k]);});
   if(sib.length)L.push('إخوة: '+sib.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
   if(kids.length)L.push('أبناء: '+kids.map(x=>x.n+(x.b?' ('+x.b+')':'')).join('، '));
   const b=$('#pSend');b.disabled=true;E.style.color='#6b7a99';E.textContent='جارٍ الإرسال…';
