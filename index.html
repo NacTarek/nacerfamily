@@ -475,6 +475,8 @@ function fitBranch(n){const{w,h}=sz();let x0=n._x,x1=n._x,y0=n._y,y1=n._y;
   (function v(m){x0=Math.min(x0,m._x);x1=Math.max(x1,m._x);y0=Math.min(y0,m._y);y1=Math.max(y1,m._y);if(!collapsed.has(m.id))m.children.forEach(v);})(n);
   const bw=x1-x0+NW+60,bh=y1-y0+NH+90,k=Math.min(3,Math.max(minK(),Math.min(w/bw,h/bh)*.92));
   view.k=k;view.x=w/2-((x0+x1)/2)*k;view.y=h/2-((y0+y1)/2)*k;applyView();}
+function placeCard(){const c=$('#card');if(window.innerWidth<=700){c.style.top='';c.style.maxHeight='';return;}const t=Math.round($('#stage').getBoundingClientRect().top)+48;c.style.top=t+'px';c.style.maxHeight=(window.innerHeight-t-16)+'px';}
+window.addEventListener('resize',()=>{if($('#card').style.display==='block')placeCard();});
 function showCard(){crumbRender();
   const c=$('#card');if(!sel){c.style.display='none';return;}
   const f=find(sel);if(!f){c.style.display='none';return;}
@@ -492,7 +494,7 @@ function showCard(){crumbRender();
   ${n.children.length?`<div class="acts"><button id="cTog">${collapsed.has(n.id)?'فتح الفرع':'طيّ الفرع'}</button></div>`:''}
   <div class="acts"><button id="cLink">🔗 نسخ رابط هذا الشخص</button><button id="cRel">🧬 ما صلتي به؟</button></div>
   <div class="acts"><button id="cProf" class="sugb">✍ تصحيح أو إكمال المعلومات</button></div><button id="cClose" aria-label="إغلاق" title="إغلاق">✕</button>`;
-  c.style.display='block';
+  c.style.display='block';placeCard();
   c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.getAttribute('data-go')));
   const t=$('#cTog');if(t)t.onclick=()=>{const opening=collapsed.has(n.id);toggle(n.id);sel=null;draw();showCard();if(opening)fitBranch(n);};
   $('#cLink').onclick=e=>copyLink(n.id,e.currentTarget);
