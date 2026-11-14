@@ -69,13 +69,19 @@ svg.drag{cursor:grabbing}
 #res div b{font-weight:700}#res small{display:block;margin:2px 0 0}
 #shr{position:fixed;inset:0;z-index:35;background:rgba(15,25,50,.6);display:none;align-items:center;justify-content:center;padding:12px}#shr .sbx{background:#fff;border-radius:16px;width:min(480px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden}#shr .lh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e3e8f2}#shr .sb{padding:12px;overflow:auto;text-align:center}#shr img{width:100%;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.15)}#shr .row{display:flex;gap:8px;margin-top:10px}#shr .row button{flex:1;padding:11px}#shr .shk{display:flex;gap:6px;margin-bottom:10px}#shr .shk button{flex:1;padding:9px;border-radius:999px}#shr .shk button.on{background:#2b59c3;color:#fff;border-color:#2b59c3}#shr img{max-height:62vh;object-fit:contain;background:#f4f6fb}
 #shr .sh{font-size:12px;color:#8a97b3;margin-top:8px}
+#news{display:none;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 12px 0;padding:8px 12px;background:#e7f5ec;border:1px solid #bfe3cc;border-radius:12px;font-size:13.5px;color:#1e5b35}#news b{font-weight:700}#newsT{flex:1 1 auto}#newsL{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 100%;order:3}#newsL .chip{white-space:nowrap}#newsL .chip{background:#fff;border-color:#bfe3cc}#newsX{border:0;background:rgba(30,91,53,.1);width:26px;height:26px;padding:0;border-radius:50%;color:#1e5b35}
 #fam{position:fixed;inset:0;z-index:30;background:rgba(15,25,50,.45);display:none}#fam .lbox{max-width:720px;margin:16px auto;height:calc(100% - 32px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #fam .lh{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #e3e8f2;flex-wrap:wrap}#fam .lh b{font-size:17px}#fam .tabs{flex:1;display:flex;gap:6px}#fam .tabs button{padding:6px 12px;border-radius:999px}#fam .tabs button.on{background:#2b59c3;color:#fff;border-color:#2b59c3}
 #fam .lb{overflow:auto;padding:14px 16px 28px}#fam .kp{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:16px}#fam .kp div{border:1px solid #e3e8f2;border-radius:12px;padding:10px;text-align:center}#fam .kp b{display:block;font-size:24px;color:#1b2a4a}#fam .kp span{font-size:12px;color:#6b7a99}
 #fam h4{margin:18px 0 8px;font-size:15px;color:#1b2a4a}#fam .br{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px}#fam .br .bl{width:110px;flex:none;color:#3b4a6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#fam .br .bt{display:block;flex:1;background:#eef2fa;border-radius:6px;height:16px;overflow:hidden}#fam .br .bf{display:block;height:100%;background:#2b59c3;border-radius:6px}#fam .br .bv{width:30px;flex:none;color:#6b7a99;text-align:left}
 #fam .pp{display:flex;flex-wrap:wrap;gap:6px}#fam .pc{border:1px solid #d5ddec;border-radius:999px;padding:5px 11px;font-size:13px;background:#fff;cursor:pointer}#fam .pc small{color:#8a97b3}
 #fam .story{font-size:16px;line-height:2.05;color:#2b3a5a}#fam .story p{margin:0 0 14px}#fam .story h4{font-size:17px;margin:20px 0 6px}#fam .mr .mn small{display:block}
-#fam .tabs{flex-wrap:wrap}
+#fam .lh b{flex:1}#fam .tabs{order:3;flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}#fam .tabs::-webkit-scrollbar{display:none}#fam .tabs button{flex:none;white-space:nowrap}
+#fam .tfs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}#fam .tf{border-radius:999px;padding:6px 12px;font-size:13px}#fam .tf.on{background:#1b2a4a;color:#fff;border-color:#1b2a4a}
+#fam .tl{position:relative;padding-right:0}#fam .tdec{position:sticky;top:-14px;z-index:1;background:#fff;font-weight:700;color:#1b2a4a;font-size:14px;padding:10px 0 6px;border-bottom:2px solid #eef1f7;margin-top:6px}
+#fam .tev{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;cursor:pointer;border-radius:10px;position:relative}#fam .tev:hover{background:#f5f7fc}
+#fam .tev .ty{width:42px;flex:none;color:#6b7a99;font-size:13px;font-weight:600;padding-top:3px}#fam .tev .tdot{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:#eef2fa}
+#fam .tev.tb .tdot{background:#e7f5ec}#fam .tev.tm .tdot{background:#fdeef3}#fam .tev.td .tdot{background:#eceff4}#fam .tev .tx{flex:1;font-size:14px;line-height:1.7;padding-top:3px}#fam .tev .tx small{color:#8a97b3}
 #fam .mh{text-align:center;color:#3b4a6b;font-size:15px;line-height:1.9;margin:4px 0 14px}#fam .mr{display:flex;gap:10px;align-items:center;border-bottom:1px solid #eef1f7;padding:9px 4px;cursor:pointer}#fam .mr:hover{background:#f7f9fd}#fam .mr .mn{flex:1}#fam .mr .mn small{display:block;color:#8a97b3;font-size:12px}#fam .mr .md{color:#6b7a99;font-size:13px;text-align:left;white-space:nowrap}
 @media(max-width:700px){#sbar .search{flex:1 1 100%}}
 #sbar .search{max-width:520px}
@@ -163,6 +169,7 @@ svg.drag{cursor:grabbing}
   <div class="hp">📱 <b>على الهاتف:</b> اسحب بإصبع واحد للتنقل، وباعد أو قرّب بين إصبعين للتكبير والتصغير.</div>
   <div class="hd">🖱 <b>على الحاسوب:</b> اسحب بالفأرة للتنقل، وعجلة الفأرة للتكبير والتصغير.</div>
 </div>
+<div id="news"><span id="newsT"></span><span id="newsL"></span><button id="newsX" aria-label="إخفاء">✕</button></div>
 <main id="stage">
   <div id="crumb"></div>
   <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -171,7 +178,7 @@ svg.drag{cursor:grabbing}
 </main>
 <aside id="card"></aside>
 <div id="lst"><div class="lbox"><div class="lh"><b>قائمة العائلة</b><span class="lsub">اضغط على السهم لفتح الأبناء، وعلى «عرض» للذهاب إلى الشجرة</span><button id="lX" aria-label="إغلاق">✕</button></div><div class="lb" id="lBody"></div></div></div>
-<div id="fam"><div class="lbox"><div class="lh"><b>📊 العائلة</b><div class="tabs"><button data-t="st" class="on">إحصاءات</button><button data-t="occ">📅 مناسبات</button><button data-t="mem">🤲 ذكرى</button><button data-t="story" id="tStory" style="display:none">📖 القصة</button></div><button id="famX" aria-label="إغلاق">✕</button></div><div class="lb" id="famBody"></div></div></div>
+<div id="fam"><div class="lbox"><div class="lh"><b>📊 العائلة</b><div class="tabs"><button data-t="st" class="on">إحصاءات</button><button data-t="occ">📅 مناسبات</button><button data-t="tl">⏳ الخط الزمني</button><button data-t="mem">🤲 ذكرى</button><button data-t="story" id="tStory" style="display:none">📖 القصة</button></div><button id="famX" aria-label="إغلاق">✕</button></div><div class="lb" id="famBody"></div></div></div>
 <div id="shr"><div class="sbx"><div class="lh"><b>📤 صورة للمشاركة</b><button id="shrX" aria-label="إغلاق">✕</button></div><div class="sb"><div class="shk"><button data-k="s" class="on">بطاقة مختصرة</button><button data-k="f">تقرير كامل</button></div><img id="shrImg" alt="إحصاءات العائلة"><div class="row"><button id="shrGo" class="sugb">مشاركة</button><button id="shrDl">⬇ تنزيل الصورة</button></div><div class="sh">مقاس مناسب لواتساب وإنستغرام وفيسبوك.</div></div></div></div>
 <div id="gm"><div class="rbox"><div class="lh"><b>🎮 من أنا؟</b><span class="lsub" id="gSub"></span><button id="gX" aria-label="إغلاق">✕</button></div><div class="rb" id="gBody"></div></div></div>
 <div id="rel"><div class="rbox"><div class="lh"><b>صلة القرابة</b><span class="lsub" id="rSub"></span><button id="rX" aria-label="إغلاق">✕</button></div>
@@ -827,11 +834,26 @@ function famOcc(){const C=Cx(),now=new Date(),t0=new Date(now.getFullYear(),now.
   const cntFull=everyone().filter(({n})=>{const b=parseDate(n.birth);return b&&b.m&&b.d;}).length;
   return (soon.length?soon.map(e=>`<div class="mr" data-go="${e.id}"><span>${e.ic}</span><div class="mn">${e.t}<small>${e.s}</small></div><div class="md">${when(e.days)}<br><small>${e.x.getDate()}/${e.x.getMonth()+1}</small></div></div>`).join(''):'<div class="mh">لا توجد مناسبات في الشهرين القادمين.</div>')+
    `<div style="font-size:12px;color:#8a97b3;margin-top:12px;line-height:1.8">تظهر هنا المناسبات خلال الشهرين القادمين لمن سُجّل له التاريخ كاملًا باليوم والشهر (${cntFull} شخصًا حاليًا). أكملوا التواريخ من «✍ تصحيح أو إكمال» لتظهر مناسباتكم.</div>`;}
+let tlF='all';
+function famTimeline(){const C=Cx(),ev=[];
+  everyone().forEach(({n})=>{const b=parseDate(n.birth),d=parseDate(n.death);
+    if(b)ev.push({y:b.y,k:b.m*31+b.d,t:'b',ic:'👶',h:`وُلد${n.female?'ت':''} <b>${esc(n.name)}</b> <small>${esc(FAM.nasab(C,n,1))}</small>`,id:n.id});
+    if(d)ev.push({y:d.y,k:d.m*31+d.d,t:'d',ic:'🤲',h:`توفي${n.female?'ت':''} <b>${esc(n.name)}</b> <small>${esc(FAM.nasab(C,n,1))}</small> ${FAM.dua(n)}`,id:n.id});
+    const sp=C.spouse(n);if(!(sp&&n.id>sp.id)){const m=parseDate(FAM.marDateOf(C,n));if(m)ev.push({y:m.y,k:m.m*31+m.d,t:'m',ic:'💍',h:`زواج <b>${esc(n.name)}</b> و<b>${esc(FAM.spName(C,n))}</b>`,id:n.id});}});
+  if(!ev.length)return '<div class="mh">لا توجد تواريخ مسجّلة بعد.</div>';
+  ev.sort((a,b)=>a.y-b.y||a.k-b.k);
+  const cnt={all:ev.length,b:ev.filter(e=>e.t==='b').length,m:ev.filter(e=>e.t==='m').length,d:ev.filter(e=>e.t==='d').length};
+  const L=tlF==='all'?ev:ev.filter(e=>e.t===tlF);let dec=null,out='';
+  L.forEach(e=>{const dd=Math.floor(e.y/10)*10;if(dd!==dec){dec=dd;out+=`<div class="tdec">${dd} – ${dd+9}</div>`;}
+    out+=`<div class="tev t${e.t}" data-go="${e.id}"><span class="ty">${e.y}</span><span class="tdot">${e.ic}</span><span class="tx">${e.h}</span></div>`;});
+  const f=(k,l)=>`<button class="tf${tlF===k?' on':''}" data-tf="${k}">${l} (${cnt[k]})</button>`;
+  return `<div class="tfs">${f('all','الكل')}${f('b','👶 ولادات')}${cnt.m?f('m','💍 زيجات'):''}${f('d','🤲 وفيات')}</div><div class="tl">${out}</div>
+   <div style="font-size:12px;color:#8a97b3;margin-top:12px">يعتمد على من سُجّلت له سنة ميلاد أو وفاة أو زواج.</div>`;}
 function famStory(){const t=String(data.story||'').trim();if(!t)return '<div class="mh">لم تُكتب قصة العائلة بعد.</div>';
   const out=[];let buf=[];const flush=()=>{if(buf.length){out.push('<p>'+buf.map(esc).join('<br>')+'</p>');buf=[];}};
   t.split('\n').forEach(l=>{if(/^\s*##/.test(l)){flush();out.push('<h4>'+esc(l.replace(/^\s*##\s*/,''))+'</h4>');}else if(!l.trim())flush();else buf.push(l);});flush();
   return '<div class="story">'+out.join('')+'</div>';}
-function famRender(){$('#tStory').style.display=data.story?'':'none';document.querySelectorAll('#fam .tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===famTab));$('#famBody').innerHTML=famTab==='st'?famStats():famTab==='occ'?famOcc():famTab==='story'?famStory():famMem();$('#famBody').scrollTop=0;const fs=$('#famShare');if(fs)fs.onclick=famShare;}
+function famRender(){$('#tStory').style.display=data.story?'':'none';document.querySelectorAll('#fam .tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===famTab));$('#famBody').innerHTML=famTab==='st'?famStats():famTab==='occ'?famOcc():famTab==='tl'?famTimeline():famTab==='story'?famStory():famMem();$('#famBody').querySelectorAll('[data-tf]').forEach(b=>b.onclick=e=>{e.stopPropagation();tlF=b.dataset.tf;famRender();});$('#famBody').scrollTop=0;const fs=$('#famShare');if(fs)fs.onclick=famShare;}
 $('#bFam').onclick=()=>{$('#fam').style.display='block';famRender();};
 $('#famX').onclick=()=>{$('#fam').style.display='none';};
 document.querySelectorAll('#fam .tabs button').forEach(b=>b.onclick=()=>{famTab=b.dataset.t;famRender();});
@@ -986,7 +1008,7 @@ async function init(){
   collapsedAll=true;everyone().forEach(({n})=>{if(n.children.length&&n!==data.root&&!(n===data.root.children[0]))collapsed.add(n.id);});
   syncBtns();draw();startView();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(data){draw();}});
-  mineSync();
+  mineSync();newsInit();
   try{const qp=new URLSearchParams(location.search),pid=qp.get('p');if(!pid&&!getMe()&&!localStorage.getItem('famWelcomed'))setTimeout(welOpen,600);if(pid&&find(pid)){setTimeout(()=>goTo(pid),50);if(qp.get('c')==='1')setTimeout(()=>profOpen(find(pid).n),400);if(qp.get('r')==='1')setTimeout(()=>relOpen(find(pid).n),400);}}catch(e){}
 }
 /* ---- menu, «my branch», welcome, breadcrumb ---- */
@@ -1006,6 +1028,17 @@ function crumbRender(){const C=$('#crumb');if(!sel||!find(sel)){C.style.display=
   if(!anc.length){C.style.display='none';return;}
   C.innerHTML=anc.map(a=>`<button data-go="${a.id}">${esc(a.name)}</button><span>‹</span>`).join('')+`<button class="cur">${esc(n.name)}</button>`;C.style.display='flex';
   C.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>goTo(b.dataset.go));setTimeout(()=>{C.scrollLeft=-C.scrollWidth;},0);}
+/* ---- what's new since the last visit ---- */
+function newsInit(){let seen=null;try{seen=JSON.parse(localStorage.getItem('famSeen')||'null');}catch(e){}
+  const ids=everyone().map(({n})=>n.id),save=()=>{try{localStorage.setItem('famSeen',JSON.stringify(ids));}catch(e){}};
+  if(!Array.isArray(seen)){save();return;}
+  const S=new Set(seen),fresh=everyone().filter(({n})=>!S.has(n.id)&&n.name&&n.name!=='شخص جديد').map(x=>x.n);
+  if(!fresh.length){save();return;}
+  $('#newsT').innerHTML=`🆕 <b>${fresh.length===1?'أُضيف شخص جديد':fresh.length===2?'أُضيف شخصان':'أُضيف '+fresh.length+' أشخاص'}</b> منذ زيارتك الأخيرة:`;
+  $('#newsL').innerHTML=fresh.slice(0,8).map(n=>`<span class="chip" data-go="${n.id}">${esc(n.name)} <small style="color:#6b7a99">${esc(FAM.nasab(Cx(),n,1))}</small></span>`).join('')+(fresh.length>8?`<span style="align-self:center">و${fresh.length-8} آخرون</span>`:'');
+  $('#newsL').querySelectorAll('[data-go]').forEach(c=>c.onclick=()=>goTo(c.dataset.go));
+  $('#news').style.display='flex';$('#newsX').onclick=()=>{$('#news').style.display='none';save();};
+  save();}
 /* ---- لعبة من أنا ---- */
 let G=null;
 function gInfo(n,p){const sib=p?p.children:[n];const gp=p?find(p.id).p:null;
